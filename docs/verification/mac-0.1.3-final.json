@@ -1,0 +1,154 @@
+{
+  "recordedAt": "2026-11-13T20:15:45.794Z",
+  "version": "0.1.3",
+  "temporaryAudioMonitorRemoved": true,
+  "malformedDiagnosticChunkRemoved": true,
+  "status": {
+    "enabled": true,
+    "compatible": true,
+    "id": "2670863152",
+    "phase": "owned",
+    "ownsPlayback": true,
+    "playing": true,
+    "seekPending": false,
+    "seekSettling": false,
+    "position": 37.883937641723264,
+    "duration": 234.9238775510204,
+    "requestedLevel": "hires",
+    "actualLevel": "lossless",
+    "sourceRate": 44100,
+    "decodedRate": 44100,
+    "sampleRate": 44100,
+    "contextState": "running",
+    "contextGeneration": 1,
+    "activeNodes": 1,
+    "deviceFormat": "unknown",
+    "next": "1938192798",
+    "claiming": false,
+    "memory": {
+      "held": 82881144,
+      "reserved": 0,
+      "limit": 536870912,
+      "pending": 0
+    },
+    "mode": "playCycle",
+    "nativeAllowed": true,
+    "queueVersion": 2,
+    "loadEpoch": 20,
+    "controlRevision": 57
+  },
+  "contextLatency": {
+    "baseLatency": 0.023219954648526078,
+    "outputLatency": 0.056,
+    "note": "API latency metadata, not measured hardware gap"
+  },
+  "nativeSettings": {
+    "listenReg": 1999,
+    "listenAnon": 320,
+    "volume": 0.48
+  },
+  "uiObservation": "CUA observed native home/playback bar after first two ring checks and native playlist/Open Hearts playing after diagnostic repair; no CSS or lyric layout changed",
+  "trace": [
+    {
+      "at": 860600,
+      "event": "prefetch-fallback",
+      "id": "1938192798",
+      "reason": "native-only-file-size"
+    },
+    {
+      "at": 861280,
+      "event": "native-load",
+      "id": "2670863152",
+      "phase": "native",
+      "current": "2670863319",
+      "epoch": 18
+    },
+    {
+      "at": 861503,
+      "event": "prefetch-fallback",
+      "id": "1938192798",
+      "reason": "native-only-file-size"
+    },
+    {
+      "at": 862553,
+      "event": "native-user-seek",
+      "id": "2670863152",
+      "takeoverDeferred": true
+    },
+    {
+      "at": 866152,
+      "event": "native-load",
+      "id": "2670863319",
+      "phase": "native",
+      "current": "2670863152",
+      "epoch": 19
+    },
+    {
+      "at": 867307,
+      "event": "native-user-seek",
+      "id": "2670863319",
+      "takeoverDeferred": true
+    },
+    {
+      "at": 868725,
+      "event": "decoded",
+      "id": "2670863319",
+      "level": "lossless",
+      "sourceRate": 44100,
+      "decodedRate": 44100,
+      "channels": 2,
+      "size": 81911840
+    },
+    {
+      "at": 868728,
+      "event": "scheduled",
+      "from": "2670863319",
+      "to": "2670863152",
+      "leadSeconds": 5.699917233560086,
+      "sourceRate": 44100,
+      "decodedRate": 44100,
+      "contextRate": 44100,
+      "scheduledGapFrames": 0
+    },
+    {
+      "at": 868731,
+      "event": "takeover",
+      "id": "2670863319",
+      "position": 226.4865,
+      "pauseAcknowledged": true
+    },
+    {
+      "at": 874429,
+      "event": "transition",
+      "from": "2670863319",
+      "to": "2670863152",
+      "scheduledGapFrames": 0
+    },
+    {
+      "at": 874562,
+      "event": "native-load",
+      "id": "2670863152",
+      "phase": "claiming",
+      "current": "2670863152",
+      "epoch": 20
+    },
+    {
+      "at": 874562,
+      "event": "claimed",
+      "id": "2670863152",
+      "position": 0.1457063492063071,
+      "claimDelayMs": 133.30000019073486
+    },
+    {
+      "at": 874566,
+      "event": "play",
+      "id": "2670863152"
+    },
+    {
+      "at": 874675,
+      "event": "prefetch-fallback",
+      "id": "1938192798",
+      "reason": "native-only-file-size"
+    }
+  ]
+}

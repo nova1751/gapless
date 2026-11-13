@@ -1,11 +1,12 @@
 # 网易云无缝播放解决方案
 
-仅增加无缝衔接，沿用网易云的音质选择、授权音源、音量、队列和原生 UI。Mac 插件 0.1.2 已安装，修正进度控制竞态并收窄接管范围；Windows 提供详细实施方案，尚无 Windows 安装包。
+仅增加无缝衔接，沿用网易云的音质选择、授权音源、音量、队列和原生 UI。Mac 插件 0.1.3 已安装，修正临近结尾错过接管、暂停和重选时丢弃预加载缓存的问题；Windows 提供详细实施方案，尚无 Windows 安装包。
 
 ## 直接入口
 
 - [Mac 安装与使用](mac/README.md)
-- [Mac 插件包](releases/gapless-player-mac-0.1.2.plugin)
+- [Mac 插件包](releases/gapless-player-mac-0.1.3.plugin)
+- [Baptized In Fear → Open Hearts 间隔排查与实际缓冲验证](docs/AUDIBLE_GAP_REVIEW.md)
 - [进度回跳、副作用与精简审查](docs/SIDE_EFFECTS_REVIEW.md)
 - [0.1.1 修正、验证和已知边界](docs/REMEDIATION.md)
 - [Windows 详细实施方案](docs/WINDOWS_GAPLESS_IMPLEMENTATION.md)

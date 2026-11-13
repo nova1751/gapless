@@ -1,0 +1,1244 @@
+{
+  "recordedAt": "2026-11-13T19:52:05.491Z",
+  "version": "0.1.2",
+  "method": "Read-only decode of original authorized native Load sources; no playback, DSP or trimming",
+  "tracks": [
+    {
+      "id": "2670863319",
+      "level": "lossless",
+      "sourceFrames": 10238980,
+      "pcm": {
+        "frames": 10238980,
+        "rate": 44100,
+        "duration": 232.1764172335601,
+        "leadingExactZeroFrames": 0,
+        "trailingExactZeroFrames": 0,
+        "first500ms": [
+          {
+            "ms": 0,
+            "rmsDb": -13.77,
+            "peakDb": -4.49
+          },
+          {
+            "ms": 10,
+            "rmsDb": -10.23,
+            "peakDb": -1.91
+          },
+          {
+            "ms": 20,
+            "rmsDb": -5.17,
+            "peakDb": -0.19
+          },
+          {
+            "ms": 30,
+            "rmsDb": -2.78,
+            "peakDb": -0.19
+          },
+          {
+            "ms": 40,
+            "rmsDb": -3.45,
+            "peakDb": -0.19
+          },
+          {
+            "ms": 50,
+            "rmsDb": -3.31,
+            "peakDb": -0.33
+          },
+          {
+            "ms": 60,
+            "rmsDb": -4.84,
+            "peakDb": -0.19
+          },
+          {
+            "ms": 70,
+            "rmsDb": -4.01,
+            "peakDb": -0.57
+          },
+          {
+            "ms": 80,
+            "rmsDb": -5.17,
+            "peakDb": -0.71
+          },
+          {
+            "ms": 90,
+            "rmsDb": -5.4,
+            "peakDb": -0.66
+          },
+          {
+            "ms": 100,
+            "rmsDb": -5.59,
+            "peakDb": -1.18
+          },
+          {
+            "ms": 110,
+            "rmsDb": -6.66,
+            "peakDb": -2.55
+          },
+          {
+            "ms": 120,
+            "rmsDb": -6.89,
+            "peakDb": -2.58
+          },
+          {
+            "ms": 130,
+            "rmsDb": -6.45,
+            "peakDb": -1.66
+          },
+          {
+            "ms": 140,
+            "rmsDb": -7.29,
+            "peakDb": -2.45
+          },
+          {
+            "ms": 150,
+            "rmsDb": -9,
+            "peakDb": -2.98
+          },
+          {
+            "ms": 160,
+            "rmsDb": -11.22,
+            "peakDb": -6.25
+          },
+          {
+            "ms": 170,
+            "rmsDb": -13.86,
+            "peakDb": -6.1
+          },
+          {
+            "ms": 180,
+            "rmsDb": -15.53,
+            "peakDb": -8.32
+          },
+          {
+            "ms": 190,
+            "rmsDb": -17,
+            "peakDb": -9.3
+          },
+          {
+            "ms": 200,
+            "rmsDb": -18.88,
+            "peakDb": -9.52
+          },
+          {
+            "ms": 210,
+            "rmsDb": -18.81,
+            "peakDb": -12.22
+          },
+          {
+            "ms": 220,
+            "rmsDb": -18.53,
+            "peakDb": -12.04
+          },
+          {
+            "ms": 230,
+            "rmsDb": -19.9,
+            "peakDb": -12.23
+          },
+          {
+            "ms": 240,
+            "rmsDb": -17.86,
+            "peakDb": -9.83
+          },
+          {
+            "ms": 250,
+            "rmsDb": -17.82,
+            "peakDb": -9.55
+          },
+          {
+            "ms": 260,
+            "rmsDb": -20.25,
+            "peakDb": -10.02
+          },
+          {
+            "ms": 270,
+            "rmsDb": -21.27,
+            "peakDb": -10.58
+          },
+          {
+            "ms": 280,
+            "rmsDb": -21.45,
+            "peakDb": -12.52
+          },
+          {
+            "ms": 290,
+            "rmsDb": -20.04,
+            "peakDb": -10.33
+          },
+          {
+            "ms": 300,
+            "rmsDb": -18.76,
+            "peakDb": -9.27
+          },
+          {
+            "ms": 310,
+            "rmsDb": -19.58,
+            "peakDb": -10.79
+          },
+          {
+            "ms": 320,
+            "rmsDb": -22.02,
+            "peakDb": -13.27
+          },
+          {
+            "ms": 330,
+            "rmsDb": -22.55,
+            "peakDb": -13.46
+          },
+          {
+            "ms": 340,
+            "rmsDb": -19.57,
+            "peakDb": -11.96
+          },
+          {
+            "ms": 350,
+            "rmsDb": -21.06,
+            "peakDb": -11.98
+          },
+          {
+            "ms": 360,
+            "rmsDb": -20.73,
+            "peakDb": -12.65
+          },
+          {
+            "ms": 370,
+            "rmsDb": -21.39,
+            "peakDb": -12.46
+          },
+          {
+            "ms": 380,
+            "rmsDb": -22.96,
+            "peakDb": -15.32
+          },
+          {
+            "ms": 390,
+            "rmsDb": -19.75,
+            "peakDb": -11.62
+          },
+          {
+            "ms": 400,
+            "rmsDb": -22.72,
+            "peakDb": -12.7
+          },
+          {
+            "ms": 410,
+            "rmsDb": -21.14,
+            "peakDb": -12.95
+          },
+          {
+            "ms": 420,
+            "rmsDb": -21.02,
+            "peakDb": -11.27
+          },
+          {
+            "ms": 430,
+            "rmsDb": -23.32,
+            "peakDb": -14.57
+          },
+          {
+            "ms": 440,
+            "rmsDb": -21.25,
+            "peakDb": -11.78
+          },
+          {
+            "ms": 450,
+            "rmsDb": -22.06,
+            "peakDb": -14.47
+          },
+          {
+            "ms": 460,
+            "rmsDb": -21.89,
+            "peakDb": -13.65
+          },
+          {
+            "ms": 470,
+            "rmsDb": -22.27,
+            "peakDb": -13.02
+          },
+          {
+            "ms": 480,
+            "rmsDb": -21.66,
+            "peakDb": -13.4
+          },
+          {
+            "ms": 490,
+            "rmsDb": -20.07,
+            "peakDb": -9.93
+          }
+        ],
+        "last500ms": [
+          {
+            "ms": 0,
+            "rmsDb": -8.9,
+            "peakDb": -0.19
+          },
+          {
+            "ms": 10,
+            "rmsDb": -8.71,
+            "peakDb": -0.84
+          },
+          {
+            "ms": 20,
+            "rmsDb": -9.29,
+            "peakDb": -0.38
+          },
+          {
+            "ms": 30,
+            "rmsDb": -9.88,
+            "peakDb": -0.54
+          },
+          {
+            "ms": 40,
+            "rmsDb": -9.88,
+            "peakDb": -0.21
+          },
+          {
+            "ms": 50,
+            "rmsDb": -9.25,
+            "peakDb": -0.22
+          },
+          {
+            "ms": 60,
+            "rmsDb": -9.33,
+            "peakDb": -1.23
+          },
+          {
+            "ms": 70,
+            "rmsDb": -9.42,
+            "peakDb": -1.16
+          },
+          {
+            "ms": 80,
+            "rmsDb": -8.88,
+            "peakDb": -0.23
+          },
+          {
+            "ms": 90,
+            "rmsDb": -9.22,
+            "peakDb": -0.2
+          },
+          {
+            "ms": 100,
+            "rmsDb": -9.14,
+            "peakDb": -0.83
+          },
+          {
+            "ms": 110,
+            "rmsDb": -9.34,
+            "peakDb": -0.19
+          },
+          {
+            "ms": 120,
+            "rmsDb": -10.5,
+            "peakDb": -2.01
+          },
+          {
+            "ms": 130,
+            "rmsDb": -9.43,
+            "peakDb": -0.57
+          },
+          {
+            "ms": 140,
+            "rmsDb": -8.92,
+            "peakDb": -0.91
+          },
+          {
+            "ms": 150,
+            "rmsDb": -9.1,
+            "peakDb": -0.22
+          },
+          {
+            "ms": 160,
+            "rmsDb": -9.7,
+            "peakDb": -0.2
+          },
+          {
+            "ms": 170,
+            "rmsDb": -10.23,
+            "peakDb": -1.07
+          },
+          {
+            "ms": 180,
+            "rmsDb": -9.46,
+            "peakDb": -0.89
+          },
+          {
+            "ms": 190,
+            "rmsDb": -8.85,
+            "peakDb": -0.23
+          },
+          {
+            "ms": 200,
+            "rmsDb": -9.35,
+            "peakDb": -0.69
+          },
+          {
+            "ms": 210,
+            "rmsDb": -9.22,
+            "peakDb": -0.19
+          },
+          {
+            "ms": 220,
+            "rmsDb": -9.25,
+            "peakDb": -0.61
+          },
+          {
+            "ms": 230,
+            "rmsDb": -8.74,
+            "peakDb": -0.76
+          },
+          {
+            "ms": 240,
+            "rmsDb": -8.82,
+            "peakDb": -0.19
+          },
+          {
+            "ms": 250,
+            "rmsDb": -9.01,
+            "peakDb": -0.18
+          },
+          {
+            "ms": 260,
+            "rmsDb": -8.74,
+            "peakDb": -0.21
+          },
+          {
+            "ms": 270,
+            "rmsDb": -8.52,
+            "peakDb": -0.19
+          },
+          {
+            "ms": 280,
+            "rmsDb": -8.55,
+            "peakDb": -0.19
+          },
+          {
+            "ms": 290,
+            "rmsDb": -8.4,
+            "peakDb": -0.19
+          },
+          {
+            "ms": 300,
+            "rmsDb": -8.11,
+            "peakDb": -0.19
+          },
+          {
+            "ms": 310,
+            "rmsDb": -8.1,
+            "peakDb": -0.29
+          },
+          {
+            "ms": 320,
+            "rmsDb": -8.21,
+            "peakDb": -0.2
+          },
+          {
+            "ms": 330,
+            "rmsDb": -8.55,
+            "peakDb": -0.18
+          },
+          {
+            "ms": 340,
+            "rmsDb": -7.67,
+            "peakDb": -0.19
+          },
+          {
+            "ms": 350,
+            "rmsDb": -8.24,
+            "peakDb": -0.19
+          },
+          {
+            "ms": 360,
+            "rmsDb": -8.45,
+            "peakDb": -0.19
+          },
+          {
+            "ms": 370,
+            "rmsDb": -7.59,
+            "peakDb": -0.34
+          },
+          {
+            "ms": 380,
+            "rmsDb": -8.71,
+            "peakDb": -0.26
+          },
+          {
+            "ms": 390,
+            "rmsDb": -8.27,
+            "peakDb": -0.21
+          },
+          {
+            "ms": 400,
+            "rmsDb": -8.53,
+            "peakDb": -0.21
+          },
+          {
+            "ms": 410,
+            "rmsDb": -7.98,
+            "peakDb": -0.48
+          },
+          {
+            "ms": 420,
+            "rmsDb": -7.44,
+            "peakDb": -0.21
+          },
+          {
+            "ms": 430,
+            "rmsDb": -6.97,
+            "peakDb": -0.19
+          },
+          {
+            "ms": 440,
+            "rmsDb": -7.75,
+            "peakDb": -0.31
+          },
+          {
+            "ms": 450,
+            "rmsDb": -7.1,
+            "peakDb": -0.2
+          },
+          {
+            "ms": 460,
+            "rmsDb": -7.31,
+            "peakDb": -0.1
+          },
+          {
+            "ms": 470,
+            "rmsDb": -6.88,
+            "peakDb": -0.21
+          },
+          {
+            "ms": 480,
+            "rmsDb": -8.49,
+            "peakDb": -0.2
+          },
+          {
+            "ms": 490,
+            "rmsDb": -8.52,
+            "peakDb": -0.28
+          }
+        ]
+      }
+    },
+    {
+      "id": "2670863152",
+      "level": "lossless",
+      "sourceFrames": 10360143,
+      "pcm": {
+        "frames": 10360143,
+        "rate": 44100,
+        "duration": 234.9238775510204,
+        "leadingExactZeroFrames": 0,
+        "trailingExactZeroFrames": 0,
+        "first500ms": [
+          {
+            "ms": 0,
+            "rmsDb": -8.21,
+            "peakDb": -0.3
+          },
+          {
+            "ms": 10,
+            "rmsDb": -8.63,
+            "peakDb": -1.07
+          },
+          {
+            "ms": 20,
+            "rmsDb": -8.26,
+            "peakDb": -0.19
+          },
+          {
+            "ms": 30,
+            "rmsDb": -7.97,
+            "peakDb": -0.85
+          },
+          {
+            "ms": 40,
+            "rmsDb": -7.77,
+            "peakDb": -0.2
+          },
+          {
+            "ms": 50,
+            "rmsDb": -7.19,
+            "peakDb": -0.49
+          },
+          {
+            "ms": 60,
+            "rmsDb": -6.82,
+            "peakDb": -0.31
+          },
+          {
+            "ms": 70,
+            "rmsDb": -6.62,
+            "peakDb": -0.29
+          },
+          {
+            "ms": 80,
+            "rmsDb": -7.47,
+            "peakDb": -0.19
+          },
+          {
+            "ms": 90,
+            "rmsDb": -6.76,
+            "peakDb": -0.19
+          },
+          {
+            "ms": 100,
+            "rmsDb": -6.8,
+            "peakDb": -0.19
+          },
+          {
+            "ms": 110,
+            "rmsDb": -5.93,
+            "peakDb": -0.19
+          },
+          {
+            "ms": 120,
+            "rmsDb": -6.23,
+            "peakDb": -0.19
+          },
+          {
+            "ms": 130,
+            "rmsDb": -5.82,
+            "peakDb": -0.19
+          },
+          {
+            "ms": 140,
+            "rmsDb": -6.3,
+            "peakDb": -0.19
+          },
+          {
+            "ms": 150,
+            "rmsDb": -6.11,
+            "peakDb": -0.19
+          },
+          {
+            "ms": 160,
+            "rmsDb": -6.57,
+            "peakDb": -0.19
+          },
+          {
+            "ms": 170,
+            "rmsDb": -7.31,
+            "peakDb": -0.19
+          },
+          {
+            "ms": 180,
+            "rmsDb": -8.8,
+            "peakDb": -0.63
+          },
+          {
+            "ms": 190,
+            "rmsDb": -8.75,
+            "peakDb": -0.23
+          },
+          {
+            "ms": 200,
+            "rmsDb": -8.23,
+            "peakDb": -0.21
+          },
+          {
+            "ms": 210,
+            "rmsDb": -8.77,
+            "peakDb": -0.19
+          },
+          {
+            "ms": 220,
+            "rmsDb": -7.58,
+            "peakDb": -0.31
+          },
+          {
+            "ms": 230,
+            "rmsDb": -6.39,
+            "peakDb": -0.2
+          },
+          {
+            "ms": 240,
+            "rmsDb": -6.96,
+            "peakDb": -0.19
+          },
+          {
+            "ms": 250,
+            "rmsDb": -7.92,
+            "peakDb": -0.2
+          },
+          {
+            "ms": 260,
+            "rmsDb": -7.8,
+            "peakDb": -0.19
+          },
+          {
+            "ms": 270,
+            "rmsDb": -8.31,
+            "peakDb": -0.19
+          },
+          {
+            "ms": 280,
+            "rmsDb": -8.07,
+            "peakDb": -0.2
+          },
+          {
+            "ms": 290,
+            "rmsDb": -7.74,
+            "peakDb": -0.19
+          },
+          {
+            "ms": 300,
+            "rmsDb": -7.36,
+            "peakDb": -0.19
+          },
+          {
+            "ms": 310,
+            "rmsDb": -8.06,
+            "peakDb": -0.19
+          },
+          {
+            "ms": 320,
+            "rmsDb": -8.73,
+            "peakDb": -0.19
+          },
+          {
+            "ms": 330,
+            "rmsDb": -7.55,
+            "peakDb": -0.23
+          },
+          {
+            "ms": 340,
+            "rmsDb": -8.17,
+            "peakDb": -0.24
+          },
+          {
+            "ms": 350,
+            "rmsDb": -6.88,
+            "peakDb": -0.19
+          },
+          {
+            "ms": 360,
+            "rmsDb": -6.98,
+            "peakDb": -0.2
+          },
+          {
+            "ms": 370,
+            "rmsDb": -7.38,
+            "peakDb": -0.19
+          },
+          {
+            "ms": 380,
+            "rmsDb": -7.17,
+            "peakDb": -0.19
+          },
+          {
+            "ms": 390,
+            "rmsDb": -7.28,
+            "peakDb": -0.2
+          },
+          {
+            "ms": 400,
+            "rmsDb": -6.92,
+            "peakDb": -0.22
+          },
+          {
+            "ms": 410,
+            "rmsDb": -7.59,
+            "peakDb": -0.19
+          },
+          {
+            "ms": 420,
+            "rmsDb": -7.65,
+            "peakDb": -0.19
+          },
+          {
+            "ms": 430,
+            "rmsDb": -7.22,
+            "peakDb": -0.19
+          },
+          {
+            "ms": 440,
+            "rmsDb": -6.68,
+            "peakDb": -0.19
+          },
+          {
+            "ms": 450,
+            "rmsDb": -6.49,
+            "peakDb": -0.19
+          },
+          {
+            "ms": 460,
+            "rmsDb": -6.61,
+            "peakDb": -0.19
+          },
+          {
+            "ms": 470,
+            "rmsDb": -6.68,
+            "peakDb": -0.19
+          },
+          {
+            "ms": 480,
+            "rmsDb": -6.48,
+            "peakDb": -0.19
+          },
+          {
+            "ms": 490,
+            "rmsDb": -6.54,
+            "peakDb": -0.2
+          }
+        ],
+        "last500ms": [
+          {
+            "ms": 0,
+            "rmsDb": -23.67,
+            "peakDb": -15.03
+          },
+          {
+            "ms": 10,
+            "rmsDb": -26.47,
+            "peakDb": -17.31
+          },
+          {
+            "ms": 20,
+            "rmsDb": -24.52,
+            "peakDb": -16.7
+          },
+          {
+            "ms": 30,
+            "rmsDb": -24.14,
+            "peakDb": -15.96
+          },
+          {
+            "ms": 40,
+            "rmsDb": -25.4,
+            "peakDb": -16.28
+          },
+          {
+            "ms": 50,
+            "rmsDb": -24.84,
+            "peakDb": -16.43
+          },
+          {
+            "ms": 60,
+            "rmsDb": -24.35,
+            "peakDb": -14.11
+          },
+          {
+            "ms": 70,
+            "rmsDb": -24.23,
+            "peakDb": -15.08
+          },
+          {
+            "ms": 80,
+            "rmsDb": -24.17,
+            "peakDb": -16.13
+          },
+          {
+            "ms": 90,
+            "rmsDb": -24.79,
+            "peakDb": -16.92
+          },
+          {
+            "ms": 100,
+            "rmsDb": -24.62,
+            "peakDb": -17.18
+          },
+          {
+            "ms": 110,
+            "rmsDb": -23.27,
+            "peakDb": -15.05
+          },
+          {
+            "ms": 120,
+            "rmsDb": -25.04,
+            "peakDb": -16.06
+          },
+          {
+            "ms": 130,
+            "rmsDb": -23.62,
+            "peakDb": -16.54
+          },
+          {
+            "ms": 140,
+            "rmsDb": -23.64,
+            "peakDb": -14.3
+          },
+          {
+            "ms": 150,
+            "rmsDb": -25.9,
+            "peakDb": -17.52
+          },
+          {
+            "ms": 160,
+            "rmsDb": -25.02,
+            "peakDb": -14.19
+          },
+          {
+            "ms": 170,
+            "rmsDb": -25.02,
+            "peakDb": -16.76
+          },
+          {
+            "ms": 180,
+            "rmsDb": -24.66,
+            "peakDb": -14.84
+          },
+          {
+            "ms": 190,
+            "rmsDb": -25.33,
+            "peakDb": -17.57
+          },
+          {
+            "ms": 200,
+            "rmsDb": -22.82,
+            "peakDb": -15.85
+          },
+          {
+            "ms": 210,
+            "rmsDb": -25.68,
+            "peakDb": -16.35
+          },
+          {
+            "ms": 220,
+            "rmsDb": -23.06,
+            "peakDb": -11.9
+          },
+          {
+            "ms": 230,
+            "rmsDb": -22.46,
+            "peakDb": -12.96
+          },
+          {
+            "ms": 240,
+            "rmsDb": -21.65,
+            "peakDb": -13.38
+          },
+          {
+            "ms": 250,
+            "rmsDb": -23.43,
+            "peakDb": -13.89
+          },
+          {
+            "ms": 260,
+            "rmsDb": -21.48,
+            "peakDb": -13.43
+          },
+          {
+            "ms": 270,
+            "rmsDb": -21.67,
+            "peakDb": -14.52
+          },
+          {
+            "ms": 280,
+            "rmsDb": -24.62,
+            "peakDb": -16.89
+          },
+          {
+            "ms": 290,
+            "rmsDb": -21.92,
+            "peakDb": -14.59
+          },
+          {
+            "ms": 300,
+            "rmsDb": -24.61,
+            "peakDb": -16.09
+          },
+          {
+            "ms": 310,
+            "rmsDb": -24.26,
+            "peakDb": -17.35
+          },
+          {
+            "ms": 320,
+            "rmsDb": -22.39,
+            "peakDb": -13.87
+          },
+          {
+            "ms": 330,
+            "rmsDb": -22.53,
+            "peakDb": -14.19
+          },
+          {
+            "ms": 340,
+            "rmsDb": -22.62,
+            "peakDb": -14.5
+          },
+          {
+            "ms": 350,
+            "rmsDb": -23.83,
+            "peakDb": -16.68
+          },
+          {
+            "ms": 360,
+            "rmsDb": -25.1,
+            "peakDb": -16.59
+          },
+          {
+            "ms": 370,
+            "rmsDb": -23.07,
+            "peakDb": -16.24
+          },
+          {
+            "ms": 380,
+            "rmsDb": -24.01,
+            "peakDb": -15.98
+          },
+          {
+            "ms": 390,
+            "rmsDb": -24.71,
+            "peakDb": -16.68
+          },
+          {
+            "ms": 400,
+            "rmsDb": -22.91,
+            "peakDb": -14.62
+          },
+          {
+            "ms": 410,
+            "rmsDb": -23.77,
+            "peakDb": -14.99
+          },
+          {
+            "ms": 420,
+            "rmsDb": -24.8,
+            "peakDb": -16.68
+          },
+          {
+            "ms": 430,
+            "rmsDb": -23.75,
+            "peakDb": -17.76
+          },
+          {
+            "ms": 440,
+            "rmsDb": -23.64,
+            "peakDb": -13.17
+          },
+          {
+            "ms": 450,
+            "rmsDb": -24.35,
+            "peakDb": -14.23
+          },
+          {
+            "ms": 460,
+            "rmsDb": -24.86,
+            "peakDb": -14.59
+          },
+          {
+            "ms": 470,
+            "rmsDb": -23.41,
+            "peakDb": -12.6
+          },
+          {
+            "ms": 480,
+            "rmsDb": -23.89,
+            "peakDb": -15.05
+          },
+          {
+            "ms": 490,
+            "rmsDb": -23.19,
+            "peakDb": -15.2
+          }
+        ]
+      }
+    }
+  ],
+  "status": {
+    "enabled": true,
+    "compatible": true,
+    "id": "2670863152",
+    "phase": "native",
+    "ownsPlayback": false,
+    "playing": false,
+    "seekPending": false,
+    "seekSettling": false,
+    "position": 1.5117000002861023,
+    "duration": 234.923,
+    "requestedLevel": "hires",
+    "actualLevel": "lossless",
+    "contextGeneration": 2,
+    "activeNodes": 0,
+    "deviceFormat": "unknown",
+    "next": "1938192798",
+    "claiming": false,
+    "memory": {
+      "held": 0,
+      "reserved": 0,
+      "limit": 536870912,
+      "pending": 0
+    },
+    "mode": "playCycle",
+    "nativeAllowed": true,
+    "queueVersion": 2,
+    "loadEpoch": 6,
+    "controlRevision": 23
+  },
+  "recentUserAttempts": [
+    {
+      "at": 186705,
+      "event": "decoded",
+      "id": "2670863152",
+      "level": "lossless",
+      "sourceRate": 44100,
+      "decodedRate": 44100,
+      "channels": 2,
+      "size": 82881144
+    },
+    {
+      "at": 186712,
+      "event": "scheduled",
+      "from": "2670863319",
+      "to": "2670863152",
+      "leadSeconds": 27.304417233560088,
+      "sourceRate": 44100,
+      "decodedRate": 44100,
+      "contextRate": 44100,
+      "scheduledGapFrames": 0
+    },
+    {
+      "at": 186717,
+      "event": "takeover",
+      "id": "2670863319",
+      "position": 204.882,
+      "pauseAcknowledged": true
+    },
+    {
+      "at": 213997,
+      "event": "transition",
+      "from": "2670863319",
+      "to": "2670863152",
+      "scheduledGapFrames": 0
+    },
+    {
+      "at": 214199,
+      "event": "native-load",
+      "id": "2670863152",
+      "phase": "claiming",
+      "current": "2670863152",
+      "epoch": 2
+    },
+    {
+      "at": 214199,
+      "event": "claimed",
+      "id": "2670863152",
+      "position": 0.19671655328798465,
+      "claimDelayMs": 202
+    },
+    {
+      "at": 214204,
+      "event": "play",
+      "id": "2670863152"
+    },
+    {
+      "at": 214298,
+      "event": "prefetch-fallback",
+      "id": "1938192798",
+      "reason": "native-only-file-size"
+    },
+    {
+      "at": 248986,
+      "event": "pause",
+      "id": "2670863152",
+      "position": 34.94828117913833
+    },
+    {
+      "at": 248988,
+      "event": "seek",
+      "id": "2670863152",
+      "position": 2.3603
+    },
+    {
+      "at": 1345088,
+      "event": "native-load",
+      "id": "2670863319",
+      "phase": "owned",
+      "current": "2670863152",
+      "epoch": 2
+    },
+    {
+      "at": 1346401,
+      "event": "native-user-seek",
+      "id": "2670863319",
+      "takeoverDeferred": true
+    },
+    {
+      "at": 1347784,
+      "event": "decoded",
+      "id": "2670863319",
+      "level": "lossless",
+      "sourceRate": 44100,
+      "decodedRate": 44100,
+      "channels": 2,
+      "size": 81911840
+    },
+    {
+      "at": 1350565,
+      "event": "decoded",
+      "id": "2670863152",
+      "level": "lossless",
+      "sourceRate": 44100,
+      "decodedRate": 44100,
+      "channels": 2,
+      "size": 82881144
+    },
+    {
+      "at": 1352702,
+      "event": "native-load",
+      "id": "2670863152",
+      "phase": "native",
+      "current": "2670863319",
+      "epoch": 3
+    },
+    {
+      "at": 1355328,
+      "event": "decoded",
+      "id": "2670863152",
+      "level": "lossless",
+      "sourceRate": 44100,
+      "decodedRate": 44100,
+      "channels": 2,
+      "size": 82881144
+    },
+    {
+      "at": 1355392,
+      "event": "prefetch-fallback",
+      "id": "1938192798",
+      "reason": "native-only-file-size"
+    },
+    {
+      "at": 1362137,
+      "event": "native-load",
+      "id": "2670863319",
+      "phase": "native",
+      "current": "2670863152",
+      "epoch": 4
+    },
+    {
+      "at": 1364160,
+      "event": "native-user-seek",
+      "id": "2670863319",
+      "takeoverDeferred": true
+    },
+    {
+      "at": 1364673,
+      "event": "decoded",
+      "id": "2670863319",
+      "level": "lossless",
+      "sourceRate": 44100,
+      "decodedRate": 44100,
+      "channels": 2,
+      "size": 81911840
+    },
+    {
+      "at": 1367361,
+      "event": "decoded",
+      "id": "2670863152",
+      "level": "lossless",
+      "sourceRate": 44100,
+      "decodedRate": 44100,
+      "channels": 2,
+      "size": 82881144
+    },
+    {
+      "at": 1368349,
+      "event": "native-load",
+      "id": "2670863152",
+      "phase": "native",
+      "current": "2670863319",
+      "epoch": 5
+    }
+  ]
+}

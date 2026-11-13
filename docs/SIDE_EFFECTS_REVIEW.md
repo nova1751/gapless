@@ -1,5 +1,7 @@
 # 0.1.2 进度回跳与副作用审查
 
+这是 0.1.2 的历史记录。用户后续反馈这两首仍有间隔感，预约和接认记录不足以判定听感无缝。0.1.3 的接管时限、缓存修正及实际音频缓冲证据见 [间隔排查](AUDIBLE_GAP_REVIEW.md)。
+
 日期：2026-11-14；目标为网易云 Mac 3.1.12（3444）、BetterNCM-mac 0.1.7。诉求仅限无缝衔接，沿用原生音质选择、音量、队列及 UI。0.1.2 已更新本机安装包；Windows 仍只有实施方案。
 
 ## 结论
@@ -45,7 +47,7 @@
 - [mac-0.1.2-final.json](verification/mac-0.1.2-final.json)：最终源码运行，两首先解码后接管、Seek+暂停及恢复期间连续 Seek。
 - [seek-rejoin-boundary.json](verification/seek-rejoin-boundary.json)：后续撤销整首退出限制后，原生 Seek 完成、自动接管及实际跨曲/原生接认；包含结束时恢复暂停位置。
 - [cross-rate-source.json](verification/cross-rate-source.json)：原生签名 API 及 FLAC 头部规格观察，只保留 ID/级别/大小/规格，不保存 URL。
-- [PACKAGE_SHA256.json](verification/PACKAGE_SHA256.json)：最终源码、ZIP 插件与安装包的一致性。
+- [PACKAGE_0.1.2_SHA256.json](verification/PACKAGE_0.1.2_SHA256.json)：本版源码、ZIP 插件与安装包的一致性。
 
 以上为真实客户端的原生 SDK/桥协议操作和必要字段观察；没有改写 DOM 触发进度拖动。CUA 观察首页与原生播放条样式，并用真实键盘输入放行 AudioContext。鼠标自动拖动尝试没有可靠进入 Seek 路径，因此不记为通过，也不声称完整鼠标拖动验收。
 

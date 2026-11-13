@@ -201,14 +201,17 @@ plugin.onLoad(() => {
   function prefetch() {
     const c = S.current;
     const active = c?.owns ? c.playing : S.nativePlaying;
-    const next = c?.entry && !c.blocked && (active || S.starting)
+    const next = c && !c.blocked
       && ['native', 'owned', 'pausing'].includes(S.phase) ? nextTrack() : null;
-    const preparing = !c?.owns && c?.preparing && active && !c.blocked && nextTrack();
-    if (!next && c && !c.owns && !S.starting && !preparing) {
+    if (!next && c && !c.owns && !S.starting) {
       c.entry = null; resources.retain([]); if (clock.ctx) void clock.close(); return;
     }
     resources.retain([S.current?.blocked && !S.current.owns ? null : ref(S.current), next, ref(S.scheduled)]);
-    if (!next || ['restoring', 'pausing'].includes(S.phase) || resources.lookup(next) || resources.jobs.has(resources.requestKey(next))) return;
+    // Retain an already decoded next track across pause; do not start new
+    // background requests until playback resumes. Discarding it creates gaps
+    // when the user seeks near the end and resumes immediately.
+    if (!c?.entry || !next || (!active && !S.starting) || ['restoring', 'pausing'].includes(S.phase)
+      || resources.lookup(next) || resources.jobs.has(resources.requestKey(next))) return;
     const epoch = S.epoch, queueVersion = S.queueVersion;
     resources.obtain(next).then(() => {
       if (S.epoch === epoch && S.queueVersion === queueVersion) { void takeover(); scheduleNext(); }
@@ -251,10 +254,11 @@ plugin.onLoad(() => {
       || candidate.spec.channels !== c.entry.spec.channels) return;
     if (!c || c.blocked || c.owns || (c.awaitingGesture && clock.ctx?.state === 'suspended') || !c.entry || !S.nativePlaying || !allowed(c.info)
       || c.nativeSeekTokens?.size || performance.now() < (c.seekStableAt || 0)
-      || S.starting || S.phase !== 'native' || c.duration - nativePosition() < 2) return;
+      || S.starting || S.phase !== 'native' || c.duration - nativePosition() < 0.5) return;
     const epoch = S.epoch, revision = S.revision, queueVersion = S.queueVersion;
     const valid = () => S.current === c && S.epoch === epoch && S.revision === revision
-      && S.queueVersion === queueVersion && nextTrack()?.key === next.key && allowed(c.info) && !c.blocked;
+      && S.queueVersion === queueVersion && nextTrack()?.key === next.key && allowed(c.info) && !c.blocked
+      && c.duration - nativePosition() >= 0.12;
     S.starting = true;
     try {
       await clock.open(c.entry);
@@ -454,7 +458,12 @@ plugin.onLoad(() => {
       S.nativePlaying = false; S.nativePosition = 0; S.nativeAt = performance.now();
       S.current = c = { id, info, requestedLevel: level, account: S.account, duration: Number(info?.songDuration) / 1000,
         serial: ++S.serial, offset: 0, heard: 0, owns: false, playing: false };
-      resources.resetFailures(); resources.retain([ref(c)]);
+      // Adopt a matching cached source synchronously. Waiting for native play
+      // before the async preparation would let a store update evict both warm
+      // buffers between Load and play, especially when selecting the same track.
+      const cached = allowed(info) && resources.lookup(ref(c), info);
+      if (cached) { c.entry = cached; c.duration = cached.duration; c.level = cached.level; }
+      resources.resetFailures(); resources.retain([ref(c), nextTrack()]);
       if (allowed(info)) void prepareCurrent(c);
       return false;
     }
@@ -703,7 +712,7 @@ plugin.onLoad(() => {
     } catch (error) { trace('reload-recovery-error', { reason: error.message }); }
   }
   window.gaplessMac = {
-    version: '0.1.2', status: () => {
+    version: '0.1.3', status: () => {
       reconcile(); const c = S.current;
       return { enabled: S.enabled, compatible: S.compatible, id: c?.id, phase: S.phase,
         ownsPlayback: !!c?.owns, playing: c?.owns ? !!c.playing : S.nativePlaying,

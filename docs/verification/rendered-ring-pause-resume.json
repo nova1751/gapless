@@ -1,0 +1,650 @@
+{
+  "recordedAt": "2026-11-13T20:08:42.576Z",
+  "version": "0.1.3",
+  "scenario": "Owned playback pause; seek to final 1.2 seconds while paused; immediate resume across Baptized In Fear -> Open Hearts",
+  "method": "32768-frame passive stereo AnalyserNode rings on playback gain; monitor outputs unconnected. No callback timing or hardware loopback.",
+  "before": {
+    "enabled": true,
+    "compatible": true,
+    "id": "2670863319",
+    "phase": "owned",
+    "ownsPlayback": true,
+    "playing": true,
+    "seekPending": false,
+    "seekSettling": false,
+    "position": 3.136366213151905,
+    "duration": 232.1764172335601,
+    "requestedLevel": "hires",
+    "actualLevel": "lossless",
+    "sourceRate": 44100,
+    "decodedRate": 44100,
+    "sampleRate": 44100,
+    "contextState": "running",
+    "contextGeneration": 1,
+    "activeNodes": 2,
+    "deviceFormat": "unknown",
+    "next": "2670863152",
+    "scheduled": "2670863152",
+    "claiming": false,
+    "memory": {
+      "held": 164792984,
+      "reserved": 0,
+      "limit": 536870912,
+      "pending": 0
+    },
+    "mode": "playCycle",
+    "nativeAllowed": true,
+    "queueVersion": 2,
+    "loadEpoch": 9,
+    "controlRevision": 23
+  },
+  "paused": {
+    "enabled": true,
+    "compatible": true,
+    "id": "2670863319",
+    "phase": "owned",
+    "ownsPlayback": true,
+    "playing": false,
+    "seekPending": false,
+    "seekSettling": false,
+    "position": 3.136366213151905,
+    "duration": 232.1764172335601,
+    "requestedLevel": "hires",
+    "actualLevel": "lossless",
+    "sourceRate": 44100,
+    "decodedRate": 44100,
+    "sampleRate": 44100,
+    "contextState": "running",
+    "contextGeneration": 1,
+    "activeNodes": 0,
+    "deviceFormat": "unknown",
+    "next": "2670863152",
+    "claiming": false,
+    "memory": {
+      "held": 164792984,
+      "reserved": 0,
+      "limit": 536870912,
+      "pending": 0
+    },
+    "mode": "playCycle",
+    "nativeAllowed": true,
+    "queueVersion": 2,
+    "loadEpoch": 9,
+    "controlRevision": 24
+  },
+  "seekResult": {
+    "playId": "2670863319",
+    "seekId": "2670863319|seek|ring2",
+    "code": 0,
+    "position": 230.9764172335601
+  },
+  "afterSeek": {
+    "enabled": true,
+    "compatible": true,
+    "id": "2670863319",
+    "phase": "owned",
+    "ownsPlayback": true,
+    "playing": false,
+    "seekPending": false,
+    "seekSettling": false,
+    "position": 230.9764172335601,
+    "duration": 232.1764172335601,
+    "requestedLevel": "hires",
+    "actualLevel": "lossless",
+    "sourceRate": 44100,
+    "decodedRate": 44100,
+    "sampleRate": 44100,
+    "contextState": "running",
+    "contextGeneration": 1,
+    "activeNodes": 0,
+    "deviceFormat": "unknown",
+    "next": "2670863152",
+    "claiming": false,
+    "memory": {
+      "held": 164792984,
+      "reserved": 0,
+      "limit": 536870912,
+      "pending": 0
+    },
+    "mode": "playCycle",
+    "nativeAllowed": true,
+    "queueVersion": 2,
+    "loadEpoch": 9,
+    "controlRevision": 25
+  },
+  "renderedBoundary": {
+    "contextState": "running",
+    "rate": 44100,
+    "ringFrames": 32768,
+    "windowFrames": 17639,
+    "windowCoversBoundary": true,
+    "maxExactZeroRunFrames": 0,
+    "maxBelowMinus100DbRunFrames": 0,
+    "bins": [
+      {
+        "relativeMs": -200,
+        "rmsDb": -14.28309544457296
+      },
+      {
+        "relativeMs": -195,
+        "rmsDb": -14.708866776235116
+      },
+      {
+        "relativeMs": -190,
+        "rmsDb": -14.17567180594849
+      },
+      {
+        "relativeMs": -185,
+        "rmsDb": -14.812160126219126
+      },
+      {
+        "relativeMs": -180,
+        "rmsDb": -14.496766473127401
+      },
+      {
+        "relativeMs": -175,
+        "rmsDb": -14.618129784753823
+      },
+      {
+        "relativeMs": -170,
+        "rmsDb": -14.921637211355739
+      },
+      {
+        "relativeMs": -165,
+        "rmsDb": -14.810326232606702
+      },
+      {
+        "relativeMs": -160,
+        "rmsDb": -14.344488060784112
+      },
+      {
+        "relativeMs": -155,
+        "rmsDb": -13.912762124560192
+      },
+      {
+        "relativeMs": -150,
+        "rmsDb": -13.688469023132644
+      },
+      {
+        "relativeMs": -145,
+        "rmsDb": -15.83301337573937
+      },
+      {
+        "relativeMs": -140,
+        "rmsDb": -14.040028216781709
+      },
+      {
+        "relativeMs": -135,
+        "rmsDb": -15.573226972568712
+      },
+      {
+        "relativeMs": -130,
+        "rmsDb": -13.441062130351572
+      },
+      {
+        "relativeMs": -125,
+        "rmsDb": -14.640239409545895
+      },
+      {
+        "relativeMs": -120,
+        "rmsDb": -14.783318616991728
+      },
+      {
+        "relativeMs": -115,
+        "rmsDb": -15.45222869744294
+      },
+      {
+        "relativeMs": -110,
+        "rmsDb": -15.612402948120822
+      },
+      {
+        "relativeMs": -105,
+        "rmsDb": -13.941080451253587
+      },
+      {
+        "relativeMs": -100,
+        "rmsDb": -14.24344527514618
+      },
+      {
+        "relativeMs": -95,
+        "rmsDb": -15.62745434320458
+      },
+      {
+        "relativeMs": -90,
+        "rmsDb": -14.486648302253418
+      },
+      {
+        "relativeMs": -85,
+        "rmsDb": -14.152933419775998
+      },
+      {
+        "relativeMs": -80,
+        "rmsDb": -13.724945158192188
+      },
+      {
+        "relativeMs": -75,
+        "rmsDb": -13.727326385848533
+      },
+      {
+        "relativeMs": -70,
+        "rmsDb": -13.249580781242411
+      },
+      {
+        "relativeMs": -65,
+        "rmsDb": -13.736590156371431
+      },
+      {
+        "relativeMs": -60,
+        "rmsDb": -13.941548071512086
+      },
+      {
+        "relativeMs": -55,
+        "rmsDb": -14.26841060465476
+      },
+      {
+        "relativeMs": -50,
+        "rmsDb": -12.9702143635598
+      },
+      {
+        "relativeMs": -45,
+        "rmsDb": -13.76453444450014
+      },
+      {
+        "relativeMs": -40,
+        "rmsDb": -13.806335690363397
+      },
+      {
+        "relativeMs": -35,
+        "rmsDb": -13.64210812462681
+      },
+      {
+        "relativeMs": -30,
+        "rmsDb": -14.041002987494073
+      },
+      {
+        "relativeMs": -25,
+        "rmsDb": -12.609729256311903
+      },
+      {
+        "relativeMs": -20,
+        "rmsDb": -15.143144064927089
+      },
+      {
+        "relativeMs": -15,
+        "rmsDb": -14.950007449594
+      },
+      {
+        "relativeMs": -10,
+        "rmsDb": -14.169540993762544
+      },
+      {
+        "relativeMs": -5,
+        "rmsDb": -15.015494877471289
+      },
+      {
+        "relativeMs": 0,
+        "rmsDb": -14.69038419050988
+      },
+      {
+        "relativeMs": 5,
+        "rmsDb": -14.90988339102389
+      },
+      {
+        "relativeMs": 10,
+        "rmsDb": -14.412421522900347
+      },
+      {
+        "relativeMs": 15,
+        "rmsDb": -15.290277215674353
+      },
+      {
+        "relativeMs": 20,
+        "rmsDb": -14.550759109095825
+      },
+      {
+        "relativeMs": 26,
+        "rmsDb": -15.327977443408965
+      },
+      {
+        "relativeMs": 31,
+        "rmsDb": -14.419047903242406
+      },
+      {
+        "relativeMs": 36,
+        "rmsDb": -14.135182797929806
+      },
+      {
+        "relativeMs": 41,
+        "rmsDb": -14.22609202350537
+      },
+      {
+        "relativeMs": 46,
+        "rmsDb": -14.056843857901134
+      },
+      {
+        "relativeMs": 51,
+        "rmsDb": -12.912880907114591
+      },
+      {
+        "relativeMs": 56,
+        "rmsDb": -14.159376671232476
+      },
+      {
+        "relativeMs": 61,
+        "rmsDb": -12.72051356228988
+      },
+      {
+        "relativeMs": 66,
+        "rmsDb": -13.552067781242592
+      },
+      {
+        "relativeMs": 71,
+        "rmsDb": -12.613333273007377
+      },
+      {
+        "relativeMs": 76,
+        "rmsDb": -13.536496783497604
+      },
+      {
+        "relativeMs": 81,
+        "rmsDb": -13.341279211522012
+      },
+      {
+        "relativeMs": 86,
+        "rmsDb": -14.436680505289987
+      },
+      {
+        "relativeMs": 91,
+        "rmsDb": -13.588092337472865
+      },
+      {
+        "relativeMs": 96,
+        "rmsDb": -12.628323837253133
+      },
+      {
+        "relativeMs": 101,
+        "rmsDb": -13.287638752786087
+      },
+      {
+        "relativeMs": 106,
+        "rmsDb": -13.228688605170797
+      },
+      {
+        "relativeMs": 111,
+        "rmsDb": -13.059546872406262
+      },
+      {
+        "relativeMs": 116,
+        "rmsDb": -11.966079787261027
+      },
+      {
+        "relativeMs": 121,
+        "rmsDb": -11.634615030162987
+      },
+      {
+        "relativeMs": 126,
+        "rmsDb": -13.477470482437443
+      },
+      {
+        "relativeMs": 131,
+        "rmsDb": -11.800411761072187
+      },
+      {
+        "relativeMs": 136,
+        "rmsDb": -12.442238558623966
+      },
+      {
+        "relativeMs": 141,
+        "rmsDb": -12.687017438174069
+      },
+      {
+        "relativeMs": 146,
+        "rmsDb": -12.41350677726318
+      },
+      {
+        "relativeMs": 151,
+        "rmsDb": -13.258632030544513
+      },
+      {
+        "relativeMs": 156,
+        "rmsDb": -11.972240358392852
+      },
+      {
+        "relativeMs": 161,
+        "rmsDb": -12.83681005221413
+      },
+      {
+        "relativeMs": 166,
+        "rmsDb": -13.014940154069963
+      },
+      {
+        "relativeMs": 171,
+        "rmsDb": -14.896489136451923
+      },
+      {
+        "relativeMs": 176,
+        "rmsDb": -13.069800093621389
+      },
+      {
+        "relativeMs": 181,
+        "rmsDb": -15.77457673271378
+      },
+      {
+        "relativeMs": 186,
+        "rmsDb": -14.8730219054913
+      },
+      {
+        "relativeMs": 191,
+        "rmsDb": -14.803278086342754
+      },
+      {
+        "relativeMs": 196,
+        "rmsDb": -15.410286321986673
+      }
+    ]
+  },
+  "scheduledGapFrames": 0,
+  "nodes": [
+    {
+      "event": "start",
+      "id": "2670863319",
+      "at": 381.4196825396825,
+      "start": 381.4296825396825,
+      "offset": 230.9764172335601,
+      "end": 382.62968253968245,
+      "rate": 44100,
+      "frames": 10238980
+    },
+    {
+      "event": "start",
+      "id": "2670863152",
+      "at": 381.4196825396825,
+      "start": 382.62968253968245,
+      "offset": 0,
+      "end": 617.5535600907028,
+      "rate": 44100,
+      "frames": 10360143
+    }
+  ],
+  "commands": [
+    {
+      "at": 492633.60000038147,
+      "command": "audioplayer.seek",
+      "id": "2670863319",
+      "position": 230.9764172335601,
+      "phase": "owned"
+    },
+    {
+      "at": 492792.2000002861,
+      "command": "audioplayer.play",
+      "id": "2670863319",
+      "phase": "owned"
+    },
+    {
+      "at": 494213.2000002861,
+      "command": "audioplayer.load",
+      "id": "2670863152",
+      "phase": "claiming"
+    },
+    {
+      "at": 494215.10000038147,
+      "command": "audioplayer.play",
+      "id": "2670863152",
+      "phase": "owned"
+    }
+  ],
+  "afterBoundary": {
+    "enabled": true,
+    "compatible": true,
+    "id": "2670863152",
+    "phase": "owned",
+    "ownsPlayback": true,
+    "playing": true,
+    "seekPending": false,
+    "seekSettling": false,
+    "position": 0.2644671201815072,
+    "duration": 234.9238775510204,
+    "requestedLevel": "hires",
+    "actualLevel": "lossless",
+    "sourceRate": 44100,
+    "decodedRate": 44100,
+    "sampleRate": 44100,
+    "contextState": "running",
+    "contextGeneration": 1,
+    "activeNodes": 1,
+    "deviceFormat": "unknown",
+    "next": "1938192798",
+    "claiming": false,
+    "memory": {
+      "held": 82881144,
+      "reserved": 0,
+      "limit": 536870912,
+      "pending": 1
+    },
+    "mode": "playCycle",
+    "nativeAllowed": true,
+    "queueVersion": 2,
+    "loadEpoch": 9,
+    "controlRevision": 27
+  },
+  "trace": [
+    {
+      "at": 468393,
+      "event": "native-load",
+      "id": "2670863152",
+      "phase": "claiming",
+      "current": "2670863152",
+      "epoch": 7
+    },
+    {
+      "at": 468393,
+      "event": "claimed",
+      "id": "2670863152",
+      "position": 0.21735102059892597,
+      "claimDelayMs": 214.40000009536743
+    },
+    {
+      "at": 468396,
+      "event": "play",
+      "id": "2670863152"
+    },
+    {
+      "at": 468499,
+      "event": "prefetch-fallback",
+      "id": "1938192798",
+      "reason": "native-only-file-size"
+    },
+    {
+      "at": 489245,
+      "event": "native-load",
+      "id": "2670863319",
+      "phase": "native",
+      "current": "2670863152",
+      "epoch": 8
+    },
+    {
+      "at": 491818,
+      "event": "decoded",
+      "id": "2670863319",
+      "level": "lossless",
+      "sourceRate": 44100,
+      "decodedRate": 44100,
+      "channels": 2,
+      "size": 81911840
+    },
+    {
+      "at": 491821,
+      "event": "scheduled",
+      "from": "2670863319",
+      "to": "2670863152",
+      "leadSeconds": 229.6989172335601,
+      "sourceRate": 44100,
+      "decodedRate": 44100,
+      "contextRate": 44100,
+      "scheduledGapFrames": 0
+    },
+    {
+      "at": 491825,
+      "event": "takeover",
+      "id": "2670863319",
+      "position": 2.4875,
+      "pauseAcknowledged": true
+    },
+    {
+      "at": 492509,
+      "event": "pause",
+      "id": "2670863319",
+      "position": 3.136366213151905
+    },
+    {
+      "at": 492634,
+      "event": "seek",
+      "id": "2670863319",
+      "position": 230.9764172335601
+    },
+    {
+      "at": 492794,
+      "event": "scheduled",
+      "from": "2670863319",
+      "to": "2670863152",
+      "leadSeconds": 1.2099999999999227,
+      "sourceRate": 44100,
+      "decodedRate": 44100,
+      "contextRate": 44100,
+      "scheduledGapFrames": 0
+    },
+    {
+      "at": 492829,
+      "event": "play",
+      "id": "2670863319"
+    },
+    {
+      "at": 493992,
+      "event": "transition",
+      "from": "2670863319",
+      "to": "2670863152",
+      "scheduledGapFrames": 0
+    },
+    {
+      "at": 494213,
+      "event": "native-load",
+      "id": "2670863152",
+      "phase": "claiming",
+      "current": "2670863152",
+      "epoch": 9
+    },
+    {
+      "at": 494213,
+      "event": "claimed",
+      "id": "2670863152",
+      "position": 0.2209297052154966,
+      "claimDelayMs": 221.09999990463257
+    },
+    {
+      "at": 494217,
+      "event": "play",
+      "id": "2670863152"
+    }
+  ],
+  "completed": true
+}
