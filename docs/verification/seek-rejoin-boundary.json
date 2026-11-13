@@ -1,0 +1,236 @@
+{
+  "recordedAt": "2026-11-13T19:29:30.910Z",
+  "version": "0.1.2",
+  "userState": {
+    "id": "2670863152",
+    "position": 2.3603,
+    "playing": false
+  },
+  "nativeSeek": {
+    "playId": "2670863319",
+    "seekId": "2670863319|seek|rejoin-after-seek",
+    "code": 0,
+    "position": 200
+  },
+  "afterNativeSeek": {
+    "enabled": true,
+    "compatible": true,
+    "id": "2670863319",
+    "phase": "native",
+    "ownsPlayback": false,
+    "playing": true,
+    "seekPending": false,
+    "seekSettling": true,
+    "position": 200.00580000019073,
+    "duration": 232.176,
+    "requestedLevel": "hires",
+    "actualLevel": "lossless",
+    "contextGeneration": 0,
+    "activeNodes": 0,
+    "deviceFormat": "unknown",
+    "next": "2670863152",
+    "claiming": false,
+    "memory": {
+      "held": 0,
+      "reserved": 226177830,
+      "limit": 536870912,
+      "pending": 1
+    },
+    "mode": "playCycle",
+    "nativeAllowed": true,
+    "queueVersion": 2,
+    "loadEpoch": 2,
+    "controlRevision": 7
+  },
+  "rejoined": {
+    "enabled": true,
+    "compatible": true,
+    "id": "2670863319",
+    "phase": "owned",
+    "ownsPlayback": true,
+    "playing": true,
+    "seekPending": false,
+    "seekSettling": false,
+    "position": 228.3183492063492,
+    "duration": 232.1764172335601,
+    "requestedLevel": "hires",
+    "actualLevel": "lossless",
+    "sourceRate": 44100,
+    "decodedRate": 44100,
+    "sampleRate": 44100,
+    "contextState": "running",
+    "contextGeneration": 1,
+    "activeNodes": 2,
+    "deviceFormat": "unknown",
+    "next": "2670863152",
+    "scheduled": "2670863152",
+    "claiming": false,
+    "memory": {
+      "held": 164792984,
+      "reserved": 0,
+      "limit": 536870912,
+      "pending": 0
+    },
+    "mode": "playCycle",
+    "nativeAllowed": true,
+    "queueVersion": 2,
+    "loadEpoch": 2,
+    "controlRevision": 7
+  },
+  "afterBoundary": {
+    "enabled": true,
+    "compatible": true,
+    "id": "2670863152",
+    "phase": "owned",
+    "ownsPlayback": true,
+    "playing": true,
+    "seekPending": false,
+    "seekSettling": false,
+    "position": 34.94828117913833,
+    "duration": 234.9238775510204,
+    "requestedLevel": "hires",
+    "actualLevel": "lossless",
+    "sourceRate": 44100,
+    "decodedRate": 44100,
+    "sampleRate": 44100,
+    "contextState": "running",
+    "contextGeneration": 1,
+    "activeNodes": 1,
+    "deviceFormat": "unknown",
+    "next": "1938192798",
+    "claiming": false,
+    "memory": {
+      "held": 82881144,
+      "reserved": 0,
+      "limit": 536870912,
+      "pending": 0
+    },
+    "mode": "playCycle",
+    "nativeAllowed": true,
+    "queueVersion": 2,
+    "loadEpoch": 2,
+    "controlRevision": 8
+  },
+  "trace": [
+    {
+      "at": 132290,
+      "event": "native-user-seek",
+      "id": "2670863152",
+      "takeoverDeferred": true
+    },
+    {
+      "at": 136831,
+      "event": "decoded",
+      "id": "2670863152",
+      "level": "lossless",
+      "sourceRate": 44100,
+      "decodedRate": 44100,
+      "channels": 2,
+      "size": 82881144
+    },
+    {
+      "at": 181662,
+      "event": "native-user-seek",
+      "id": "2670863319",
+      "takeoverDeferred": true
+    },
+    {
+      "at": 183886,
+      "event": "decoded",
+      "id": "2670863319",
+      "level": "lossless",
+      "sourceRate": 44100,
+      "decodedRate": 44100,
+      "channels": 2,
+      "size": 81911840
+    },
+    {
+      "at": 186705,
+      "event": "decoded",
+      "id": "2670863152",
+      "level": "lossless",
+      "sourceRate": 44100,
+      "decodedRate": 44100,
+      "channels": 2,
+      "size": 82881144
+    },
+    {
+      "at": 186712,
+      "event": "scheduled",
+      "from": "2670863319",
+      "to": "2670863152",
+      "leadSeconds": 27.304417233560088,
+      "sourceRate": 44100,
+      "decodedRate": 44100,
+      "contextRate": 44100,
+      "scheduledGapFrames": 0
+    },
+    {
+      "at": 186717,
+      "event": "takeover",
+      "id": "2670863319",
+      "position": 204.882,
+      "pauseAcknowledged": true
+    },
+    {
+      "at": 213997,
+      "event": "transition",
+      "from": "2670863319",
+      "to": "2670863152",
+      "scheduledGapFrames": 0
+    },
+    {
+      "at": 214199,
+      "event": "claimed",
+      "id": "2670863152",
+      "position": 0.19671655328798465,
+      "claimDelayMs": 202
+    }
+  ],
+  "afterRestoringUserState": {
+    "enabled": true,
+    "compatible": true,
+    "id": "2670863152",
+    "phase": "owned",
+    "ownsPlayback": true,
+    "playing": false,
+    "seekPending": false,
+    "seekSettling": false,
+    "position": 2.3603,
+    "duration": 234.9238775510204,
+    "requestedLevel": "hires",
+    "actualLevel": "lossless",
+    "sourceRate": 44100,
+    "decodedRate": 44100,
+    "sampleRate": 44100,
+    "contextState": "running",
+    "contextGeneration": 1,
+    "activeNodes": 0,
+    "deviceFormat": "unknown",
+    "next": "1938192798",
+    "claiming": false,
+    "memory": {
+      "held": 82881144,
+      "reserved": 0,
+      "limit": 536870912,
+      "pending": 0
+    },
+    "mode": "playCycle",
+    "nativeAllowed": true,
+    "queueVersion": 2,
+    "loadEpoch": 2,
+    "controlRevision": 10
+  },
+  "uiState": 1,
+  "tracks": {
+    "from": {
+      "id": "2670863319",
+      "name": "Baptized In Fear"
+    },
+    "to": {
+      "id": "2670863152",
+      "name": "Open Hearts"
+    }
+  },
+  "measurementNote": "Actual transition and native claim observed; scheduledGapFrames=0 is clock scheduling evidence, not a digital audio loopback measurement."
+}

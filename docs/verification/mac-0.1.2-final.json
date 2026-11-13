@@ -1,0 +1,182 @@
+{
+  "recordedAt": "2026-11-13T19:21:49.476Z",
+  "version": "0.1.2",
+  "before": {
+    "enabled": true,
+    "compatible": true,
+    "id": "2670863151",
+    "phase": "owned",
+    "ownsPlayback": true,
+    "playing": true,
+    "position": 60.38618458059423,
+    "duration": 308.57503401360543,
+    "requestedLevel": "hires",
+    "actualLevel": "lossless",
+    "sourceRate": 44100,
+    "decodedRate": 44100,
+    "sampleRate": 44100,
+    "contextState": "running",
+    "contextGeneration": 1,
+    "activeNodes": 2,
+    "deviceFormat": "unknown",
+    "next": "2670863319",
+    "scheduled": "2670863319",
+    "claiming": false,
+    "memory": {
+      "held": 190777112,
+      "reserved": 0,
+      "limit": 536870912,
+      "pending": 0
+    },
+    "mode": "playCycle",
+    "nativeAllowed": true,
+    "queueVersion": 2,
+    "loadEpoch": 2,
+    "controlRevision": 3
+  },
+  "traceBefore": [
+    {
+      "at": 12926,
+      "event": "decoded",
+      "id": "2670863151",
+      "level": "lossless",
+      "sourceRate": 44100,
+      "decodedRate": 44100,
+      "channels": 2,
+      "size": 108865272
+    },
+    {
+      "at": 15649,
+      "event": "decoded",
+      "id": "2670863319",
+      "level": "lossless",
+      "sourceRate": 44100,
+      "decodedRate": 44100,
+      "channels": 2,
+      "size": 81911840
+    },
+    {
+      "at": 60709,
+      "event": "scheduled",
+      "from": "2670863151",
+      "to": "2670863319",
+      "leadSeconds": 257.3636340135101,
+      "sourceRate": 44100,
+      "decodedRate": 44100,
+      "contextRate": 44100,
+      "scheduledGapFrames": 0
+    },
+    {
+      "at": 60715,
+      "event": "takeover",
+      "id": "2670863151",
+      "position": 51.221400000095365,
+      "pauseAcknowledged": true
+    }
+  ],
+  "interruptedSeek": {
+    "target": 60,
+    "completion": {
+      "playId": "2670863151",
+      "seekId": "2670863151|seek|final-interrupt",
+      "code": 0,
+      "position": 60
+    },
+    "status": {
+      "enabled": true,
+      "compatible": true,
+      "id": "2670863151",
+      "phase": "owned",
+      "ownsPlayback": true,
+      "playing": false,
+      "position": 60,
+      "duration": 308.57503401360543,
+      "requestedLevel": "hires",
+      "actualLevel": "lossless",
+      "sourceRate": 44100,
+      "decodedRate": 44100,
+      "sampleRate": 44100,
+      "contextState": "running",
+      "contextGeneration": 1,
+      "activeNodes": 0,
+      "deviceFormat": "unknown",
+      "next": "2670863319",
+      "claiming": false,
+      "memory": {
+        "held": 108865272,
+        "reserved": 0,
+        "limit": 536870912,
+        "pending": 0
+      },
+      "mode": "playCycle",
+      "nativeAllowed": true,
+      "queueVersion": 2,
+      "loadEpoch": 2,
+      "controlRevision": 5
+    },
+    "nativeUIState": 1
+  },
+  "restoringSeeks": {
+    "triggered": true,
+    "results": [
+      {
+        "playId": "2670863151",
+        "seekId": "2670863151|seek|restore-first",
+        "code": 0,
+        "position": 200
+      },
+      {
+        "playId": "2670863151",
+        "seekId": "2670863151|seek|restore-second",
+        "code": 0,
+        "position": 200
+      }
+    ],
+    "frames": [
+      {
+        "at": 85609,
+        "value": "60.06",
+        "uiState": 1
+      },
+      {
+        "at": 85904.69999980927,
+        "value": "199.892",
+        "uiState": 1
+      }
+    ],
+    "status": {
+      "enabled": true,
+      "compatible": true,
+      "id": "2670863151",
+      "phase": "native",
+      "ownsPlayback": false,
+      "playing": false,
+      "position": 200,
+      "duration": 308.57503401360543,
+      "requestedLevel": "hires",
+      "actualLevel": "lossless",
+      "contextGeneration": 2,
+      "activeNodes": 0,
+      "deviceFormat": "unknown",
+      "next": "2670863319",
+      "claiming": false,
+      "memory": {
+        "held": 0,
+        "reserved": 0,
+        "limit": 536870912,
+        "pending": 0
+      },
+      "mode": "playCycle",
+      "nativeAllowed": true,
+      "queueVersion": 2,
+      "loadEpoch": 2,
+      "controlRevision": 7
+    },
+    "nativeUIState": 1
+  },
+  "uiChanges": {
+    "cssAdded": false,
+    "quality": 1999,
+    "volume": 0.48
+  }
+}

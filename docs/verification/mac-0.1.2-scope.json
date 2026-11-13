@@ -1,0 +1,58 @@
+{
+  "recordedAt": "2026-11-13T19:18:03.366Z",
+  "version": "0.1.2",
+  "scenario": "Next source exceeds file limit; current decoded source does not trigger takeover",
+  "status": {
+    "enabled": true,
+    "compatible": true,
+    "id": "2670863152",
+    "phase": "native",
+    "ownsPlayback": false,
+    "playing": true,
+    "position": 80.60030000019073,
+    "duration": 234.9238775510204,
+    "requestedLevel": "hires",
+    "actualLevel": "lossless",
+    "sourceRate": 44100,
+    "decodedRate": 44100,
+    "contextGeneration": 0,
+    "activeNodes": 0,
+    "deviceFormat": "unknown",
+    "next": "1938192798",
+    "claiming": false,
+    "memory": {
+      "held": 82881144,
+      "reserved": 0,
+      "limit": 536870912,
+      "pending": 0
+    },
+    "mode": "playCycle",
+    "nativeAllowed": true,
+    "queueVersion": 2,
+    "loadEpoch": 1,
+    "controlRevision": 0
+  },
+  "trace": [
+    {
+      "at": 3884,
+      "event": "decoded",
+      "id": "2670863152",
+      "level": "lossless",
+      "sourceRate": 44100,
+      "decodedRate": 44100,
+      "channels": 2,
+      "size": 82881144
+    },
+    {
+      "at": 3945,
+      "event": "prefetch-fallback",
+      "id": "1938192798",
+      "reason": "native-only-file-size"
+    }
+  ],
+  "ui": {
+    "state": 2,
+    "quality": 1999,
+    "volume": 0.48
+  }
+}

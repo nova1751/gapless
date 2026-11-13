@@ -6,7 +6,7 @@ plugin.onLoad(() => {
   const bridge = window.__gpMacBridge, Resources = globalThis.GaplessAudioResources;
   if (!bridge?.hooked || !Resources || !globalThis.GaplessPlaybackClock || window.gaplessMac) return;
   const QUALITY = { 128: 'standard', 192: 'higher', 320: 'exhigh', 999: 'lossless', 1999: 'hires' };
-  const log = [], recoveryKey = 'gapless-mac-reload-v2';
+  const log = [], seekReplies = [], recoveryKey = 'gapless-mac-reload-v2';
   const S = { enabled: true, compatible: false, current: null, scheduled: null, claim: false,
     store: null, phase: 'native', epoch: 0, revision: 0, serial: 0, queueVersion: 0,
     account: '', signature: '', selection: '', token: '', nativePosition: 0, nativeAt: performance.now(), nativePlaying: false,
@@ -113,7 +113,7 @@ plugin.onLoad(() => {
     bridge.emit('audioplayer.onPlayState', [c.id, token, value]);
   }
   function progress(c, force = false) {
-    if (S.current !== c || !c.owns || S.claim) return;
+    if (S.current !== c || !c.owns || S.claim || (!c.playing && !force)) return;
     bridge.emit('audioplayer.onPlayProgress', [c.id, clock.position(c).toFixed(3), '1.0000', force]);
   }
   function boundary(c) {
@@ -159,6 +159,7 @@ plugin.onLoad(() => {
       }
       void restoreNative('native-settings');
     }
+    if (c?.owns && S.phase === 'owned' && !nextTrack()) void restoreNative('no-trusted-next');
     refreshLyrics(c);
   }
   function refreshLyrics(c) {
@@ -167,10 +168,9 @@ plugin.onLoad(() => {
     if (String(s.playing?.onlineResourceId) !== c.id || !s.playing?.curPlaying || !s.playing?.resourceDuration) return;
     c.needsLyrics = false;
     if (!(s['page:vinylPage']?.pageState === 'opened' || s.setting?.showLyric || s.app?.isMiniMode)) return;
-    const epoch = S.epoch, serial = c.serial;
-    Promise.resolve(S.store.dispatch({ type: 'async:lyric/fetchLyric', payload: { force: true } })).then(() => {
-      if (S.epoch === epoch && S.current === c && c.serial === serial) progress(c, true);
-    }).catch(error => trace('native-lyric-error', { reason: error.message }));
+    // Lyrics never drive playback progress; the audio clock is the sole source.
+    Promise.resolve(S.store.dispatch({ type: 'async:lyric/fetchLyric', payload: { force: true } }))
+      .catch(error => trace('native-lyric-error', { reason: error.message }));
   }
   function answerLoad(msg, c) {
     const epoch = S.epoch;
@@ -199,12 +199,19 @@ plugin.onLoad(() => {
       sourceRate: entry.spec.rate, decodedRate: entry.buffer.sampleRate, contextRate: clock.ctx.sampleRate, scheduledGapFrames: 0 });
   }
   function prefetch() {
-    const next = S.current?.owns && S.phase === 'owned' ? nextTrack() : null;
-    resources.retain([ref(S.current), next, ref(S.scheduled)]);
-    if (!next || S.phase === 'restoring' || resources.lookup(next) || resources.jobs.has(resources.requestKey(next))) return;
+    const c = S.current;
+    const active = c?.owns ? c.playing : S.nativePlaying;
+    const next = c?.entry && !c.blocked && (active || S.starting)
+      && ['native', 'owned', 'pausing'].includes(S.phase) ? nextTrack() : null;
+    const preparing = !c?.owns && c?.preparing && active && !c.blocked && nextTrack();
+    if (!next && c && !c.owns && !S.starting && !preparing) {
+      c.entry = null; resources.retain([]); if (clock.ctx) void clock.close(); return;
+    }
+    resources.retain([S.current?.blocked && !S.current.owns ? null : ref(S.current), next, ref(S.scheduled)]);
+    if (!next || ['restoring', 'pausing'].includes(S.phase) || resources.lookup(next) || resources.jobs.has(resources.requestKey(next))) return;
     const epoch = S.epoch, queueVersion = S.queueVersion;
     resources.obtain(next).then(() => {
-      if (S.epoch === epoch && S.queueVersion === queueVersion) scheduleNext();
+      if (S.epoch === epoch && S.queueVersion === queueVersion) { void takeover(); scheduleNext(); }
     }).catch(error => {
       const key = resources.requestKey(next), failure = resources.failures.get(key);
       if (!failure?.logged && error.message !== 'cancelled') {
@@ -213,7 +220,7 @@ plugin.onLoad(() => {
     });
   }
   async function prepareCurrent(c) {
-    if (c.preparing) return; c.preparing = true;
+    if (c.preparing || !S.nativePlaying || !nextTrack()) return; c.preparing = true;
     const epoch = S.epoch;
     try {
       const entry = await resources.obtain(ref(c), c.info);
@@ -237,24 +244,29 @@ plugin.onLoad(() => {
   }
   async function takeover() {
     const c = S.current;
+    const next = nextTrack(), candidate = next && resources.lookup(next);
+    // Keep the native output until an actual compatible, decoded next track can
+    // benefit from a shared clock. A possible queue row alone is insufficient.
+    if (!candidate?.hash || !c?.entry || candidate.spec.rate !== c.entry.spec.rate
+      || candidate.spec.channels !== c.entry.spec.channels) return;
     if (!c || c.blocked || c.owns || (c.awaitingGesture && clock.ctx?.state === 'suspended') || !c.entry || !S.nativePlaying || !allowed(c.info)
+      || c.nativeSeekTokens?.size || performance.now() < (c.seekStableAt || 0)
       || S.starting || S.phase !== 'native' || c.duration - nativePosition() < 2) return;
-    const epoch = S.epoch, revision = S.revision; S.starting = true;
+    const epoch = S.epoch, revision = S.revision, queueVersion = S.queueVersion;
+    const valid = () => S.current === c && S.epoch === epoch && S.revision === revision
+      && S.queueVersion === queueVersion && nextTrack()?.key === next.key && allowed(c.info) && !c.blocked;
+    S.starting = true;
     try {
       await clock.open(c.entry);
-      if (S.current !== c || S.epoch !== epoch || S.revision !== revision || !allowed(c.info)) return;
+      if (!valid()) return;
       S.phase = 'pausing';
       c.takeoverPlaying = true;
       const token = `${c.id}|pause|gapless-${epoch}`;
       await eventCall('audioplayer.pause', [c.id, token], 'audioplayer.onPlayState', a => String(a[0]) === c.id && a[1] === token && Number(a[2]) === 2);
       if (S.current !== c || S.epoch !== epoch) return;
-      if (S.revision !== revision) {
-        S.phase = 'native';
-        if (c.takeoverPlaying) await bridge.raw('audioplayer.play', [c.id, `${c.id}|resume|cancelled-takeover-${epoch}`]);
-        return;
-      }
+      if (!valid()) return;
       const [nativeTime] = await bridge.raw('audioplayer.getPlayedTime', [{ playId: c.id }]);
-      if (S.current !== c || S.epoch !== epoch || S.revision !== revision) return;
+      if (!valid()) return;
       if (Number(nativeTime?.result) !== 1 || !Number.isFinite(Number(nativeTime.playedAudioTime))) throw new Error('native-listening-time-unavailable');
       const offset = Math.min(nativePosition(), c.duration - 0.001);
       c.offset = offset; c.heard = Number(nativeTime.playedAudioTime) + (c.nativeHeardBase || 0); c.owns = true; S.phase = 'owned';
@@ -270,12 +282,30 @@ plugin.onLoad(() => {
         c.blocked = true;
         if (c.owns) await restoreNative(error.message);
         else {
-          S.phase = 'native';
-          if (S.nativePlaying || S.revision === revision) await bridge.raw('audioplayer.play', [c.id, `${c.id}|resume|fallback-${epoch}`]).catch(() => {});
+          if (S.phase !== 'pausing') S.phase = 'native';
           trace('takeover-fallback', { id: c.id, reason: error.message });
         }
       }
-    } finally { S.starting = false; }
+    } finally {
+      // A Seek/pause between the pause acknowledgement and getPlayedTime must not
+      // leave the native backend parked. Finish any native Seek before resuming.
+      if (S.current === c && S.epoch === epoch && !c.owns && S.phase === 'pausing') {
+        while (c.takeoverSeek) {
+          const pending = c.takeoverSeek; await pending;
+          if (c.takeoverSeek === pending) c.takeoverSeek = null;
+        }
+        if (S.current === c && S.epoch === epoch) {
+          S.phase = 'native';
+          if (c.takeoverPlaying) await bridge.raw('audioplayer.play',
+            [c.id, `${c.id}|resume|cancelled-takeover-${epoch}`]).catch(() => {});
+          trace('takeover-cancelled', { id: c.id, playing: !!c.takeoverPlaying });
+        }
+      }
+      S.starting = false;
+      if (S.current === c && !c.owns && c.blocked) {
+        c.entry = null; resources.retain([]); await clock.close();
+      }
+    }
   }
   function validRecovery(c, epoch) { return S.current === c && S.epoch === epoch; }
   async function restoreNative(reason) {
@@ -283,16 +313,19 @@ plugin.onLoad(() => {
     if (!c?.owns) return S.recovering;
     if (S.phase === 'restoring') return S.recovering;
     const epoch = S.epoch, target = clock.position(c); let desired = c.playing;
-    c.recoveryPosition = target; c.recoveryPlaying = desired; c.recoveryHeard = clock.heard(c); c.blocked = true; S.claim = false;
+    c.recoveryPosition = target; c.recoveryPlaying = desired; c.recoveryHeard = clock.heard(c);
+    c.recoverySucceeded = false; c.blocked = true; S.claim = false;
     S.phase = 'restoring'; stopCurrent(); trace('restore-start', { id: c.id, reason, position: target });
     const run = async () => {
       try {
+        // Native onLoad can auto-play for both direct load and queue selection.
+        // That workflow must not overwrite a paused user's recovery intent.
+        c.ignoreSelectionPlay = true;
         if (!c.info || c.restoreSelection) {
           if (!c.row || (rows().length && rows().filter(r => rowId(r) === c.id).length !== 1)) throw new Error('native-recovery-selection-unavailable');
           const loaded = bridge.waitNative('audioplayer.onLoad', a => String(a[0]) === c.id && Number(a[1]?.code) === 0, 8000);
           const completed = loaded.promise;
           try {
-            c.ignoreSelectionPlay = true;
             S.store.dispatch({ type: 'playing/playOneTrackInPlayingList', payload: {
               item: c.row, switchType: 'call', flag: 1, triggerScene: 'playingList' } });
             await completed;
@@ -325,6 +358,8 @@ plugin.onLoad(() => {
         if (!settled) throw new Error('native-recovery-controls-busy');
         stopCurrent(); c.owns = false; S.phase = 'native';
         S.nativePosition = c.recoveryPosition; S.nativeAt = performance.now(); S.nativePlaying = desired;
+        c.suppressPausedNativeProgress = !desired;
+        c.recoverySucceeded = true;
         c.nativeHeardBase = c.recoveryHeard;
         if (!validRecovery(c, epoch)) return;
         bridge.emit('audioplayer.onPlayProgress', [c.id, c.recoveryPosition, 1, true]);
@@ -347,6 +382,15 @@ plugin.onLoad(() => {
   }
   bridge.shouldSuppressNative = (command, args) => {
     const c = S.current;
+    // Seek subscribers are global in this SDK; a late native event for the old
+    // track must not complete a new owned request. Raw waiters observe it first.
+    if (c?.owns && command === 'audioplayer.onSeek') return true;
+    if (String(args?.[0]) === c?.id && command === 'audioplayer.onSeek'
+      && c.nativeSeekBuffered?.has(args[1])) return true;
+    if (String(args?.[0]) === c?.id && command === 'audioplayer.onPlayProgress'
+      && c.nativeSeekTokens?.size) return true;
+    if (String(args?.[0]) === c?.id && command === 'audioplayer.onPlayProgress'
+      && c.suppressPausedNativeProgress && !S.nativePlaying) return true;
     return !!c && (c.owns || S.phase === 'pausing') && String(args?.[0]) === c.id
       && /^audioplayer\.(onPlayState|onPlayProgress|onEnd|onSeek|onBuffering)$/.test(command);
   };
@@ -357,12 +401,41 @@ plugin.onLoad(() => {
     else if (command === 'audioplayer.onPlayState') {
       S.nativePosition = nativePosition(); S.nativeAt = performance.now(); S.nativePlaying = Number(args[2]) === 1;
       S.token = args[1]; if (S.phase === 'native') void takeover();
-    } else if (command === 'audioplayer.onSeek' && Number(args[2]) === 0) {
-      S.nativePosition = Number(args[3]); S.nativeAt = performance.now();
+    } else if (command === 'audioplayer.onSeek') {
+      c.nativeSeekTokens?.delete(args[1]); c.seekStableAt = performance.now() + 400;
+      if (Number(args[2]) === 0) { S.nativePosition = Number(args[3]); S.nativeAt = performance.now(); }
     }
   };
   bridge.onError = error => { trace('bridge-error', { reason: error.message }); void restoreNative('bridge-error'); };
   function ack(msg, args = []) { queueMicrotask(() => bridge.dispatch(msg.seq, args)); }
+  function completeSeek(msg, c, token, offset, code = 0) {
+    seekReplies.push({ msg, c, token, offset, code, epoch: S.epoch });
+    if (seekReplies.length === 1) replyNextSeek();
+  }
+  function replyNextSeek() {
+    const request = seekReplies[0]; if (!request) return;
+    ack(request.msg);
+    // Serialize acknowledgements: this SDK subscribes after RPC and does not
+    // filter Seek notifications by token. Every accepted request must complete.
+    setTimeout(() => {
+      try {
+        const { c, token, offset, code, epoch } = request;
+        const valid = S.current === c && S.epoch === epoch;
+        bridge.emit('audioplayer.onSeek', [c.id, token, valid ? code : -1, offset]);
+        const current = S.current;
+        if (current?.owns && !S.claim) {
+          progress(current, true);
+          // BetterNCM infers playing from large progress jumps. A paused Seek is
+          // still paused; publish its real state once, without paused heartbeats.
+          if (!current.playing) emitState(current, 2);
+        } else if (valid && S.phase !== 'restoring' && !c.nativeSeekTokens?.size) {
+          bridge.emit('audioplayer.onPlayProgress', [c.id, nativePosition().toFixed(3), '1.0000', true]);
+          if (!S.nativePlaying) emitState(c, 2);
+        }
+      } catch (error) { bridge.onError(error); }
+      finally { seekReplies.shift(); replyNextSeek(); }
+    }, 0);
+  }
   bridge.handle = msg => {
     reconcile(); const p = msg.params || []; let c = S.current;
     if (msg.command === 'audioplayer.load') {
@@ -401,9 +474,14 @@ plugin.onLoad(() => {
       }
       const epoch = S.epoch, token = p[1] || c.id;
       Promise.resolve(S.recovering).finally(() => {
+        if (msg.command.endsWith('seek')) {
+          completeSeek(msg, c, token, c.recoveryPosition,
+            validRecovery(c, epoch) && c.recoverySucceeded ? 0 : -1);
+          return;
+        }
         ack(msg);
-        if (msg.command.endsWith('seek')) setTimeout(() => {
-          if (validRecovery(c, epoch)) bridge.emit('audioplayer.onSeek', [c.id, token, 0, c.recoveryPosition]);
+        if (selectionPlay) setTimeout(() => {
+          if (validRecovery(c, epoch) && c.suppressPausedNativeProgress && !S.nativePlaying) emitState(c, 2, token);
         }, 0);
       });
       return true;
@@ -423,6 +501,35 @@ plugin.onLoad(() => {
     if (!c?.owns) {
       if (/^audioplayer\.(play|pause|seek|stop|unload)$/.test(msg.command)) {
         S.revision++;
+        if (c) c.suppressPausedNativeProgress = false;
+        if (c && S.enabled && S.compatible && allowed(c.info) && msg.command === 'audioplayer.seek'
+          && (!p[0] || String(p[0]) === c.id)) {
+          // Defer output handoff until native Seek settles; keep decoded sources
+          // so a user Seek does not disable gapless for the remainder of a track.
+          const seekToken = p[1] || c.id, epoch = S.epoch;
+          c.nativeSeekTokens ||= new Set(); c.nativeSeekTokens.add(seekToken);
+          c.seekStableAt = performance.now() + 400;
+          setTimeout(() => {
+            if (S.current === c && S.epoch === epoch && c.nativeSeekTokens.delete(seekToken)) {
+              c.seekStableAt = performance.now() + 400;
+              trace('native-user-seek-timeout', { id: c.id });
+            }
+          }, 5000);
+          // Buffer completion until its RPC finishes, then use the same
+          // serialized SDK reply as an owned Seek. Never lose its event.
+          c.nativeSeekBuffered ||= new Set(); c.nativeSeekBuffered.add(seekToken);
+          c.takeoverSeek = eventCall('audioplayer.seek', p, 'audioplayer.onSeek',
+            a => String(a[0]) === c.id && a[1] === seekToken).then(args => {
+            c.nativeSeekBuffered.delete(seekToken);
+            completeSeek(msg, c, seekToken, Number(args[3]), Number(args[2]));
+          }).catch(error => {
+            c.nativeSeekBuffered.delete(seekToken); c.nativeSeekTokens.delete(seekToken);
+            trace('native-user-seek-error', { id: c.id, reason: error.message });
+            completeSeek(msg, c, seekToken, nativePosition(), -1);
+          });
+          trace('native-user-seek', { id: c.id, takeoverDeferred: true });
+          return true;
+        }
         if (S.phase === 'pausing' && c && (!p[0] || String(p[0]) === c.id)) {
           if (msg.command.endsWith('pause') || /\.(stop|unload)$/.test(msg.command)) c.takeoverPlaying = false;
           else if (msg.command.endsWith('play')) c.takeoverPlaying = true;
@@ -436,7 +543,11 @@ plugin.onLoad(() => {
     const globalPause = msg.command === 'audioplayer.pause' && S.claim && performance.now() - S.gestureAt < 1500;
     if (trackCommand && !matches && !globalPause) {
       // An old SDK cleanup command must not pause the parked native backend or the new Web Audio instance.
-      trace('stale-control', { command: msg.command, id: String(p[0]), current: c.id }); ack(msg); return true;
+      trace('stale-control', { command: msg.command, id: String(p[0]), current: c.id });
+      if (msg.command === 'audioplayer.seek') {
+        completeSeek(msg, { id: String(p[0]) }, p[1] || String(p[0]), Number(p[2]) || 0, -1);
+      } else ack(msg);
+      return true;
     }
     if (msg.command === 'audioplayer.play') {
       if (c.pauseAfterClaimRevision === S.revision) {
@@ -452,21 +563,16 @@ plugin.onLoad(() => {
       emitState(c, 1, token); ack(msg); trace('play', { id: c.id }); prefetch(); scheduleNext(); return true;
     }
     if (msg.command === 'audioplayer.pause') {
-      S.revision++; S.token = p[1] || c.id; stopCurrent(); emitState(c, 2, S.token); ack(msg);
+      S.revision++; S.token = p[1] || c.id; stopCurrent(); progress(c, true); emitState(c, 2, S.token); ack(msg);
       trace('pause', { id: c.id, position: clock.position(c) }); return true;
     }
     if (msg.command === 'audioplayer.seek') {
       if (!Number.isFinite(Number(p[2]))) return false;
-      const playing = c.playing, token = p[1] || c.id, epoch = S.epoch, revision = ++S.revision;
+      const playing = c.playing, token = p[1] || c.id; S.revision++;
       const offset = Math.max(0, Math.min(c.duration - 0.001, Number(p[2])));
       stopCurrent(); c.offset = offset; c.endSent = false; c.missed = false; S.token = token;
       if (playing) clock.start(c, clock.ctx.currentTime + 0.01, offset);
-      ack(msg);
-      // Native SDK installs its Seek subscription after the RPC continuation.
-      setTimeout(() => {
-        if (S.current !== c || S.epoch !== epoch || S.revision !== revision) return;
-        bridge.emit('audioplayer.onSeek', [c.id, token, 0, offset]); progress(c, true);
-      }, 0);
+      completeSeek(msg, c, token, offset);
       trace('seek', { id: c.id, position: offset }); scheduleNext(); return true;
     }
     if (/^audioplayer\.(stop|unload)$/.test(msg.command)) {
@@ -597,10 +703,11 @@ plugin.onLoad(() => {
     } catch (error) { trace('reload-recovery-error', { reason: error.message }); }
   }
   window.gaplessMac = {
-    version: '0.1.1', status: () => {
+    version: '0.1.2', status: () => {
       reconcile(); const c = S.current;
       return { enabled: S.enabled, compatible: S.compatible, id: c?.id, phase: S.phase,
         ownsPlayback: !!c?.owns, playing: c?.owns ? !!c.playing : S.nativePlaying,
+        seekPending: !!c?.nativeSeekTokens?.size, seekSettling: performance.now() < (c?.seekStableAt || 0),
         position: position(), duration: c?.duration, requestedLevel: c?.requestedLevel, actualLevel: c?.level || c?.info?.level,
         sourceRate: c?.entry?.spec.rate, decodedRate: c?.entry?.buffer.sampleRate, ...clock.status(),
         next: nextTrack()?.id, scheduled: S.scheduled?.id, claiming: S.claim,

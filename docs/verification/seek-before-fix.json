@@ -1,0 +1,149 @@
+{
+  "recordedAt": "2026-11-13T18:56:34.432Z",
+  "version": "0.1.1",
+  "initial": {
+    "enabled": true,
+    "compatible": true,
+    "id": "1994361206",
+    "phase": "owned",
+    "ownsPlayback": true,
+    "playing": true,
+    "position": 183.73240362811794,
+    "duration": 250.2704761904762,
+    "requestedLevel": "hires",
+    "actualLevel": "lossless",
+    "sourceRate": 44100,
+    "decodedRate": 44100,
+    "sampleRate": 44100,
+    "contextState": "running",
+    "contextGeneration": 1,
+    "activeNodes": 2,
+    "deviceFormat": "unknown",
+    "next": "2670863151",
+    "scheduled": "2670863151",
+    "claiming": false,
+    "memory": {
+      "held": 197160696,
+      "reserved": 0,
+      "limit": 536870912,
+      "pending": 0
+    },
+    "mode": "playCycle",
+    "nativeAllowed": true,
+    "queueVersion": 2,
+    "loadEpoch": 1,
+    "controlRevision": 10
+  },
+  "firstCompletion": {
+    "completed": false,
+    "waitMs": 350
+  },
+  "clearing": {
+    "playId": "1994361206",
+    "seekId": "1994361206|seek|audit-final",
+    "code": 0,
+    "position": 90
+  },
+  "lateFirstCompletion": {
+    "playId": "1994361206",
+    "seekId": "1994361206|seek|audit-final",
+    "code": 0,
+    "position": 90
+  },
+  "frames": [
+    {
+      "at": 389387.80000019073,
+      "value": 60,
+      "position": 60,
+      "loadingSeek": 0
+    },
+    {
+      "at": 389674,
+      "value": 90,
+      "position": 90,
+      "loadingSeek": 0
+    },
+    {
+      "at": 437521,
+      "value": 160,
+      "position": 160,
+      "loadingSeek": 0
+    }
+  ],
+  "events": [
+    {
+      "at": 389386.60000038147,
+      "command": "audioplayer.onPlayProgress",
+      "id": "1994361206",
+      "position": 60
+    },
+    {
+      "at": 389533.30000019073,
+      "command": "audioplayer.onPlayProgress",
+      "id": "1994361206",
+      "position": 60
+    },
+    {
+      "at": 389651.40000009537,
+      "command": "audioplayer.onSeek",
+      "id": "1994361206",
+      "position": 90
+    },
+    {
+      "at": 389667.2000002861,
+      "command": "audioplayer.onPlayProgress",
+      "id": "1994361206",
+      "position": 90
+    },
+    {
+      "at": 389682.5,
+      "command": "audioplayer.onPlayProgress",
+      "id": "1994361206",
+      "position": 90
+    },
+    {
+      "at": 389833.40000009537,
+      "command": "audioplayer.onPlayProgress",
+      "id": "1994361206",
+      "position": 90
+    },
+    {
+      "at": 389983.2000002861,
+      "command": "audioplayer.onPlayProgress",
+      "id": "1994361206",
+      "position": 90
+    }
+  ],
+  "final": {
+    "enabled": true,
+    "compatible": true,
+    "id": "1994361206",
+    "phase": "owned",
+    "ownsPlayback": true,
+    "playing": false,
+    "position": 90,
+    "duration": 250.2704761904762,
+    "requestedLevel": "hires",
+    "actualLevel": "lossless",
+    "sourceRate": 44100,
+    "decodedRate": 44100,
+    "sampleRate": 44100,
+    "contextState": "running",
+    "contextGeneration": 1,
+    "activeNodes": 0,
+    "deviceFormat": "unknown",
+    "next": "2670863151",
+    "claiming": false,
+    "memory": {
+      "held": 197160696,
+      "reserved": 0,
+      "limit": 536870912,
+      "pending": 0
+    },
+    "mode": "playCycle",
+    "nativeAllowed": true,
+    "queueVersion": 2,
+    "loadEpoch": 1,
+    "controlRevision": 13
+  }
+}

@@ -1,0 +1,95 @@
+{
+  "version": "0.1.2",
+  "scenario": "Seek to 75s during native pause acknowledgement and position query",
+  "triggered": true,
+  "before": {
+    "enabled": true,
+    "compatible": true,
+    "id": "2670863319",
+    "phase": "pausing",
+    "ownsPlayback": false,
+    "playing": false,
+    "position": 119.48100000000001,
+    "duration": 232.1764172335601,
+    "requestedLevel": "hires",
+    "actualLevel": "lossless",
+    "sourceRate": 44100,
+    "decodedRate": 44100,
+    "sampleRate": 44100,
+    "contextState": "running",
+    "contextGeneration": 1,
+    "activeNodes": 0,
+    "deviceFormat": "unknown",
+    "next": "2670863152",
+    "claiming": false,
+    "memory": {
+      "held": 81911840,
+      "reserved": 0,
+      "limit": 536870912,
+      "pending": 0
+    },
+    "mode": "playCycle",
+    "nativeAllowed": true,
+    "queueVersion": 2,
+    "loadEpoch": 2,
+    "controlRevision": 2
+  },
+  "seekResult": {
+    "playId": "2670863319",
+    "seekId": "2670863319|seek|during-takeover-final",
+    "code": 0,
+    "position": 75
+  },
+  "after": {
+    "enabled": true,
+    "compatible": true,
+    "id": "2670863319",
+    "phase": "native",
+    "ownsPlayback": false,
+    "playing": false,
+    "position": 203.17,
+    "duration": 232.1764172335601,
+    "requestedLevel": "hires",
+    "actualLevel": "lossless",
+    "contextGeneration": 2,
+    "activeNodes": 0,
+    "deviceFormat": "unknown",
+    "next": "2670863152",
+    "claiming": false,
+    "memory": {
+      "held": 0,
+      "reserved": 0,
+      "limit": 536870912,
+      "pending": 0
+    },
+    "mode": "playCycle",
+    "nativeAllowed": true,
+    "queueVersion": 2,
+    "loadEpoch": 2,
+    "controlRevision": 4
+  },
+  "trace": [
+    {
+      "at": 26348,
+      "event": "restored-native",
+      "id": "2670863151",
+      "reason": "page-reload",
+      "position": 220.4795,
+      "playing": true,
+      "confirmed": true
+    },
+    {
+      "at": 234474,
+      "event": "native-user-seek",
+      "id": "2670863319",
+      "takeoverDeferred": true
+    },
+    {
+      "at": 234705,
+      "event": "takeover-cancelled",
+      "id": "2670863319",
+      "playing": true
+    }
+  ],
+  "note": "Later playback advanced naturally or through user controls; matching seek token and position establish this race completion."
+}

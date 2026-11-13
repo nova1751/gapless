@@ -1,0 +1,25 @@
+{
+  "recordedAt": "2026-11-13T19:35:50.501931+00:00",
+  "method": "Native signed player URL API plus first FLAC response chunk; body reader cancelled immediately after header observation; no URL retained",
+  "current": {
+    "id": "2670863152",
+    "name": "Open Hearts",
+    "level": "lossless",
+    "sampleRate": 44100
+  },
+  "next": {
+    "id": "1938192798",
+    "name": "Moth To A Flame",
+    "level": "hires",
+    "size": 139582018,
+    "code": 200,
+    "codec": "flac",
+    "sampleRate": 176400,
+    "channels": 2,
+    "bits": 24,
+    "frames": 41277600,
+    "duration": 234
+  },
+  "singleFileLimit": 134217728,
+  "sameSourceRate": false
+}

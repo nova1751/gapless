@@ -1,0 +1,191 @@
+{
+  "recordedAt": "2026-11-13T19:19:11.937Z",
+  "version": "0.1.2",
+  "before": {
+    "enabled": true,
+    "compatible": true,
+    "id": "2670863151",
+    "phase": "owned",
+    "ownsPlayback": true,
+    "playing": true,
+    "position": 68.1736768707483,
+    "duration": 308.57503401360543,
+    "requestedLevel": "hires",
+    "actualLevel": "lossless",
+    "sourceRate": 44100,
+    "decodedRate": 44100,
+    "sampleRate": 44100,
+    "contextState": "running",
+    "contextGeneration": 1,
+    "activeNodes": 2,
+    "deviceFormat": "unknown",
+    "next": "2670863319",
+    "scheduled": "2670863319",
+    "claiming": false,
+    "memory": {
+      "held": 190777112,
+      "reserved": 0,
+      "limit": 536870912,
+      "pending": 0
+    },
+    "mode": "playCycle",
+    "nativeAllowed": true,
+    "queueVersion": 2,
+    "loadEpoch": 2,
+    "controlRevision": 3
+  },
+  "traceBefore": [
+    {
+      "at": 3884,
+      "event": "decoded",
+      "id": "2670863152",
+      "level": "lossless",
+      "sourceRate": 44100,
+      "decodedRate": 44100,
+      "channels": 2,
+      "size": 82881144
+    },
+    {
+      "at": 69559,
+      "event": "decoded",
+      "id": "2670863151",
+      "level": "lossless",
+      "sourceRate": 44100,
+      "decodedRate": 44100,
+      "channels": 2,
+      "size": 108865272
+    },
+    {
+      "at": 74120,
+      "event": "decoded",
+      "id": "2670863319",
+      "level": "lossless",
+      "sourceRate": 44100,
+      "decodedRate": 44100,
+      "channels": 2,
+      "size": 81911840
+    },
+    {
+      "at": 117200,
+      "event": "scheduled",
+      "from": "2670863151",
+      "to": "2670863319",
+      "leadSeconds": 257.36353401360543,
+      "sourceRate": 44100,
+      "decodedRate": 44100,
+      "contextRate": 44100,
+      "scheduledGapFrames": 0
+    },
+    {
+      "at": 117205,
+      "event": "takeover",
+      "id": "2670863151",
+      "position": 51.2215,
+      "pauseAcknowledged": true
+    }
+  ],
+  "interruptedSeek": {
+    "target": 68,
+    "completion": {
+      "playId": "2670863151",
+      "seekId": "2670863151|seek|final-interrupt",
+      "code": 0,
+      "position": 68
+    },
+    "status": {
+      "enabled": true,
+      "compatible": true,
+      "id": "2670863151",
+      "phase": "owned",
+      "ownsPlayback": true,
+      "playing": false,
+      "position": 68,
+      "duration": 308.57503401360543,
+      "requestedLevel": "hires",
+      "actualLevel": "lossless",
+      "sourceRate": 44100,
+      "decodedRate": 44100,
+      "sampleRate": 44100,
+      "contextState": "running",
+      "contextGeneration": 1,
+      "activeNodes": 0,
+      "deviceFormat": "unknown",
+      "next": "2670863319",
+      "claiming": false,
+      "memory": {
+        "held": 108865272,
+        "reserved": 0,
+        "limit": 536870912,
+        "pending": 0
+      },
+      "mode": "playCycle",
+      "nativeAllowed": true,
+      "queueVersion": 2,
+      "loadEpoch": 2,
+      "controlRevision": 5
+    },
+    "nativeUIState": 1
+  },
+  "restoringSeeks": {
+    "triggered": true,
+    "results": [
+      {
+        "playId": "2670863151",
+        "seekId": "2670863151|seek|restore-first",
+        "code": 0,
+        "position": 200
+      },
+      {
+        "playId": "2670863151",
+        "seekId": "2670863151|seek|restore-second",
+        "code": 0,
+        "position": 200
+      }
+    ],
+    "frames": [
+      {
+        "at": 158663.60000038147,
+        "uiState": 1
+      },
+      {
+        "at": 158972.7000002861,
+        "uiState": 2
+      }
+    ],
+    "status": {
+      "enabled": true,
+      "compatible": true,
+      "id": "2670863151",
+      "phase": "native",
+      "ownsPlayback": false,
+      "playing": true,
+      "position": 201.41119999980924,
+      "duration": 308.57503401360543,
+      "requestedLevel": "hires",
+      "actualLevel": "lossless",
+      "contextGeneration": 2,
+      "activeNodes": 0,
+      "deviceFormat": "unknown",
+      "next": "2670863319",
+      "claiming": false,
+      "memory": {
+        "held": 0,
+        "reserved": 0,
+        "limit": 536870912,
+        "pending": 0
+      },
+      "mode": "playCycle",
+      "nativeAllowed": true,
+      "queueVersion": 2,
+      "loadEpoch": 2,
+      "controlRevision": 8
+    },
+    "nativeUIState": 2
+  },
+  "uiChanges": {
+    "cssAdded": false,
+    "quality": 1999,
+    "volume": 0.48
+  },
+  "note": "Intermediate validation: direct native reload auto-play overwrote paused recovery intent. Corrected in final source; see mac-0.1.2-final.json."
+}

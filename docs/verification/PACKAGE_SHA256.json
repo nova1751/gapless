@@ -1,9 +1,10 @@
 {
-  "recordedAt": "2026-11-13T18:25:56.260101+00:00",
+  "recordedAt": "2026-11-13T19:37:33.453579+00:00",
+  "version": "0.1.2",
   "algorithm": "SHA-256",
-  "package": "releases/gapless-player-mac-0.1.1.plugin",
-  "packageBytes": 16942,
-  "packageSHA256": "e5c901a6b75f86c1aaefb4377f9dde171577758b7cd5798c2559f149890640ec",
+  "package": "releases/gapless-player-mac-0.1.2.plugin",
+  "packageBytes": 18474,
+  "packageSHA256": "8207026eb2f9f3803e6cf32b27428578f1d1bb500ca065d78b59f8b1d48b7ac4",
   "installedPackageMatches": true,
   "archiveMatchesSources": true,
   "archiveEntries": [
@@ -15,17 +16,24 @@
   "sourceSHA256": {
     "shared/audio-resources.js": "4a5c8353f3d14177a7447104db724a51134ff77c00e293e3bd170ba0ff635f1e",
     "shared/playback-clock.js": "dfc7784e20f2630133ac98d1e41d7411bd70388a3fd903f17e9eb9d2fec8b20a",
-    "mac/player.js": "c08135581fe085e0f289cb1e413a8cbd828719f77df0beed723cf259c3cbd814",
+    "mac/player.js": "d6cd5d1f3ea494778671580f1af7869fafbcce06fbf9dbfc98dcfac944e825e2",
     "mac/startup.js": "562b3e45f475ca53767e51e0eda401546dc2189a67188b3e214ed8a5a4e55c8f",
-    "mac/manifest.json": "68ece51af67ad9e4f2dccb009d73e32d19df68289e727822855b51631dde0c5d",
+    "mac/manifest.json": "ae5b76fe1418c8648191ee51025e4c11538d8a7538c81d3c07f3e4c80dda8ccf",
     "mac/package.py": "3459188c673fa2027f0060c5bc73d9948d67b14f8d6e8755111932604f2c046c",
     "LICENSE": "6238f6a51a6bc87420e66834d9e53aac07de39be30e5b7886db4d121d56b548b"
   },
   "verification": {
-    "javascriptSyntax": "passed: mac/player.js, mac/startup.js, shared/audio-resources.js, shared/playback-clock.js",
-    "pythonSyntax": "passed: mac/package.py",
-    "nativeSwitchScenario": "passed: continuous native playback when disabled, enabled again in same page",
+    "javascriptSyntax": "passed: modified mac/player.js",
+    "manualProtocolRecords": [
+      "seek-after-fix.json",
+      "seek-takeover-race.json",
+      "mac-0.1.2-final.json",
+      "seek-rejoin-boundary.json"
+    ],
     "qualitySelection": 1999,
-    "volume": 0.48
+    "volume": 0.48,
+    "noNewTestCases": true,
+    "noApplicationBuild": true,
+    "runtimeNote": "Native rejoin/boundary verified; final redundant block cleanup and stale Seek completion guard reviewed and syntax checked afterward. Archive/installed file match final sources; loaded 0.1.2 valid current-track behavior is unchanged."
   }
 }
