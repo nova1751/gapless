@@ -1,0 +1,153 @@
+{
+  "recordedAt": "2026-11-13T20:51:46.960Z",
+  "version": "0.1.4",
+  "status": {
+    "enabled": true,
+    "compatible": true,
+    "id": "2670863152",
+    "phase": "owned",
+    "ownsPlayback": true,
+    "playing": true,
+    "seekPending": false,
+    "seekSettling": false,
+    "position": 199.18510204081636,
+    "duration": 234.9238775510204,
+    "requestedLevel": "hires",
+    "actualLevel": "lossless",
+    "sourceRate": 44100,
+    "decodedRate": 44100,
+    "sampleRate": 44100,
+    "contextState": "running",
+    "contextGeneration": 1,
+    "activeNodes": 1,
+    "deviceFormat": "unknown",
+    "next": "1938192798",
+    "claiming": false,
+    "memory": {
+      "held": 82881144,
+      "reserved": 0,
+      "limit": 536870912,
+      "pending": 0
+    },
+    "mode": "playCycle",
+    "nativeAllowed": true,
+    "queueVersion": 2,
+    "loadEpoch": 4,
+    "controlRevision": 11
+  },
+  "temporaryDiagnosticsRemoved": true,
+  "removedDiagnosticModules": 4,
+  "removedDiagnosticChunks": 4,
+  "nativeSettings": {
+    "listenReg": 1999,
+    "listenAnon": 320,
+    "volume": 0.48
+  },
+  "trace": [
+    {
+      "at": 139678,
+      "event": "play",
+      "id": "2670863152"
+    },
+    {
+      "at": 139753,
+      "event": "prefetch-fallback",
+      "id": "1938192798",
+      "reason": "native-only-file-size"
+    },
+    {
+      "at": 237285,
+      "event": "native-load",
+      "id": "2670863319",
+      "phase": "native",
+      "current": "2670863152",
+      "epoch": 3
+    },
+    {
+      "at": 239931,
+      "event": "decoded",
+      "id": "2670863319",
+      "level": "lossless",
+      "sourceRate": 44100,
+      "decodedRate": 44100,
+      "channels": 2,
+      "size": 81911840
+    },
+    {
+      "at": 239943,
+      "event": "output-ready",
+      "waitMs": 11.5,
+      "contextTime": 164.84426303854875,
+      "outputContextTime": 164.76231833333335
+    },
+    {
+      "at": 239946,
+      "event": "scheduled",
+      "from": "2670863319",
+      "to": "2670863152",
+      "leadSeconds": 229.5820172334647,
+      "sourceRate": 44100,
+      "decodedRate": 44100,
+      "contextRate": 44100,
+      "scheduledGapFrames": 0
+    },
+    {
+      "at": 239955,
+      "event": "takeover",
+      "id": "2670863319",
+      "position": 2.6044000000953673,
+      "pauseAcknowledged": true
+    },
+    {
+      "at": 259273,
+      "event": "seek",
+      "id": "2670863319",
+      "position": 230.1764172335601
+    },
+    {
+      "at": 259273,
+      "event": "scheduled",
+      "from": "2670863319",
+      "to": "2670863152",
+      "leadSeconds": 2.009999999999991,
+      "sourceRate": 44100,
+      "decodedRate": 44100,
+      "contextRate": 44100,
+      "scheduledGapFrames": 0
+    },
+    {
+      "at": 261290,
+      "event": "transition",
+      "from": "2670863319",
+      "to": "2670863152",
+      "scheduledGapFrames": 0
+    },
+    {
+      "at": 261483,
+      "event": "native-load",
+      "id": "2670863152",
+      "phase": "claiming",
+      "current": "2670863152",
+      "epoch": 4
+    },
+    {
+      "at": 261483,
+      "event": "claimed",
+      "id": "2670863152",
+      "position": 0.21040816326532763,
+      "claimDelayMs": 192.90000009536743
+    },
+    {
+      "at": 261487,
+      "event": "play",
+      "id": "2670863152"
+    },
+    {
+      "at": 261567,
+      "event": "prefetch-fallback",
+      "id": "1938192798",
+      "reason": "native-only-file-size"
+    }
+  ],
+  "uiObservation": "CUA confirmed native home and playback bar appearance after diagnostics; playback remained active, no CSS or lyric layout changes"
+}

@@ -1,0 +1,150 @@
+{
+  "recordedAt": "2026-11-13T20:45:18.860Z",
+  "version": "0.1.4",
+  "scenario": "External native pause while output-ready await is in progress; cancellation must preserve pause",
+  "readyBeforePause": {
+    "contextTime": 0.9839455782312925,
+    "outputTimestamp": {
+      "contextTime": 0.9011089999999998,
+      "performanceTime": 76074.5
+    }
+  },
+  "pausedWhileAwaiting": true,
+  "afterCancellation": {
+    "enabled": true,
+    "compatible": true,
+    "id": "2670863319",
+    "phase": "native",
+    "ownsPlayback": false,
+    "playing": false,
+    "seekPending": false,
+    "seekSettling": false,
+    "position": 3.47,
+    "duration": 232.1764172335601,
+    "requestedLevel": "hires",
+    "actualLevel": "lossless",
+    "sourceRate": 44100,
+    "decodedRate": 44100,
+    "sampleRate": 44100,
+    "contextState": "running",
+    "contextGeneration": 1,
+    "activeNodes": 0,
+    "deviceFormat": "unknown",
+    "next": "2670863152",
+    "claiming": false,
+    "memory": {
+      "held": 164792984,
+      "reserved": 0,
+      "limit": 536870912,
+      "pending": 0
+    },
+    "mode": "playCycle",
+    "nativeAllowed": true,
+    "queueVersion": 2,
+    "loadEpoch": 2,
+    "controlRevision": 3
+  },
+  "handoffCancelled": true,
+  "trace": [
+    {
+      "at": 304,
+      "event": "ready",
+      "compatible": false,
+      "appVersion": "3.1.12"
+    },
+    {
+      "at": 476,
+      "event": "queue-changed",
+      "queueVersion": 1
+    },
+    {
+      "at": 476,
+      "event": "capabilities",
+      "compatible": false
+    },
+    {
+      "at": 512,
+      "event": "capabilities",
+      "compatible": true
+    },
+    {
+      "at": 514,
+      "event": "restore-start",
+      "id": "2670863152",
+      "reason": "page-reload",
+      "position": 49.545429931877436
+    },
+    {
+      "at": 518,
+      "event": "recovery-native-cleanup",
+      "command": "audioplayer.stop",
+      "id": ""
+    },
+    {
+      "at": 571,
+      "event": "queue-changed",
+      "queueVersion": 2
+    },
+    {
+      "at": 810,
+      "event": "native-load",
+      "id": "2670863152",
+      "phase": "restoring",
+      "current": "2670863152",
+      "epoch": 1
+    },
+    {
+      "at": 937,
+      "event": "restored-native",
+      "id": "2670863152",
+      "reason": "page-reload",
+      "position": 49.545429931877436,
+      "playing": true,
+      "confirmed": true
+    },
+    {
+      "at": 3691,
+      "event": "decoded",
+      "id": "2670863152",
+      "level": "lossless",
+      "sourceRate": 44100,
+      "decodedRate": 44100,
+      "channels": 2,
+      "size": 82881144
+    },
+    {
+      "at": 3750,
+      "event": "prefetch-fallback",
+      "id": "1938192798",
+      "reason": "native-only-file-size"
+    },
+    {
+      "at": 72508,
+      "event": "native-load",
+      "id": "2670863319",
+      "phase": "native",
+      "current": "2670863152",
+      "epoch": 1
+    },
+    {
+      "at": 75126,
+      "event": "decoded",
+      "id": "2670863319",
+      "level": "lossless",
+      "sourceRate": 44100,
+      "decodedRate": 44100,
+      "channels": 2,
+      "size": 81911840
+    },
+    {
+      "at": 76086,
+      "event": "output-ready",
+      "waitMs": 957.5999999046326,
+      "contextTime": 0.9839455782312925,
+      "outputContextTime": 0.9011089999999998
+    }
+  ],
+  "completed": true,
+  "monitorRemoved": true,
+  "restoredPlaying": true
+}

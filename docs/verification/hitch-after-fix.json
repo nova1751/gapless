@@ -1,0 +1,693 @@
+{
+  "version": "0.1.4",
+  "recordedAt": "2026-11-13T20:43:04.445Z",
+  "scenario": "Native Load and Seek near track end; cold output-clock first takeover followed by Baptized In Fear -> Open Hearts",
+  "coldClockForcedWhileNativeContinued": true,
+  "completed": true,
+  "finalStatus": {
+    "enabled": true,
+    "compatible": true,
+    "id": "2670863152",
+    "phase": "owned",
+    "ownsPlayback": true,
+    "playing": true,
+    "seekPending": false,
+    "seekSettling": false,
+    "position": 0.4149083899273238,
+    "duration": 234.9238775510204,
+    "requestedLevel": "hires",
+    "actualLevel": "lossless",
+    "sourceRate": 44100,
+    "decodedRate": 44100,
+    "sampleRate": 44100,
+    "contextState": "running",
+    "contextGeneration": 3,
+    "activeNodes": 1,
+    "deviceFormat": "unknown",
+    "next": "1938192798",
+    "claiming": false,
+    "memory": {
+      "held": 82881144,
+      "reserved": 0,
+      "limit": 536870912,
+      "pending": 0
+    },
+    "mode": "playCycle",
+    "nativeAllowed": true,
+    "queueVersion": 2,
+    "loadEpoch": 5,
+    "controlRevision": 15
+  },
+  "events": [
+    {
+      "event": "native-event",
+      "command": "audioplayer.onPlayState",
+      "id": "1938192798",
+      "value": 1,
+      "at": 95203.7000002861
+    },
+    {
+      "event": "native-event",
+      "command": "audioplayer.onPlayState",
+      "id": "1938192798",
+      "value": 2,
+      "at": 95323.59999990463
+    },
+    {
+      "event": "native-call",
+      "command": "audioplayer.seek",
+      "id": "2670863319",
+      "at": 95407.80000019073
+    },
+    {
+      "event": "native-event",
+      "command": "audioplayer.onPlayState",
+      "id": "2670863319",
+      "value": 1,
+      "at": 95426.80000019073
+    },
+    {
+      "event": "native-event",
+      "command": "audioplayer.onSeek",
+      "id": "2670863319",
+      "at": 95431.09999990463
+    },
+    {
+      "event": "native-rpc-complete",
+      "command": "audioplayer.seek",
+      "id": "2670863319",
+      "at": 95431.2000002861,
+      "duration": 23.40000009536743
+    },
+    {
+      "event": "native-call",
+      "command": "audioplayer.pause",
+      "id": "2670863319",
+      "at": 100644.59999990463
+    },
+    {
+      "event": "native-rpc-complete",
+      "command": "audioplayer.pause",
+      "id": "2670863319",
+      "at": 100644.90000009537,
+      "duration": 0.3000001907348633
+    },
+    {
+      "event": "native-event",
+      "command": "audioplayer.onPlayState",
+      "id": "2670863319",
+      "value": 2,
+      "at": 100645
+    },
+    {
+      "event": "native-call",
+      "command": "audioplayer.getPlayedTime",
+      "id": "2670863319",
+      "at": 100645.09999990463
+    },
+    {
+      "event": "native-rpc-complete",
+      "command": "audioplayer.getPlayedTime",
+      "id": "2670863319",
+      "at": 100645.40000009537,
+      "duration": 0.3000001907348633
+    },
+    {
+      "event": "clock-start",
+      "id": "2670863319",
+      "at": 100645.5,
+      "contextTime": 0.04353741496598639,
+      "scheduledAt": 0.053537414965986393,
+      "offset": 225.24059999990465,
+      "duration": 232.1764172335601,
+      "outputTimestamp": {
+        "contextTime": 0.00009,
+        "performanceTime": 100633.2000002861
+      },
+      "estimatedOutputAt": 100686.64741525208,
+      "baseLatency": 0.023219954648526078,
+      "outputLatency": 0.056
+    },
+    {
+      "event": "clock-start",
+      "id": "2670863152",
+      "at": 100646.80000019073,
+      "contextTime": 0.04353741496598639,
+      "scheduledAt": 6.989354648621429,
+      "offset": 0,
+      "duration": 234.9238775510204,
+      "outputTimestamp": {
+        "contextTime": 0.00009,
+        "performanceTime": 100633.2000002861
+      },
+      "estimatedOutputAt": 107622.46464890754,
+      "baseLatency": 0.023219954648526078,
+      "outputLatency": 0.056
+    }
+  ],
+  "longTasks": [
+    {
+      "at": 95081.2000002861,
+      "duration": 77
+    },
+    {
+      "at": 96230.40000009537,
+      "duration": 67
+    },
+    {
+      "at": 107599.2000002861,
+      "duration": 81
+    }
+  ],
+  "trace": [
+    {
+      "at": 10087,
+      "event": "takeover",
+      "id": "2670863319",
+      "position": 192.93880000019075,
+      "pauseAcknowledged": true
+    },
+    {
+      "at": 10545,
+      "event": "seek",
+      "id": "2670863319",
+      "position": 204.856
+    },
+    {
+      "at": 10545,
+      "event": "scheduled",
+      "from": "2670863319",
+      "to": "2670863152",
+      "leadSeconds": 27.330417233560098,
+      "sourceRate": 44100,
+      "decodedRate": 44100,
+      "contextRate": 44100,
+      "scheduledGapFrames": 0
+    },
+    {
+      "at": 37892,
+      "event": "transition",
+      "from": "2670863319",
+      "to": "2670863152",
+      "scheduledGapFrames": 0
+    },
+    {
+      "at": 38029,
+      "event": "native-load",
+      "id": "2670863152",
+      "phase": "claiming",
+      "current": "2670863152",
+      "epoch": 2
+    },
+    {
+      "at": 38029,
+      "event": "claimed",
+      "id": "2670863152",
+      "position": 0.14749659863944586,
+      "claimDelayMs": 136.39999961853027
+    },
+    {
+      "at": 38032,
+      "event": "play",
+      "id": "2670863152"
+    },
+    {
+      "at": 38131,
+      "event": "prefetch-fallback",
+      "id": "1938192798",
+      "reason": "native-only-file-size"
+    },
+    {
+      "at": 95170,
+      "event": "native-load",
+      "id": "1938192798",
+      "phase": "native",
+      "current": "2670863152",
+      "epoch": 3
+    },
+    {
+      "at": 95244,
+      "event": "native-fallback",
+      "id": "1938192798",
+      "reason": "download-403"
+    },
+    {
+      "at": 95378,
+      "event": "native-load",
+      "id": "2670863319",
+      "phase": "native",
+      "current": "1938192798",
+      "epoch": 4
+    },
+    {
+      "at": 95408,
+      "event": "native-user-seek",
+      "id": "2670863319",
+      "takeoverDeferred": true
+    },
+    {
+      "at": 97971,
+      "event": "decoded",
+      "id": "2670863319",
+      "level": "lossless",
+      "sourceRate": 44100,
+      "decodedRate": 44100,
+      "channels": 2,
+      "size": 81911840
+    },
+    {
+      "at": 100617,
+      "event": "decoded",
+      "id": "2670863152",
+      "level": "lossless",
+      "sourceRate": 44100,
+      "decodedRate": 44100,
+      "channels": 2,
+      "size": 82881144
+    },
+    {
+      "at": 100645,
+      "event": "output-ready",
+      "waitMs": 25.40000009536743,
+      "contextTime": 0.04353741496598639,
+      "outputContextTime": 0.00009
+    },
+    {
+      "at": 100647,
+      "event": "scheduled",
+      "from": "2670863319",
+      "to": "2670863152",
+      "leadSeconds": 6.9458172336554425,
+      "sourceRate": 44100,
+      "decodedRate": 44100,
+      "contextRate": 44100,
+      "scheduledGapFrames": 0
+    },
+    {
+      "at": 100657,
+      "event": "takeover",
+      "id": "2670863319",
+      "position": 225.24059999990465,
+      "pauseAcknowledged": true
+    },
+    {
+      "at": 107588,
+      "event": "transition",
+      "from": "2670863319",
+      "to": "2670863152",
+      "scheduledGapFrames": 0
+    },
+    {
+      "at": 107739,
+      "event": "native-load",
+      "id": "2670863152",
+      "phase": "claiming",
+      "current": "2670863152",
+      "epoch": 5
+    },
+    {
+      "at": 107739,
+      "event": "claimed",
+      "id": "2670863152",
+      "position": 0.15948888879353706,
+      "claimDelayMs": 150.5
+    },
+    {
+      "at": 107742,
+      "event": "play",
+      "id": "2670863152"
+    },
+    {
+      "at": 107837,
+      "event": "prefetch-fallback",
+      "id": "1938192798",
+      "reason": "native-only-file-size"
+    }
+  ],
+  "nativeSettings": {
+    "listenReg": 1999,
+    "listenAnon": 320,
+    "volume": 0.48
+  },
+  "monitorRemoved": true,
+  "renderSamples": [
+    {
+      "at": 153,
+      "currentTime": 85.18530612244898,
+      "renderCapacity": 0.0011734334663224596,
+      "callbackIntervalMean": 0.021333586788784272,
+      "callbackIntervalVariance": 3.0136771980586905e-9
+    },
+    {
+      "at": 5587,
+      "currentTime": 0.06675736961451247,
+      "renderCapacity": 0.001175253854832644,
+      "callbackIntervalMean": 0.021092264829792415,
+      "callbackIntervalVariance": 0.000002724303603566864
+    },
+    {
+      "at": 5738,
+      "currentTime": 0.2147845804988662,
+      "renderCapacity": 0.001639267481616786,
+      "callbackIntervalMean": 0.02112841779931586,
+      "callbackIntervalVariance": 0.000002355245354620462
+    },
+    {
+      "at": 5890,
+      "currentTime": 0.3657142857142857,
+      "renderCapacity": 0.004976292192854796,
+      "callbackIntervalMean": 0.021153420312238838,
+      "callbackIntervalVariance": 0.000002033096906459103
+    },
+    {
+      "at": 6042,
+      "currentTime": 0.5137414965986394,
+      "renderCapacity": 0.0034660421545667443,
+      "callbackIntervalMean": 0.021178211640293557,
+      "callbackIntervalVariance": 0.0000017550176777204568
+    },
+    {
+      "at": 6196,
+      "currentTime": 0.6849886621315193,
+      "renderCapacity": 0.0031848625357126133,
+      "callbackIntervalMean": 0.021203251977346734,
+      "callbackIntervalVariance": 0.0000014830884727135233
+    },
+    {
+      "at": 6348,
+      "currentTime": 0.833015873015873,
+      "renderCapacity": 0.0027682635011495333,
+      "callbackIntervalMean": 0.021220378254414037,
+      "callbackIntervalVariance": 0.0000012792776099197778
+    },
+    {
+      "at": 6499,
+      "currentTime": 0.9839455782312925,
+      "renderCapacity": 0.0025288002247822417,
+      "callbackIntervalMean": 0.021236609451692014,
+      "callbackIntervalVariance": 0.000001103463548116811
+    },
+    {
+      "at": 6655,
+      "currentTime": 1.1319727891156464,
+      "renderCapacity": 0.0017322097378277151,
+      "callbackIntervalMean": 0.021250025880361543,
+      "callbackIntervalVariance": 9.515574125789929e-7
+    },
+    {
+      "at": 6807,
+      "currentTime": 1.2829024943310658,
+      "renderCapacity": 0.0037043983869455123,
+      "callbackIntervalMean": 0.02126181043954637,
+      "callbackIntervalVariance": 8.20448494401244e-7
+    },
+    {
+      "at": 6959,
+      "currentTime": 1.4309297052154195,
+      "renderCapacity": 0.004922644163150493,
+      "callbackIntervalMean": 0.021271547422828954,
+      "callbackIntervalVariance": 7.072580508837069e-7
+    },
+    {
+      "at": 7110,
+      "currentTime": 1.581859410430839,
+      "renderCapacity": 0.00441128161809564,
+      "callbackIntervalMean": 0.021280129689581376,
+      "callbackIntervalVariance": 6.096832561248901e-7
+    },
+    {
+      "at": 7262,
+      "currentTime": 1.750204081632653,
+      "renderCapacity": 0.005029850044657547,
+      "callbackIntervalMean": 0.021287744254967447,
+      "callbackIntervalVariance": 5.145182913685399e-7
+    },
+    {
+      "at": 7415,
+      "currentTime": 1.9011337868480727,
+      "renderCapacity": 0.0031584405788903035,
+      "callbackIntervalMean": 0.021295266871506117,
+      "callbackIntervalVariance": 4.445263282313872e-7
+    },
+    {
+      "at": 7567,
+      "currentTime": 2.049160997732426,
+      "renderCapacity": 0.0045488651284937166,
+      "callbackIntervalMean": 0.02130170117913577,
+      "callbackIntervalVariance": 3.8333841837685843e-7
+    },
+    {
+      "at": 7719,
+      "currentTime": 2.2000907029478456,
+      "renderCapacity": 0.0045713219516745965,
+      "callbackIntervalMean": 0.021306755681651177,
+      "callbackIntervalVariance": 3.307602798093972e-7
+    },
+    {
+      "at": 7872,
+      "currentTime": 2.3481179138321995,
+      "renderCapacity": 0.00499813153961136,
+      "callbackIntervalMean": 0.021310462107516987,
+      "callbackIntervalVariance": 2.853042653887718e-7
+    },
+    {
+      "at": 8024,
+      "currentTime": 2.499047619047619,
+      "renderCapacity": 0.005523051720102972,
+      "callbackIntervalMean": 0.021312300363662676,
+      "callbackIntervalVariance": 2.4658574743044607e-7
+    },
+    {
+      "at": 8177,
+      "currentTime": 2.647074829931973,
+      "renderCapacity": 0.005578996718237225,
+      "callbackIntervalMean": 0.021316213217068034,
+      "callbackIntervalVariance": 2.1300694483096738e-7
+    },
+    {
+      "at": 8329,
+      "currentTime": 2.8183219954648524,
+      "renderCapacity": 0.005734699633355269,
+      "callbackIntervalMean": 0.021318302630905173,
+      "callbackIntervalVariance": 1.8001330642600033e-7
+    },
+    {
+      "at": 8482,
+      "currentTime": 2.9663492063492063,
+      "renderCapacity": 0.004873020335488708,
+      "callbackIntervalMean": 0.021318822526311895,
+      "callbackIntervalVariance": 1.585682066748282e-7
+    },
+    {
+      "at": 8633,
+      "currentTime": 3.1172789115646258,
+      "renderCapacity": 0.0062385665368919745,
+      "callbackIntervalMean": 0.02132297860585299,
+      "callbackIntervalVariance": 1.3717447255693615e-7
+    },
+    {
+      "at": 8786,
+      "currentTime": 3.2653061224489797,
+      "renderCapacity": 0.004316209242317616,
+      "callbackIntervalMean": 0.021323094761619355,
+      "callbackIntervalVariance": 1.1863224321906003e-7
+    },
+    {
+      "at": 8939,
+      "currentTime": 3.416235827664399,
+      "renderCapacity": 0.004266091603769163,
+      "callbackIntervalMean": 0.021325437590622616,
+      "callbackIntervalVariance": 1.024965870170347e-7
+    },
+    {
+      "at": 9092,
+      "currentTime": 3.564263038548753,
+      "renderCapacity": 0.0053455875457188405,
+      "callbackIntervalMean": 0.02132658953161772,
+      "callbackIntervalVariance": 8.881729124983595e-8
+    },
+    {
+      "at": 9244,
+      "currentTime": 3.718095238095238,
+      "renderCapacity": 0.005221318030010819,
+      "callbackIntervalMean": 0.021326691138682203,
+      "callbackIntervalVariance": 7.56165212646338e-8
+    },
+    {
+      "at": 9395,
+      "currentTime": 3.8835374149659865,
+      "renderCapacity": 0.0058487740969492795,
+      "callbackIntervalMean": 0.021329205148089486,
+      "callbackIntervalVariance": 6.54373787672069e-8
+    },
+    {
+      "at": 9548,
+      "currentTime": 4.0344671201814055,
+      "renderCapacity": 0.005332335469385847,
+      "callbackIntervalMean": 0.0213286213599987,
+      "callbackIntervalVariance": 5.725716628550747e-8
+    },
+    {
+      "at": 9700,
+      "currentTime": 4.18249433106576,
+      "renderCapacity": 0.006058898125968718,
+      "callbackIntervalMean": 0.021329958119428786,
+      "callbackIntervalVariance": 5.1231598766611784e-8
+    },
+    {
+      "at": 9853,
+      "currentTime": 4.333424036281179,
+      "renderCapacity": 0.0047985092010249236,
+      "callbackIntervalMean": 0.021331540697499807,
+      "callbackIntervalVariance": 4.471194248013273e-8
+    },
+    {
+      "at": 10005,
+      "currentTime": 4.481451247165533,
+      "renderCapacity": 0.0048652694610778445,
+      "callbackIntervalMean": 0.021331721409051298,
+      "callbackIntervalVariance": 3.878825571617413e-8
+    },
+    {
+      "at": 10156,
+      "currentTime": 4.632380952380952,
+      "renderCapacity": 0.0063474018284306755,
+      "callbackIntervalMean": 0.021330508809605717,
+      "callbackIntervalVariance": 3.558021892588597e-8
+    },
+    {
+      "at": 10307,
+      "currentTime": 4.780408163265306,
+      "renderCapacity": 0.004056986508161147,
+      "callbackIntervalMean": 0.021329846743793558,
+      "callbackIntervalVariance": 3.1618450215355126e-8
+    },
+    {
+      "at": 10460,
+      "currentTime": 4.931337868480726,
+      "renderCapacity": 0.005155363921825936,
+      "callbackIntervalMean": 0.02133164144041363,
+      "callbackIntervalVariance": 2.7899689402270014e-8
+    },
+    {
+      "at": 10612,
+      "currentTime": 5.09968253968254,
+      "renderCapacity": 0.005097268986157875,
+      "callbackIntervalMean": 0.02133204484746936,
+      "callbackIntervalVariance": 2.525346770001501e-8
+    },
+    {
+      "at": 10764,
+      "currentTime": 5.250612244897959,
+      "renderCapacity": 0.0034564902611051423,
+      "callbackIntervalMean": 0.021333386176343776,
+      "callbackIntervalVariance": 2.205468346922649e-8
+    },
+    {
+      "at": 10917,
+      "currentTime": 5.3986394557823125,
+      "renderCapacity": 0.002855404203529467,
+      "callbackIntervalMean": 0.021332643338005407,
+      "callbackIntervalVariance": 1.9702356169309122e-8
+    },
+    {
+      "at": 11071,
+      "currentTime": 5.5495691609977325,
+      "renderCapacity": 0.005116169913165923,
+      "callbackIntervalMean": 0.021331765531982936,
+      "callbackIntervalVariance": 1.804404080646365e-8
+    },
+    {
+      "at": 11224,
+      "currentTime": 5.697596371882086,
+      "renderCapacity": 0.002945852426821285,
+      "callbackIntervalMean": 0.0213311138878357,
+      "callbackIntervalVariance": 1.6002821026527103e-8
+    },
+    {
+      "at": 11378,
+      "currentTime": 5.868843537414966,
+      "renderCapacity": 0.003153980134632585,
+      "callbackIntervalMean": 0.02133016388237233,
+      "callbackIntervalVariance": 1.4293160165206367e-8
+    },
+    {
+      "at": 11531,
+      "currentTime": 6.016870748299319,
+      "renderCapacity": 0.0027129426072313957,
+      "callbackIntervalMean": 0.021332442786941255,
+      "callbackIntervalVariance": 1.2854167501564274e-8
+    },
+    {
+      "at": 11682,
+      "currentTime": 6.167800453514739,
+      "renderCapacity": 0.0021556773981911055,
+      "callbackIntervalMean": 0.021330728338182257,
+      "callbackIntervalVariance": 1.1841466257596008e-8
+    },
+    {
+      "at": 11835,
+      "currentTime": 6.315827664399093,
+      "renderCapacity": 0.00403585339527899,
+      "callbackIntervalMean": 0.02133179465508452,
+      "callbackIntervalVariance": 1.0288966639391029e-8
+    },
+    {
+      "at": 11987,
+      "currentTime": 6.466757369614513,
+      "renderCapacity": 0.0023394001777944135,
+      "callbackIntervalMean": 0.02133212835076535,
+      "callbackIntervalVariance": 9.2285519433616e-9
+    },
+    {
+      "at": 12141,
+      "currentTime": 6.614784580498866,
+      "renderCapacity": 0.006096417182517351,
+      "callbackIntervalMean": 0.021333949876633635,
+      "callbackIntervalVariance": 1.077024897487103e-8
+    },
+    {
+      "at": 12294,
+      "currentTime": 6.765714285714286,
+      "renderCapacity": 0.005766526019690577,
+      "callbackIntervalMean": 0.02133281308624259,
+      "callbackIntervalVariance": 9.89398018773082e-9
+    },
+    {
+      "at": 12446,
+      "currentTime": 6.9340589569160995,
+      "renderCapacity": 0.005549807167717054,
+      "callbackIntervalMean": 0.021331617214444192,
+      "callbackIntervalVariance": 9.258341951912918e-9
+    },
+    {
+      "at": 12606,
+      "currentTime": 7.0849886621315195,
+      "renderCapacity": 0.0018290109271678467,
+      "callbackIntervalMean": 0.021330882442905683,
+      "callbackIntervalVariance": 8.258386905051747e-9
+    },
+    {
+      "at": 12758,
+      "currentTime": 7.233015873015873,
+      "renderCapacity": 0.0014067335646628528,
+      "callbackIntervalMean": 0.021331244845038212,
+      "callbackIntervalVariance": 7.545864965941307e-9
+    },
+    {
+      "at": 12911,
+      "currentTime": 7.383945578231293,
+      "renderCapacity": 0.0033311438491132593,
+      "callbackIntervalMean": 0.02133393804835625,
+      "callbackIntervalVariance": 6.8840283936891245e-9
+    },
+    {
+      "at": 13063,
+      "currentTime": 7.555192743764172,
+      "renderCapacity": 0.0059163262431328354,
+      "callbackIntervalMean": 0.02133232479290063,
+      "callbackIntervalVariance": 6.26381135217504e-9
+    }
+  ],
+  "method": "Native RPC/event and clock-start timing; temporary long-task observer; CDP WebAudio rendering statistics. Not hardware audio recording."
+}

@@ -262,7 +262,7 @@ plugin.onLoad(() => {
     S.starting = true;
     try {
       await clock.open(c.entry);
-      if (!valid()) return;
+      if (!valid() || !S.nativePlaying) return;
       S.phase = 'pausing';
       c.takeoverPlaying = true;
       const token = `${c.id}|pause|gapless-${epoch}`;
@@ -712,7 +712,7 @@ plugin.onLoad(() => {
     } catch (error) { trace('reload-recovery-error', { reason: error.message }); }
   }
   window.gaplessMac = {
-    version: '0.1.3', status: () => {
+    version: '0.1.4', status: () => {
       reconcile(); const c = S.current;
       return { enabled: S.enabled, compatible: S.compatible, id: c?.id, phase: S.phase,
         ownsPlayback: !!c?.owns, playing: c?.owns ? !!c.playing : S.nativePlaying,

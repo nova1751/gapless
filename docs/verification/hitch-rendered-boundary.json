@@ -1,0 +1,687 @@
+{
+  "recordedAt": "2026-11-13T20:46:24.758Z",
+  "version": "0.1.4",
+  "scenario": "Final installed source; owned Seek and stereo render window covering boundary and native claim",
+  "seek": {
+    "playId": "2670863319",
+    "seekId": "2670863319|seek|hitch-ring",
+    "code": 0,
+    "position": 230.9764172335601
+  },
+  "rendered": {
+    "rate": 44100,
+    "windowFrames": 26460,
+    "windowCoversBoundary": true,
+    "maxExactZeroRunFrames": 0,
+    "maxBelowMinus100DbRunFrames": 0,
+    "bins": [
+      {
+        "relativeMs": -200,
+        "rmsDb": -14.283095444572957
+      },
+      {
+        "relativeMs": -195,
+        "rmsDb": -14.70886677623512
+      },
+      {
+        "relativeMs": -190,
+        "rmsDb": -14.17567180594849
+      },
+      {
+        "relativeMs": -185,
+        "rmsDb": -14.812160126219126
+      },
+      {
+        "relativeMs": -180,
+        "rmsDb": -14.496766473127401
+      },
+      {
+        "relativeMs": -175,
+        "rmsDb": -14.618129784753823
+      },
+      {
+        "relativeMs": -170,
+        "rmsDb": -14.921637211355739
+      },
+      {
+        "relativeMs": -165,
+        "rmsDb": -14.810326232606702
+      },
+      {
+        "relativeMs": -160,
+        "rmsDb": -14.344488060784112
+      },
+      {
+        "relativeMs": -155,
+        "rmsDb": -13.912762124560192
+      },
+      {
+        "relativeMs": -150,
+        "rmsDb": -13.688469023132644
+      },
+      {
+        "relativeMs": -145,
+        "rmsDb": -15.833013375739366
+      },
+      {
+        "relativeMs": -140,
+        "rmsDb": -14.040028216781709
+      },
+      {
+        "relativeMs": -135,
+        "rmsDb": -15.573226972568712
+      },
+      {
+        "relativeMs": -130,
+        "rmsDb": -13.441062130351568
+      },
+      {
+        "relativeMs": -125,
+        "rmsDb": -14.640239409545895
+      },
+      {
+        "relativeMs": -120,
+        "rmsDb": -14.783318616991728
+      },
+      {
+        "relativeMs": -115,
+        "rmsDb": -15.45222869744294
+      },
+      {
+        "relativeMs": -110,
+        "rmsDb": -15.612402948120822
+      },
+      {
+        "relativeMs": -105,
+        "rmsDb": -13.941080451253587
+      },
+      {
+        "relativeMs": -100,
+        "rmsDb": -14.24344527514618
+      },
+      {
+        "relativeMs": -95,
+        "rmsDb": -15.62745434320458
+      },
+      {
+        "relativeMs": -90,
+        "rmsDb": -14.48664830225342
+      },
+      {
+        "relativeMs": -85,
+        "rmsDb": -14.152933419775998
+      },
+      {
+        "relativeMs": -80,
+        "rmsDb": -13.724945158192188
+      },
+      {
+        "relativeMs": -75,
+        "rmsDb": -13.727326385848533
+      },
+      {
+        "relativeMs": -70,
+        "rmsDb": -13.249580781242411
+      },
+      {
+        "relativeMs": -65,
+        "rmsDb": -13.736590156371431
+      },
+      {
+        "relativeMs": -60,
+        "rmsDb": -13.941548071512086
+      },
+      {
+        "relativeMs": -55,
+        "rmsDb": -14.26841060465476
+      },
+      {
+        "relativeMs": -50,
+        "rmsDb": -12.9702143635598
+      },
+      {
+        "relativeMs": -45,
+        "rmsDb": -13.76453444450014
+      },
+      {
+        "relativeMs": -40,
+        "rmsDb": -13.806335690363397
+      },
+      {
+        "relativeMs": -35,
+        "rmsDb": -13.64210812462681
+      },
+      {
+        "relativeMs": -30,
+        "rmsDb": -14.041002987494073
+      },
+      {
+        "relativeMs": -25,
+        "rmsDb": -12.609729256311903
+      },
+      {
+        "relativeMs": -20,
+        "rmsDb": -15.143144064927089
+      },
+      {
+        "relativeMs": -15,
+        "rmsDb": -14.950007449594
+      },
+      {
+        "relativeMs": -10,
+        "rmsDb": -14.169540993762544
+      },
+      {
+        "relativeMs": -5,
+        "rmsDb": -15.015494877471289
+      },
+      {
+        "relativeMs": 0,
+        "rmsDb": -14.69038419050988
+      },
+      {
+        "relativeMs": 5,
+        "rmsDb": -14.909883391022174
+      },
+      {
+        "relativeMs": 10,
+        "rmsDb": -14.412421522900033
+      },
+      {
+        "relativeMs": 15,
+        "rmsDb": -15.290277215674216
+      },
+      {
+        "relativeMs": 20,
+        "rmsDb": -14.550759109095901
+      },
+      {
+        "relativeMs": 26,
+        "rmsDb": -15.327977443408962
+      },
+      {
+        "relativeMs": 31,
+        "rmsDb": -14.419047903242577
+      },
+      {
+        "relativeMs": 36,
+        "rmsDb": -14.135182797929977
+      },
+      {
+        "relativeMs": 41,
+        "rmsDb": -14.226092023506762
+      },
+      {
+        "relativeMs": 46,
+        "rmsDb": -14.056843857901239
+      },
+      {
+        "relativeMs": 51,
+        "rmsDb": -12.912880907113564
+      },
+      {
+        "relativeMs": 56,
+        "rmsDb": -14.159376671233115
+      },
+      {
+        "relativeMs": 61,
+        "rmsDb": -12.720513562289582
+      },
+      {
+        "relativeMs": 66,
+        "rmsDb": -13.55206778124283
+      },
+      {
+        "relativeMs": 71,
+        "rmsDb": -12.613333273006619
+      },
+      {
+        "relativeMs": 76,
+        "rmsDb": -13.536496783497604
+      },
+      {
+        "relativeMs": 81,
+        "rmsDb": -13.341279211521943
+      },
+      {
+        "relativeMs": 86,
+        "rmsDb": -14.43668050529162
+      },
+      {
+        "relativeMs": 91,
+        "rmsDb": -13.588092337474915
+      },
+      {
+        "relativeMs": 96,
+        "rmsDb": -12.628323837253394
+      },
+      {
+        "relativeMs": 101,
+        "rmsDb": -13.287638752786084
+      },
+      {
+        "relativeMs": 106,
+        "rmsDb": -13.228688605170774
+      },
+      {
+        "relativeMs": 111,
+        "rmsDb": -13.05954687240593
+      },
+      {
+        "relativeMs": 116,
+        "rmsDb": -11.96607978726087
+      },
+      {
+        "relativeMs": 121,
+        "rmsDb": -11.634615030163042
+      },
+      {
+        "relativeMs": 126,
+        "rmsDb": -13.477470482438136
+      },
+      {
+        "relativeMs": 131,
+        "rmsDb": -11.800411761072187
+      },
+      {
+        "relativeMs": 136,
+        "rmsDb": -12.442238558624272
+      },
+      {
+        "relativeMs": 141,
+        "rmsDb": -12.687017438174182
+      },
+      {
+        "relativeMs": 146,
+        "rmsDb": -12.413506777263045
+      },
+      {
+        "relativeMs": 151,
+        "rmsDb": -13.258632030544192
+      },
+      {
+        "relativeMs": 156,
+        "rmsDb": -11.972240358392963
+      },
+      {
+        "relativeMs": 161,
+        "rmsDb": -12.83681005221415
+      },
+      {
+        "relativeMs": 166,
+        "rmsDb": -13.014940154069963
+      },
+      {
+        "relativeMs": 171,
+        "rmsDb": -14.89648913645231
+      },
+      {
+        "relativeMs": 176,
+        "rmsDb": -13.069800093621527
+      },
+      {
+        "relativeMs": 181,
+        "rmsDb": -15.774576732713514
+      },
+      {
+        "relativeMs": 186,
+        "rmsDb": -14.873021905491282
+      },
+      {
+        "relativeMs": 191,
+        "rmsDb": -14.803278086341212
+      },
+      {
+        "relativeMs": 196,
+        "rmsDb": -15.657086436646248
+      },
+      {
+        "relativeMs": 201,
+        "rmsDb": -15.585312006509257
+      },
+      {
+        "relativeMs": 206,
+        "rmsDb": -13.686167991429858
+      },
+      {
+        "relativeMs": 211,
+        "rmsDb": -15.062953322812763
+      },
+      {
+        "relativeMs": 216,
+        "rmsDb": -14.208126998943644
+      },
+      {
+        "relativeMs": 221,
+        "rmsDb": -14.97864313636385
+      },
+      {
+        "relativeMs": 226,
+        "rmsDb": -13.338155186232708
+      },
+      {
+        "relativeMs": 231,
+        "rmsDb": -12.887966481117733
+      },
+      {
+        "relativeMs": 236,
+        "rmsDb": -13.233296304528558
+      },
+      {
+        "relativeMs": 241,
+        "rmsDb": -13.393042141169207
+      },
+      {
+        "relativeMs": 246,
+        "rmsDb": -13.117904925867405
+      },
+      {
+        "relativeMs": 251,
+        "rmsDb": -14.839342620642007
+      },
+      {
+        "relativeMs": 256,
+        "rmsDb": -13.748188245548256
+      },
+      {
+        "relativeMs": 261,
+        "rmsDb": -14.504082935684899
+      },
+      {
+        "relativeMs": 266,
+        "rmsDb": -13.770071290059086
+      },
+      {
+        "relativeMs": 271,
+        "rmsDb": -15.52848886456426
+      },
+      {
+        "relativeMs": 276,
+        "rmsDb": -13.738223030248687
+      },
+      {
+        "relativeMs": 281,
+        "rmsDb": -15.777193571272857
+      },
+      {
+        "relativeMs": 286,
+        "rmsDb": -13.698772614506511
+      },
+      {
+        "relativeMs": 291,
+        "rmsDb": -15.201834875397553
+      },
+      {
+        "relativeMs": 296,
+        "rmsDb": -13.29001247336987
+      },
+      {
+        "relativeMs": 301,
+        "rmsDb": -14.337193236980534
+      },
+      {
+        "relativeMs": 306,
+        "rmsDb": -13.279937646648808
+      },
+      {
+        "relativeMs": 311,
+        "rmsDb": -14.076280679090116
+      },
+      {
+        "relativeMs": 316,
+        "rmsDb": -14.420639812158282
+      },
+      {
+        "relativeMs": 321,
+        "rmsDb": -14.896479051494332
+      },
+      {
+        "relativeMs": 326,
+        "rmsDb": -15.060972227108154
+      },
+      {
+        "relativeMs": 331,
+        "rmsDb": -14.337093393460531
+      },
+      {
+        "relativeMs": 336,
+        "rmsDb": -14.104581699729142
+      },
+      {
+        "relativeMs": 341,
+        "rmsDb": -14.16401710584212
+      },
+      {
+        "relativeMs": 346,
+        "rmsDb": -14.882009517224724
+      },
+      {
+        "relativeMs": 351,
+        "rmsDb": -13.123873895743703
+      },
+      {
+        "relativeMs": 356,
+        "rmsDb": -13.125481156551032
+      },
+      {
+        "relativeMs": 361,
+        "rmsDb": -13.43353785552881
+      },
+      {
+        "relativeMs": 366,
+        "rmsDb": -12.960834752439212
+      },
+      {
+        "relativeMs": 371,
+        "rmsDb": -14.57931893101846
+      },
+      {
+        "relativeMs": 376,
+        "rmsDb": -13.74695503923247
+      },
+      {
+        "relativeMs": 381,
+        "rmsDb": -13.959057506977448
+      },
+      {
+        "relativeMs": 386,
+        "rmsDb": -12.521657817601579
+      },
+      {
+        "relativeMs": 391,
+        "rmsDb": -14.343028782686641
+      },
+      {
+        "relativeMs": 396,
+        "rmsDb": -13.364618083168487
+      }
+    ]
+  },
+  "starts": [
+    {
+      "id": "2670863319",
+      "start": 63.17988662131519,
+      "end": 64.3798866213152,
+      "offset": 230.9764172335601,
+      "at": 138274.69999980927
+    },
+    {
+      "id": "2670863152",
+      "start": 64.3798866213152,
+      "end": 299.3037641723356,
+      "offset": 0,
+      "at": 138275.09999990463
+    }
+  ],
+  "longTasks": [
+    {
+      "at": 139487.90000009537,
+      "duration": 124
+    }
+  ],
+  "scheduledGapFrames": 0,
+  "after": {
+    "enabled": true,
+    "compatible": true,
+    "id": "2670863152",
+    "phase": "owned",
+    "ownsPlayback": true,
+    "playing": true,
+    "seekPending": false,
+    "seekSettling": false,
+    "position": 0.4531292517006733,
+    "duration": 234.9238775510204,
+    "requestedLevel": "hires",
+    "actualLevel": "lossless",
+    "sourceRate": 44100,
+    "decodedRate": 44100,
+    "sampleRate": 44100,
+    "contextState": "running",
+    "contextGeneration": 1,
+    "activeNodes": 1,
+    "deviceFormat": "unknown",
+    "next": "1938192798",
+    "claiming": false,
+    "memory": {
+      "held": 82881144,
+      "reserved": 0,
+      "limit": 536870912,
+      "pending": 0
+    },
+    "mode": "playCycle",
+    "nativeAllowed": true,
+    "queueVersion": 2,
+    "loadEpoch": 2,
+    "controlRevision": 6
+  },
+  "trace": [
+    {
+      "at": 937,
+      "event": "restored-native",
+      "id": "2670863152",
+      "reason": "page-reload",
+      "position": 49.545429931877436,
+      "playing": true,
+      "confirmed": true
+    },
+    {
+      "at": 3691,
+      "event": "decoded",
+      "id": "2670863152",
+      "level": "lossless",
+      "sourceRate": 44100,
+      "decodedRate": 44100,
+      "channels": 2,
+      "size": 82881144
+    },
+    {
+      "at": 3750,
+      "event": "prefetch-fallback",
+      "id": "1938192798",
+      "reason": "native-only-file-size"
+    },
+    {
+      "at": 72508,
+      "event": "native-load",
+      "id": "2670863319",
+      "phase": "native",
+      "current": "2670863152",
+      "epoch": 1
+    },
+    {
+      "at": 75126,
+      "event": "decoded",
+      "id": "2670863319",
+      "level": "lossless",
+      "sourceRate": 44100,
+      "decodedRate": 44100,
+      "channels": 2,
+      "size": 81911840
+    },
+    {
+      "at": 76086,
+      "event": "output-ready",
+      "waitMs": 957.5999999046326,
+      "contextTime": 0.9839455782312925,
+      "outputContextTime": 0.9011089999999998
+    },
+    {
+      "at": 79084,
+      "event": "output-ready",
+      "waitMs": 960.5,
+      "contextTime": 3.9909297052154193,
+      "outputContextTime": 3.909037
+    },
+    {
+      "at": 79097,
+      "event": "scheduled",
+      "from": "2670863319",
+      "to": "2670863152",
+      "leadSeconds": 227.55911723336936,
+      "sourceRate": 44100,
+      "decodedRate": 44100,
+      "contextRate": 44100,
+      "scheduledGapFrames": 0
+    },
+    {
+      "at": 79105,
+      "event": "takeover",
+      "id": "2670863319",
+      "position": 4.6273000001907345,
+      "pauseAcknowledged": true
+    },
+    {
+      "at": 138275,
+      "event": "seek",
+      "id": "2670863319",
+      "position": 230.9764172335601
+    },
+    {
+      "at": 138275,
+      "event": "scheduled",
+      "from": "2670863319",
+      "to": "2670863152",
+      "leadSeconds": 1.2100000000000009,
+      "sourceRate": 44100,
+      "decodedRate": 44100,
+      "contextRate": 44100,
+      "scheduledGapFrames": 0
+    },
+    {
+      "at": 139478,
+      "event": "transition",
+      "from": "2670863319",
+      "to": "2670863152",
+      "scheduledGapFrames": 0
+    },
+    {
+      "at": 139674,
+      "event": "native-load",
+      "id": "2670863152",
+      "phase": "claiming",
+      "current": "2670863152",
+      "epoch": 2
+    },
+    {
+      "at": 139674,
+      "event": "claimed",
+      "id": "2670863152",
+      "position": 0.19770975056688656,
+      "claimDelayMs": 196.40000009536743
+    },
+    {
+      "at": 139678,
+      "event": "play",
+      "id": "2670863152"
+    },
+    {
+      "at": 139753,
+      "event": "prefetch-fallback",
+      "id": "1938192798",
+      "reason": "native-only-file-size"
+    }
+  ],
+  "claimIncluded": true,
+  "completed": true,
+  "monitorRemoved": true
+}

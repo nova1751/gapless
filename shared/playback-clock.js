@@ -27,7 +27,24 @@
         })]); } finally { clearTimeout(timer); }
       }
       if (!this.matches(entry) || this.ctx.state !== 'running') throw new Error('native-only-context');
-      return this.ctx;
+      // A running state can precede the first output block. Keep the native
+      // player audible until the output timestamp actually advances; otherwise
+      // the handoff makes the listener wait for a cold output device.
+      const ctx = this.ctx, started = performance.now();
+      if (typeof ctx.getOutputTimestamp !== 'function') throw new Error('native-only-output-clock');
+      const initial = ctx.getOutputTimestamp();
+      for (;;) {
+        if (this.ctx !== ctx || ctx.state !== 'running' || !this.matches(entry)) throw new Error('native-only-context');
+        const stamp = ctx.getOutputTimestamp();
+        if (stamp.contextTime > Math.max(0, initial.contextTime)
+          && stamp.performanceTime > Math.max(0, initial.performanceTime)) {
+          this.trace('output-ready', { waitMs: performance.now() - started, contextTime: ctx.currentTime,
+            outputContextTime: stamp.contextTime });
+          return ctx;
+        }
+        if (performance.now() - started >= 500) throw new Error('native-only-output-clock-timeout');
+        await new Promise(resolve => setTimeout(resolve, 10));
+      }
     }
     matches(entry) { return !!entry?.buffer && entry.spec.rate === entry.buffer.sampleRate
       && entry.spec.channels === entry.buffer.numberOfChannels && this.ctx?.sampleRate === entry.spec.rate; }

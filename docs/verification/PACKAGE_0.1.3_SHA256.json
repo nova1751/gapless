@@ -1,0 +1,40 @@
+{
+  "recordedAt": "2026-11-13T20:15:46.071531+00:00",
+  "version": "0.1.3",
+  "algorithm": "SHA-256",
+  "package": "releases/gapless-player-mac-0.1.3.plugin",
+  "packageBytes": 18718,
+  "packageSHA256": "2e8f8c997adfb6a203e0672d0d85ada6f209ae6a68cc8c3a247a6615cfc746fd",
+  "installedPackageMatches": true,
+  "archiveMatchesSources": true,
+  "archiveEntries": [
+    "manifest.json",
+    "startup_script.js",
+    "player.js",
+    "LICENSE"
+  ],
+  "sourceSHA256": {
+    "shared/audio-resources.js": "4a5c8353f3d14177a7447104db724a51134ff77c00e293e3bd170ba0ff635f1e",
+    "shared/playback-clock.js": "dfc7784e20f2630133ac98d1e41d7411bd70388a3fd903f17e9eb9d2fec8b20a",
+    "mac/player.js": "05e8e1b46eb0594fdbb4947a0b57f5ab86ba46e16e99b34b0528916728431f66",
+    "mac/startup.js": "562b3e45f475ca53767e51e0eda401546dc2189a67188b3e214ed8a5a4e55c8f",
+    "mac/manifest.json": "697d203db86ef00fe5a6eb69f3340d6e2a4f8e87fdecf8985c78f5e5e87ff3d5",
+    "mac/package.py": "3459188c673fa2027f0060c5bc73d9948d67b14f8d6e8755111932604f2c046c",
+    "LICENSE": "6238f6a51a6bc87420e66834d9e53aac07de39be30e5b7886db4d121d56b548b"
+  },
+  "verification": {
+    "javascriptSyntax": "passed: modified mac/player.js",
+    "manualProtocolRecords": [
+      "audible-gap-before-fix.json",
+      "rendered-ring-late-seek.json",
+      "rendered-ring-pause-resume.json",
+      "rendered-ring-after-claim.json",
+      "mac-0.1.3-final.json"
+    ],
+    "qualitySelection": 1999,
+    "volume": 0.48,
+    "noNewTestCases": true,
+    "noApplicationBuild": true,
+    "runtimeNote": "Source and installed archive match the loaded 0.1.3 exercised in stereo render-ring checks. No hardware loopback or final subjective confirmation."
+  }
+}
