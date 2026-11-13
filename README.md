@@ -1,4 +1,4 @@
-# 网易云无缝播放解决方案
+# gapless — 网易云无缝播放解决方案
 
 仅增加无缝衔接，沿用网易云的音质选择、授权音源、音量、队列和原生 UI。Mac 插件 0.1.4 已安装，接管前确认输出时钟已开始推进，避免暂停原生后才等待冷启动；保留 0.1.3 的缓存与临近结尾接管修正。Windows 提供详细实施方案，尚无 Windows 安装包。
 
@@ -37,4 +37,4 @@ tools/      可选的本机 CDP 协议诊断脚本
 
 借鉴 [NcmGaplessPlayer](https://github.com/AntsandIce/NcmGaplessPlayer) 的采样时钟预约思路，使用 [BetterNCM-mac](https://github.com/OyangDer/betterncm-mac) 宿主与原生桥。保留 MIT 许可与上游署名，见 [第三方说明](THIRD_PARTY_NOTICES.md)。
 
-这是独立本地 Git 仓库。没有关联远程或上传 GitHub，不包含用户账号、profile、令牌、音乐文件或音源 URL。
+项目仓库：[nova1751/gapless](https://github.com/nova1751/gapless)。不包含用户账号、profile、令牌、音乐文件或音源 URL。
