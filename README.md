@@ -6,6 +6,8 @@
 
 - [Mac 安装与使用](mac/README.md)
 - [Mac 插件包](releases/gapless-player-mac-0.1.4.plugin)
+- [原生无缝可行性实查与 Windows 参考实现](docs/NATIVE_GAPLESS_FEASIBILITY.md)
+- [无缝播放技术路线调研与改进优先级](docs/GAPLESS_IMPLEMENTATION_RESEARCH.md)
 - [临近衔接卡顿与输出冷启动排查](docs/HANDOFF_HITCH_REVIEW.md)
 - [Baptized In Fear → Open Hearts 间隔排查与实际缓冲验证](docs/AUDIBLE_GAP_REVIEW.md)
 - [进度回跳、副作用与精简审查](docs/SIDE_EFFECTS_REVIEW.md)
@@ -20,6 +22,8 @@
 不改歌词布局，不新增 DSP、主题或静音裁剪。本插件开关使用宿主已有样式和保存接口，关闭后恢复原生播放，本开关无需刷新页面。
 
 Web Audio 接替了底层解码/输出，不能保证与原生输出比特完全一致。随机/推荐、重复 ID 等无法确认下一首的队列保持原生。初次准备/接管期间拖动进度时，等待原生 Seek 完成及 400 ms 稳定窗口后自动重新尝试接管，不会让整首曲目退出无缝。详细限制见副作用审查。
+
+本轮只读检查确认：Mac 3.1.12 的原生引擎含跨曲处理逻辑，但 SDK 的下一首预加载方法为空实现，尚无可验证的插件调用路径。没有据此替换播放代码或启用隐藏配置。Windows 参考插件同样通过 Web Audio 接管出声；其固定码率兜底与额外调音/UI 不符合本项目范围。Windows 优先验证原生预准备能力，不能把 Mac 的接口结果直接套用过去。
 
 ## 源码与打包
 

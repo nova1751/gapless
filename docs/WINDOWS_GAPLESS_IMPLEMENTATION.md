@@ -1,12 +1,29 @@
 # Windows 无缝播放实施方案：与 macOS 功能一致
 
-版本：方案 v6，2026-11-14。配套：[0.1.0 历史源码审查](MAC_GAPLESS_AUDIT.md)、[Mac 安装与确认范围](../mac/README.md)、[0.1.2 副作用审查](SIDE_EFFECTS_REVIEW.md)、[0.1.3 间隔排查](AUDIBLE_GAP_REVIEW.md)、[0.1.4 卡顿排查](HANDOFF_HITCH_REVIEW.md)。
+版本：方案 v7，2026-11-14。配套：[原生可行性与 Windows 实现对照](NATIVE_GAPLESS_FEASIBILITY.md)、[0.1.0 历史源码审查](MAC_GAPLESS_AUDIT.md)、[Mac 安装与确认范围](../mac/README.md)、[0.1.2 副作用审查](SIDE_EFFECTS_REVIEW.md)、[0.1.3 间隔排查](AUDIBLE_GAP_REVIEW.md)、[0.1.4 卡顿排查](HANDOFF_HITCH_REVIEW.md)。
 
 本方案可交给开发者逐项实施。当前 Mac 已修正并安装 0.1.4，进度竞态与接管范围见副作用审查，临近结尾接管、暂停缓存和实际渲染边界见间隔排查，输出冷启动及卡顿确认范围见卡顿排查，历史证据见 [0.1.1 记录](REMEDIATION.md)。Windows 精简版尚未编码、打包或实机验收；不能宣布两个平台现已功能一致。
 
+## 0. 原生优先的入口检查
+
+先在目标 Windows 版验证原生下一首预准备和持续输出能力，再决定是否实施第 2—8 节的 Web Audio 接管。Mac 3.1.12 的 `AudioPlayer.preLoad`、`subscribePreloadInfo`、`setPreloadInfoResult` 是空实现；这不能证明 Windows 的同名方法也不可用。两端功能一致不要求采用同一音频后端，但不能用“全部原生放行”冒充已实现无缝。
+
+Windows 参考项目 NcmGaplessPlayer 1.20.0 的实际实现是截获 `channel.call`、后台下载并解码完整音频，用 `AudioBufferSourceNode.start(when)` 提前预约 B，代发原生 UI 事件；未命中时走 `<audio>`。其 `network.fetch` 只是原生网络请求，不是原生音频输出。固定 320k / 128k 兜底、响度平衡、拍点和混音面板不移植。已核对 `ncm-3x` 分支提交 `87e444c4599aac97f4a0de74421cea7853bbf1bc`；逐项证据见配套报告。
+
+W0 增加以下入口条件：
+
+1. 在实际加载的 SDK 中只读检查预加载方法体及对应原生命令/事件。方法存在、Promise 成功或通用原生命令目录中未出现名字，均不能单独作为能力判定。
+2. 若发现真实原生预准备协议，先观察客户端自身的调用，再确认下一首由原生权威队列选定、音源沿用用户当前档位、预准备不会切换当前播放/曲名或关闭输出设备。
+3. 只有确认准备完成、跨曲持续输出以及暂停、Seek、手动换歌、队列/音质变化的撤销语义，才实现薄适配：提交原生预准备资料与开关；不建立第二播放后端、不代发原生音频进度、不新增样式。
+4. 若原生只能缓存文件或没有可调用协议，记录缺口后再进入本文 Web Audio 方案；缓存命中不能等同于采样边界连续。
+
+新的 BetterNCM-v3 是一个候选宿主，声明目标为 Windows 网易云 3.1.41.205529，不能自动推广到其他版本。其原生命令扫描器的命名空间白名单不含 `audioplayer`，现有 250 命令目录不能用来否定无缝接口；W0 必须覆盖实际 SDK 和该命名空间。宿主发行包还包含主题/歌词插件，本项目范围只允许所需宿主和无缝插件，不能默认启用整套插件。[宿主说明](https://github.com/Leafmy/BetterNCM-v3/tree/438dddf6d6b6b6e75db2715828f47cb9a7a71446)、[扫描器范围](https://github.com/Leafmy/BetterNCM-v3/blob/438dddf6d6b6b6e75db2715828f47cb9a7a71446/tools/analyze_bundle.py#L32-L41)
+
+当前没有可访问的 Windows 网易云实机，本轮完成的是参考源码与宿主协议资料检查；没有生成 Windows 插件，也没有宣布 Windows 原生无缝可用或不可用。
+
 ## 1. 功能一致的定义
 
-两个平台使用同一份播放核心、配置语义、兼容判断和回退规则。平台层只负责网易云原生协议、授权音源、原生状态、宿主配置及开关位置。修正已发现的 Mac 缺陷后，Mac 和 Windows 一起使用新核心；不把缺陷复制到 Windows。
+若两端均需要 Web Audio，使用同一份播放核心、配置语义、兼容判断和回退规则。平台层只负责网易云原生协议、授权音源、原生状态、宿主配置及开关位置。修正已发现的 Mac 缺陷后，Mac 和 Windows 一起使用新核心；不把缺陷复制到 Windows。若 Windows 原生无缝链路通过第 0 节验收，应优先复用，不为共享实现而接管原生声音。
 
 「功能一致」指可见功能和兼容策略相同，不承诺两个系统的驱动、解码器、输出延迟或数字输出完全相同，也不承诺不兼容曲目无条件无缝。
 
@@ -30,7 +47,7 @@
 | F14 | 单曲循环 | 同一曲目的下一次实例无额外交叉、裁剪 | 具备实现，未全面实机验收 |
 | F15 | 随机播放 | 只有可信下一首才接管/预约；未知时原生播放 | 0.1.2 保持原生；0.1.1 只保证不预约，尚无可信随机下一首接口 |
 | F16 | 心动/推荐 | 已知原生下一首且两首均准备好才接管，不自行生成推荐 | 0.1.2 保持原生；0.1.1 只保证不预约，尚无可信推荐下一首接口 |
-| F17 | 原生进度/曲名 | UI、原生轮询和音频状态同步，End 每实例至多一次 | 正常切歌通过；已加候选接认状态、End 去重和累计听音；getPlaybackInfo 的原生位置仍有边界限制 |
+| F17 | 原生进度/曲名 | UI、原生轮询和音频状态同步，End 每实例至多一次 | 正常切歌通过；已加候选接认状态、End 去重和累计听音；Mac getPlaybackInfo 是返回空对象的 SDK 占位，不能作为位置/设备验证依据 |
 | F18 | 歌词 | 使用原生获取及渲染流程，随原生进度同步 | 原生歌词更新通过；0.1.1 已按原生字段就绪刷新，并复核异步实例 |
 | F19 | UI | 首页、播放条、歌词页、主题保持原样；开关融入宿主已有设置 | Mac 手动样式检查通过；Windows 需原生样式验收 |
 | F20 | 音频规格 | 可解码 MP3/FLAC、单/双声道、支持的普通到 Hi-Res 档位 | Mac 44.1/48 kHz 有使用证据；其他规格按能力判断 |
@@ -136,7 +153,7 @@ Windows 规划 slug 为 `gapless-player-windows`；修正后的共享核心和�
 | PlayProgress | `[id, positionSeconds, bufferedRatio, optionalForce]` | 原生实际参数类型、进度节流及 force 语义 |
 | Seek 事件 | `[id,token,code,position]` | 成功/失败事件与当前订阅关联 |
 | End | Mac End/getPlayedTime 均为累计听音秒数；Windows 参考用 playedMs | 时间单位、实际收听/位置语义、原生推进去重 |
-| getPlayedTime / getPlaybackInfo | 参考为 `{playId}` 请求；Mac 不伪造设备格式，Windows 字段须实测 | Mac 实测 getPlayedTime 为秒，两个字段均表示累计听音，独立于位置；Windows 必须另测单位和含义，避免错误 result 导致额外推进 |
+| getPlayedTime / getPlaybackInfo | 参考为 `{playId}` 请求；Mac 不伪造设备格式，且其 getPlaybackInfo SDK 直接返回空对象 | Mac 实测 getPlayedTime 为秒，两个字段均表示累计听音，独立于位置；Windows 必须另测单位和含义，避免错误 result 导致额外推进 |
 
 核心内部位置统一为秒/整数帧，累计听音另行计时；外部协议单位仅在适配器转换。源位深、解码 float32 与真实设备格式分别记录，不能把 buffer 规格伪装成已查询的声卡规格。
 

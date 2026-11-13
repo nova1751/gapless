@@ -1,0 +1,131 @@
+{
+  "recordedAt": "2026-11-13T21:49:23.867Z",
+  "method": "read loaded SDK function bodies via CDP; no playback methods invoked",
+  "client": {
+    "platform": "macOS arm64",
+    "version": "3.1.12",
+    "build": "3444"
+  },
+  "webpack": {
+    "factoryCount": 2328,
+    "sdkModule": "4",
+    "sharedUiPreloadModules": [
+      "100",
+      "129"
+    ]
+  },
+  "sdkMethods": {
+    "preLoad": {
+      "nativeCallsInMethod": [],
+      "staticOutcome": "empty async implementation",
+      "sourceSha256": "ac258dfc631fd5beb8936769d835c3b2d92ba476d034a1f3b365cb9ecd3e0366"
+    },
+    "subscribePreloadInfo": {
+      "nativeCallsInMethod": [],
+      "staticOutcome": "returns inactive unsubscribe function",
+      "sourceSha256": "4822c4d17091e51cc3df7bffe49480fa9c29a5c4aa97136660ccbd71f95c5d7b"
+    },
+    "setPreloadInfoResult": {
+      "nativeCallsInMethod": [],
+      "staticOutcome": "returns false without native call",
+      "sourceSha256": "430d70c1649f62465a674170735f283c58ed087b5d5786adf259edccc1a9efe2"
+    },
+    "setRangeConfig": {
+      "nativeCallsInMethod": [],
+      "staticOutcome": "empty async implementation",
+      "sourceSha256": "0db465890c70106b0000676a9ef4161d062390a445dd20e32a5c5aa6b8421d1d"
+    },
+    "getPlaybackInfo": {
+      "nativeCallsInMethod": [],
+      "staticOutcome": "returns empty object without native call",
+      "sourceSha256": "2023822b5167f1db36030d158bfd05bbda6ff3c96c14f6ebd437390371b7322e"
+    }
+  },
+  "nativePlayWorkflow": [
+    "register audioplayer Load handler",
+    "audioplayer.load",
+    "on successful Load: audioplayer.play"
+  ],
+  "storageCacheMethods": [
+    "setPlayCacheConfig",
+    "getPlayCacheSize",
+    "getAllTrackFromCache",
+    "getTrackFromCache",
+    "subscribeCacheTrackUpdate",
+    "getTrackFromCacheFast"
+  ],
+  "playbackOrSettingCommandsInvoked": [],
+  "runtimeBefore": {
+    "version": "0.1.4",
+    "enabled": true,
+    "phase": "owned",
+    "ownsPlayback": true,
+    "playing": false,
+    "heldBytes": 197638560,
+    "reservedBytes": 0,
+    "pendingTasks": 0
+  },
+  "runtimeAfter": {
+    "version": "0.1.4",
+    "enabled": true,
+    "phase": "owned",
+    "ownsPlayback": true,
+    "playing": false,
+    "heldBytes": 197638560,
+    "reservedBytes": 0,
+    "pendingTasks": 0
+  },
+  "limits": [
+    "Static method inspection does not prove the native engine lacks an undiscovered entry point.",
+    "No hardware output capture, native instance memory access, or Windows client run was performed."
+  ],
+  "nativeBinary": {
+    "sha256": "e9c6b5468749ccad69ffe24e6395d6d29af9e2f7514a2bc9697e265b89b40374",
+    "analysis": "Objective-C metadata and offline arm64 disassembly; no process attach or patch",
+    "streamerClass": "NTESAudioStreamer",
+    "gaplessGetter": "0x1003785dc",
+    "gaplessSetter": "0x1003785e4",
+    "booleanIvarOffset": "0x59",
+    "crossStreamChecks": [
+      "0x100375b3c",
+      "0x100375b48"
+    ],
+    "streamFinishCheck": "0x100376524",
+    "fixAbMethod": "NTESAudioABTestDefinition.inAudioGaplessFixAbTest",
+    "fixAbImplementation": "constant false; not the main gapless enable switch",
+    "setterCallsiteSearch": "No match in inspected common selector/stub and direct-call references; dynamic access and other initialization paths not ruled out",
+    "initialization": "Inspected initWithAudioProvider: does not write gapless boolean; active instance state was not read"
+  },
+  "nativeConfiguration": {
+    "exactConfigCenterKey": "preload#audioServiceHelperConfig",
+    "observedInCurrentStore": false,
+    "readOnlyGetLocalConfigProbes": [
+      {
+        "type": "features",
+        "key": "audioServiceHelperConfig",
+        "result": "empty string"
+      },
+      {
+        "type": "setting",
+        "key": "playFade",
+        "result": "empty string"
+      }
+    ],
+    "interpretation": "Storage namespace/key mapping is unverified; empty responses do not establish that the setting is absent. No settings written."
+  },
+  "windowsReference": {
+    "repository": "AntsandIce/NcmGaplessPlayer",
+    "branch": "ncm-3x",
+    "verifiedHead": "87e444c4599aac97f4a0de74421cea7853bbf1bc",
+    "version": "1.20.0",
+    "playback": "Web Audio buffer scheduling; HTML audio streaming fallback",
+    "nativeNetworkIsNativePlayback": false,
+    "targetWindowsClientRun": false,
+    "compatibilityHost": {
+      "repository": "Leafmy/BetterNCM-v3",
+      "commit": "438dddf6d6b6b6e75db2715828f47cb9a7a71446",
+      "declaredClient": "3.1.41.205529",
+      "commandScannerIncludesAudioplayerNamespace": false
+    }
+  }
+}
