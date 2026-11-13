@@ -1,0 +1,204 @@
+{
+  "recordedAt": "2026-11-13T18:15:05.738Z",
+  "pluginVersion": "0.1.1",
+  "scenario": "Same-rate scheduling; suppressed next Load; confirmed native recovery at candidate offset; seek does not inflate listened seconds",
+  "status": {
+    "enabled": true,
+    "compatible": true,
+    "id": "29567155",
+    "phase": "native",
+    "ownsPlayback": false,
+    "playing": true,
+    "position": 75.5302999997139,
+    "duration": 234.47510204081632,
+    "requestedLevel": "hires",
+    "actualLevel": "lossless",
+    "sourceRate": 44100,
+    "decodedRate": 44100,
+    "sampleRate": 44100,
+    "contextState": "running",
+    "contextGeneration": 1,
+    "activeNodes": 0,
+    "deviceFormat": "unknown",
+    "next": "29750586",
+    "claiming": false,
+    "memory": {
+      "held": 82722816,
+      "reserved": 0,
+      "limit": 536870912,
+      "pending": 0
+    },
+    "mode": "playCycle",
+    "nativeAllowed": true,
+    "queueVersion": 2,
+    "loadEpoch": 1,
+    "controlRevision": 1
+  },
+  "trace": [
+    {
+      "at": 266,
+      "event": "ready",
+      "compatible": false,
+      "appVersion": "3.1.12"
+    },
+    {
+      "at": 432,
+      "event": "queue-changed",
+      "queueVersion": 1
+    },
+    {
+      "at": 432,
+      "event": "capabilities",
+      "compatible": false
+    },
+    {
+      "at": 503,
+      "event": "capabilities",
+      "compatible": true
+    },
+    {
+      "at": 507,
+      "event": "restore-start",
+      "id": "564480",
+      "reason": "page-reload",
+      "position": 147.70490000009536
+    },
+    {
+      "at": 513,
+      "event": "recovery-native-cleanup",
+      "command": "audioplayer.stop",
+      "id": ""
+    },
+    {
+      "at": 607,
+      "event": "queue-changed",
+      "queueVersion": 2
+    },
+    {
+      "at": 771,
+      "event": "native-load",
+      "id": "564480",
+      "phase": "restoring",
+      "current": "564480",
+      "epoch": 1
+    },
+    {
+      "at": 1018,
+      "event": "restored-native",
+      "id": "564480",
+      "reason": "page-reload",
+      "position": 147.70490000009536,
+      "playing": true,
+      "confirmed": true
+    },
+    {
+      "at": 4362,
+      "event": "decoded",
+      "id": "564480",
+      "level": "lossless",
+      "sourceRate": 44100,
+      "decodedRate": 44100,
+      "channels": 2,
+      "size": 94225824
+    },
+    {
+      "at": 5867,
+      "event": "awaiting-gesture",
+      "id": "564480"
+    },
+    {
+      "at": 24754,
+      "event": "takeover",
+      "id": "564480",
+      "position": 171.40769999980927,
+      "pauseAcknowledged": true
+    },
+    {
+      "at": 29336,
+      "event": "decoded",
+      "id": "29567155",
+      "level": "lossless",
+      "sourceRate": 44100,
+      "decodedRate": 44100,
+      "channels": 2,
+      "size": 82722816
+    },
+    {
+      "at": 29336,
+      "event": "scheduled",
+      "from": "564480",
+      "to": "29567155",
+      "leadSeconds": 91.09345646277576,
+      "sourceRate": 44100,
+      "decodedRate": 44100,
+      "contextRate": 44100,
+      "scheduledGapFrames": 0
+    },
+    {
+      "at": 75364,
+      "event": "seek",
+      "id": "564480",
+      "position": 265.08
+    },
+    {
+      "at": 75364,
+      "event": "scheduled",
+      "from": "564480",
+      "to": "29567155",
+      "leadSeconds": 2.0099999999999696,
+      "sourceRate": 44100,
+      "decodedRate": 44100,
+      "contextRate": 44100,
+      "scheduledGapFrames": 0
+    },
+    {
+      "at": 77392,
+      "event": "transition",
+      "from": "564480",
+      "to": "29567155",
+      "scheduledGapFrames": 0
+    },
+    {
+      "at": 80518,
+      "event": "restore-start",
+      "id": "29567155",
+      "reason": "unclaimed-next",
+      "position": 3.1303174603174924
+    },
+    {
+      "at": 80538,
+      "event": "recovery-native-cleanup",
+      "command": "audioplayer.stop",
+      "id": ""
+    },
+    {
+      "at": 80642,
+      "event": "native-load",
+      "id": "29567155",
+      "phase": "restoring",
+      "current": "29567155",
+      "epoch": 1
+    },
+    {
+      "at": 80732,
+      "event": "restored-native",
+      "id": "29567155",
+      "reason": "unclaimed-next",
+      "position": 3.1303174603174924,
+      "playing": true,
+      "confirmed": true
+    }
+  ],
+  "manualListeningTime": {
+    "before": {
+      "result": 1,
+      "playedTime": 74.33616780045351,
+      "playedAudioTime": 74.33616780045351
+    },
+    "after": {
+      "result": 1,
+      "playedTime": 74.33616780045351,
+      "playedAudioTime": 74.33616780045351
+    }
+  }
+}

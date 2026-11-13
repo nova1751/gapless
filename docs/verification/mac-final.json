@@ -1,0 +1,375 @@
+{
+  "recordedAt": "2026-11-13T18:25:40.852Z",
+  "pluginVersion": "0.1.1",
+  "scenario": "native host switch disabled then re-enabled without page reload; same track kept playing",
+  "beforeToggle": {
+    "at": 49130,
+    "status": {
+      "enabled": true,
+      "compatible": true,
+      "id": "1378406132",
+      "phase": "owned",
+      "ownsPlayback": true,
+      "playing": true,
+      "position": 13.998078457954518,
+      "duration": 330.11809523809524,
+      "requestedLevel": "hires",
+      "actualLevel": "lossless",
+      "sourceRate": 44100,
+      "decodedRate": 44100,
+      "sampleRate": 44100,
+      "contextState": "running",
+      "contextGeneration": 1,
+      "activeNodes": 1,
+      "deviceFormat": "unknown",
+      "next": "744722",
+      "claiming": false,
+      "memory": {
+        "held": 116465664,
+        "reserved": 344946978,
+        "limit": 536870912,
+        "pending": 1
+      },
+      "mode": "playCycle",
+      "nativeAllowed": true,
+      "queueVersion": 2,
+      "loadEpoch": 2,
+      "controlRevision": 2
+    }
+  },
+  "disabled": {
+    "at": 90034.90000009537,
+    "status": {
+      "enabled": false,
+      "compatible": true,
+      "id": "1378406132",
+      "phase": "native",
+      "ownsPlayback": false,
+      "playing": true,
+      "position": 54.846000000000004,
+      "duration": 330.11809523809524,
+      "requestedLevel": "hires",
+      "actualLevel": "lossless",
+      "contextGeneration": 2,
+      "activeNodes": 0,
+      "deviceFormat": "unknown",
+      "claiming": false,
+      "memory": {
+        "held": 0,
+        "reserved": 0,
+        "limit": 536870912,
+        "pending": 0
+      },
+      "mode": "playCycle",
+      "nativeAllowed": false,
+      "queueVersion": 2,
+      "loadEpoch": 2,
+      "controlRevision": 3
+    },
+    "trace": [
+      {
+        "at": 43231,
+        "event": "decoded",
+        "id": "1378406132",
+        "level": "lossless",
+        "sourceRate": 44100,
+        "decodedRate": 44100,
+        "channels": 2,
+        "size": 116465664
+      },
+      {
+        "at": 43239,
+        "event": "takeover",
+        "id": "1378406132",
+        "position": 8.098599999904632,
+        "pauseAcknowledged": true
+      },
+      {
+        "at": 53561,
+        "event": "decoded",
+        "id": "744722",
+        "level": "lossless",
+        "sourceRate": 44100,
+        "decodedRate": 44100,
+        "channels": 2,
+        "size": 120619008
+      },
+      {
+        "at": 53562,
+        "event": "scheduled",
+        "from": "1378406132",
+        "to": "744722",
+        "leadSeconds": 311.70532290258967,
+        "sourceRate": 44100,
+        "decodedRate": 44100,
+        "contextRate": 44100,
+        "scheduledGapFrames": 0
+      },
+      {
+        "at": 63042,
+        "event": "restore-start",
+        "id": "1378406132",
+        "reason": "disabled",
+        "position": 27.90683129242164
+      },
+      {
+        "at": 63067,
+        "event": "restored-native",
+        "id": "1378406132",
+        "reason": "disabled",
+        "position": 27.90683129242164,
+        "playing": true,
+        "confirmed": true
+      },
+      {
+        "at": 63067,
+        "event": "disabled"
+      },
+      {
+        "at": 63198,
+        "event": "enabled-changed",
+        "enabled": false
+      }
+    ],
+    "samePage": true
+  },
+  "afterToggle": {
+    "at": 324548.19999980927,
+    "status": {
+      "enabled": true,
+      "compatible": true,
+      "id": "1378406132",
+      "phase": "owned",
+      "ownsPlayback": true,
+      "playing": true,
+      "position": 289.3500158730159,
+      "duration": 330.11809523809524,
+      "requestedLevel": "hires",
+      "actualLevel": "lossless",
+      "sourceRate": 44100,
+      "decodedRate": 44100,
+      "sampleRate": 44100,
+      "contextState": "running",
+      "contextGeneration": 3,
+      "activeNodes": 2,
+      "deviceFormat": "unknown",
+      "next": "744722",
+      "scheduled": "744722",
+      "claiming": false,
+      "memory": {
+        "held": 237084672,
+        "reserved": 0,
+        "limit": 536870912,
+        "pending": 0
+      },
+      "mode": "playCycle",
+      "nativeAllowed": true,
+      "queueVersion": 2,
+      "loadEpoch": 2,
+      "controlRevision": 3
+    }
+  },
+  "samePage": true,
+  "settings": {
+    "quantity": {
+      "listen": 1999,
+      "download": 1999,
+      "listenReg": 1999,
+      "downloadReg": 1999,
+      "listenAnon": 320,
+      "downloadAnon": 320,
+      "fileNameType": 0,
+      "pathNameType": 0
+    },
+    "volume": 0.48,
+    "playingState": 2,
+    "actualQuality": 999
+  },
+  "trace": [
+    {
+      "at": 265,
+      "event": "ready",
+      "compatible": false,
+      "appVersion": "3.1.12"
+    },
+    {
+      "at": 433,
+      "event": "queue-changed",
+      "queueVersion": 1
+    },
+    {
+      "at": 433,
+      "event": "capabilities",
+      "compatible": false
+    },
+    {
+      "at": 480,
+      "event": "capabilities",
+      "compatible": true
+    },
+    {
+      "at": 483,
+      "event": "restore-start",
+      "id": "29750586",
+      "reason": "page-reload",
+      "position": 149.92540000009538
+    },
+    {
+      "at": 490,
+      "event": "recovery-native-cleanup",
+      "command": "audioplayer.stop",
+      "id": ""
+    },
+    {
+      "at": 557,
+      "event": "queue-changed",
+      "queueVersion": 2
+    },
+    {
+      "at": 819,
+      "event": "native-load",
+      "id": "29750586",
+      "phase": "restoring",
+      "current": "29750586",
+      "epoch": 1
+    },
+    {
+      "at": 982,
+      "event": "restored-native",
+      "id": "29750586",
+      "reason": "page-reload",
+      "position": 149.92540000009538,
+      "playing": true,
+      "confirmed": true
+    },
+    {
+      "at": 2899,
+      "event": "decoded",
+      "id": "29750586",
+      "level": "lossless",
+      "sourceRate": 44100,
+      "decodedRate": 44100,
+      "channels": 2,
+      "size": 64665888
+    },
+    {
+      "at": 4404,
+      "event": "awaiting-gesture",
+      "id": "29750586"
+    },
+    {
+      "at": 34653,
+      "event": "native-load",
+      "id": "1378406132",
+      "phase": "native",
+      "current": "29750586",
+      "epoch": 1
+    },
+    {
+      "at": 43231,
+      "event": "decoded",
+      "id": "1378406132",
+      "level": "lossless",
+      "sourceRate": 44100,
+      "decodedRate": 44100,
+      "channels": 2,
+      "size": 116465664
+    },
+    {
+      "at": 43239,
+      "event": "takeover",
+      "id": "1378406132",
+      "position": 8.098599999904632,
+      "pauseAcknowledged": true
+    },
+    {
+      "at": 53561,
+      "event": "decoded",
+      "id": "744722",
+      "level": "lossless",
+      "sourceRate": 44100,
+      "decodedRate": 44100,
+      "channels": 2,
+      "size": 120619008
+    },
+    {
+      "at": 53562,
+      "event": "scheduled",
+      "from": "1378406132",
+      "to": "744722",
+      "leadSeconds": 311.70532290258967,
+      "sourceRate": 44100,
+      "decodedRate": 44100,
+      "contextRate": 44100,
+      "scheduledGapFrames": 0
+    },
+    {
+      "at": 63042,
+      "event": "restore-start",
+      "id": "1378406132",
+      "reason": "disabled",
+      "position": 27.90683129242164
+    },
+    {
+      "at": 63067,
+      "event": "restored-native",
+      "id": "1378406132",
+      "reason": "disabled",
+      "position": 27.90683129242164,
+      "playing": true,
+      "confirmed": true
+    },
+    {
+      "at": 63067,
+      "event": "disabled"
+    },
+    {
+      "at": 63198,
+      "event": "enabled-changed",
+      "enabled": false
+    },
+    {
+      "at": 112071,
+      "event": "enabled-changed",
+      "enabled": true
+    },
+    {
+      "at": 117652,
+      "event": "decoded",
+      "id": "1378406132",
+      "level": "lossless",
+      "sourceRate": 44100,
+      "decodedRate": 44100,
+      "channels": 2,
+      "size": 116465664
+    },
+    {
+      "at": 117663,
+      "event": "takeover",
+      "id": "1378406132",
+      "position": 82.447,
+      "pauseAcknowledged": true
+    },
+    {
+      "at": 124757,
+      "event": "decoded",
+      "id": "744722",
+      "level": "lossless",
+      "sourceRate": 44100,
+      "decodedRate": 44100,
+      "channels": 2,
+      "size": 120619008
+    },
+    {
+      "at": 124758,
+      "event": "scheduled",
+      "from": "1378406132",
+      "to": "744722",
+      "leadSeconds": 240.5525691609977,
+      "sourceRate": 44100,
+      "decodedRate": 44100,
+      "contextRate": 44100,
+      "scheduledGapFrames": 0
+    }
+  ]
+}
