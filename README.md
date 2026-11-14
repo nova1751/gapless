@@ -1,13 +1,14 @@
 # gapless — 网易云无缝播放解决方案
 
-目标仅增加无缝衔接，沿用网易云的音质选择、授权音源、音量、队列和原生 UI。Mac 0.1.6 已打包、安装并重新启用，包含 seek 节点切换、旧原生回调过滤和接管 resume token 修正。Windows 提供详细实施方案，尚无 Windows 安装包。
+目标仅增加无缝衔接，沿用网易云的音质选择、授权音源、音量、队列和原生 UI。Mac 0.1.7 已安装并保持启用，新增系统媒体状态同步、控制中心 Seek 路由，并移除首次接管的固定 10 ms 启动延后。Windows 提供详细实施方案，尚无 Windows 安装包。
 
-0.1.5 系统媒体实验已撤回。原生对照同样会出现控制中心进度回跳，因此不再以此为由关闭整个无缝插件。0.1.6 已观察到 Baptized In Fear → Open Hearts 两次实际跨曲并完成网易云界面接认；系统状态显示暂停与首次后端交接的限制仍未解决，不把内部预约参数当作声卡输出验收。见 [功能恢复记录](docs/RESTORE_GAPLESS_0.1.6.md)。
+0.1.5 系统进度纠偏实验已撤回。0.1.7 保留最小 Media Session 同步：用户确认曲名、播放／暂停按钮和声音一致；系统拖动也已作用到实际音频。**拖动时系统按钮仍可能短暂切换，原生对照已有的进度回跳及首次交接听感也未宣布彻底解决。**无缝功能保持启用，不以显示问题停用核心。见 [本轮系统同步记录](docs/SYSTEM_SYNC_0.1.7.md) 与 [0.1.6 功能恢复记录](docs/RESTORE_GAPLESS_0.1.6.md)。
 
 ## 直接入口
 
 - [Mac 安装与使用](mac/README.md)
-- [Mac 插件包](releases/gapless-player-mac-0.1.6.plugin)
+- [Mac 插件包](releases/gapless-player-mac-0.1.7.plugin)
+- [0.1.7 系统媒体同步、Seek 与剩余限制](docs/SYSTEM_SYNC_0.1.7.md)
 - [0.1.6 无缝功能恢复与实际跨曲记录](docs/RESTORE_GAPLESS_0.1.6.md)
 - [原生无缝可行性实查与 Windows 参考实现](docs/NATIVE_GAPLESS_FEASIBILITY.md)
 - [无缝播放技术路线调研与改进优先级](docs/GAPLESS_IMPLEMENTATION_RESEARCH.md)
@@ -39,7 +40,7 @@ releases/   可安装的 Mac ZIP 插件包
 tools/      可选的本机 CDP 协议诊断脚本
 ```
 
-在根目录执行 `python3 mac/package.py` 可重新打包至 `dist/`。当前 manifest 为 0.1.6，发布包与本机安装包一致；旧版本保留在 `releases/`，安装时只保留一个同 slug 的插件包。不需要安装前端依赖，不执行应用构建。源码只对实测 Mac 网易云 3.1.12（3444）启用，未知版本保持原生。
+在根目录执行 `python3 mac/package.py` 可重新打包至 `dist/`。当前 manifest 为 0.1.7，发布包与本机安装包一致；旧版本保留在 `releases/`，安装时只保留一个同 slug 的插件包。不需要安装前端依赖，不执行应用构建。源码只对实测 Mac 网易云 3.1.12（3444）启用，未知版本保持原生。
 
 ## 来源与许可
 

@@ -91,6 +91,22 @@ plugin.onLoad(() => {
     onState: value => { if (S.current?.owns && value !== 'running') void restoreNative(`context-${value}`); },
     onEnded: c => { if (S.current === c && c.owns) boundary(c); } });
   const position = () => S.current?.owns ? clock.position(S.current) : nativePosition();
+  const media = globalThis.GaplessMacMediaSession && new globalThis.GaplessMacMediaSession({ trace,
+    seek: async (id, value) => {
+      const result = await nativePlayer().seek({ playId: id, seekId: `${id}|seek|system-${S.revision + 1}`, value });
+      if (Number(result?.code) !== 0) throw new Error('system-seek-incomplete');
+      return result;
+    },
+    snapshot: () => {
+    const c = S.current;
+    if (!c?.owns || !S.enabled || S.phase === 'restoring') return { owns: false };
+    if (!c.mediaMetadata) {
+      const row = c.row || rows().find(r => rowId(r) === c.id);
+      if (row) c.mediaMetadata = webpackRequire()(22).e(row);
+    }
+    return { owns: true, id: c.id, playing: !!c.playing, duration: c.duration,
+      position: clock.position(c), revision: S.revision, metadata: c.mediaMetadata };
+  } });
   function nextTrack() {
     const c = S.current, s = state(); if (!c || !allowed(c.info)) return null;
     const mode = s.playing.playingMode;
@@ -111,10 +127,12 @@ plugin.onLoad(() => {
   function emitState(c, value, token = S.token || c.id) {
     if (value === 2) nativePlayer().isCallPaused = true;
     bridge.emit('audioplayer.onPlayState', [c.id, token, value]);
+    media?.sync(true);
   }
   function progress(c, force = false) {
     if (S.current !== c || !c.owns || S.claim || (!c.playing && !force)) return;
     bridge.emit('audioplayer.onPlayProgress', [c.id, clock.position(c).toFixed(3), '1.0000', force]);
+    media?.sync(force);
   }
   function boundary(c) {
     if (S.current !== c || !c.owns || c.endSent) return;
@@ -125,6 +143,7 @@ plugin.onLoad(() => {
       S.phase = 'claiming'; candidate.claimAt = performance.now();
       trace('transition', { from: c.id, to: candidate.id, scheduledGapFrames: Math.round((candidate.start - c.end) * clock.ctx.sampleRate) });
     } else { cancelScheduled(); c.owns = false; S.phase = 'native'; }
+    media?.sync(true);
     bridge.emit('audioplayer.onEnd', [c.id, { code: 0, errorCode: 0, errorString: '', playedTime: clock.heard(c) }]);
   }
   function reconcile() {
@@ -274,7 +293,8 @@ plugin.onLoad(() => {
       if (Number(nativeTime?.result) !== 1 || !Number.isFinite(Number(nativeTime.playedAudioTime))) throw new Error('native-listening-time-unavailable');
       const offset = Math.min(nativePosition(), c.duration - 0.001);
       c.offset = offset; c.heard = Number(nativeTime.playedAudioTime) + (c.nativeHeardBase || 0); c.owns = true; S.phase = 'owned';
-      clock.start(c, clock.ctx.currentTime + 0.01, offset);
+      // The output clock is already warm; start at the earliest render time.
+      clock.start(c, clock.ctx.currentTime, offset);
       S.token = `${c.id}|resume|gapless-${epoch}`;
       emitState(c, 1); bridge.emit('audioplayer.onBuffering', [c.id, 0]);
       trace('takeover', { id: c.id, position: offset, pauseAcknowledged: true });
@@ -320,7 +340,7 @@ plugin.onLoad(() => {
     const epoch = S.epoch, target = clock.position(c); let desired = c.playing;
     c.recoveryPosition = target; c.recoveryPlaying = desired; c.recoveryHeard = clock.heard(c);
     c.recoverySucceeded = false; c.blocked = true; S.claim = false;
-    S.phase = 'restoring'; stopCurrent(); trace('restore-start', { id: c.id, reason, position: target });
+    S.phase = 'restoring'; media?.release(); stopCurrent(); trace('restore-start', { id: c.id, reason, position: target });
     const run = async () => {
       try {
         // Native onLoad can auto-play for both direct load and queue selection.
@@ -459,6 +479,7 @@ plugin.onLoad(() => {
       S.nativePlaying = false; S.nativePosition = 0; S.nativeAt = performance.now();
       S.current = c = { id, info, requestedLevel: level, account: S.account, duration: Number(info?.songDuration) / 1000,
         serial: ++S.serial, offset: 0, heard: 0, owns: false, playing: false };
+      media?.release();
       // Adopt a matching cached source synchronously. Waiting for native play
       // before the async preparation would let a store update evict both warm
       // buffers between Load and play, especially when selecting the same track.
@@ -585,7 +606,7 @@ plugin.onLoad(() => {
       trace('seek', { id: c.id, position: offset }); scheduleNext(); return true;
     }
     if (/^audioplayer\.(stop|unload)$/.test(msg.command)) {
-      S.epoch++; S.revision++; stopCurrent(); c.owns = false; S.phase = 'native'; return false;
+      S.epoch++; S.revision++; stopCurrent(); c.owns = false; S.phase = 'native'; media?.release(); return false;
     }
     if (msg.command === 'audioplayer.getPlayedTime') {
       const requested = String(p[0]?.playId || p[0] || '').split('_')[0];
@@ -607,6 +628,7 @@ plugin.onLoad(() => {
       if (S.claim && performance.now() - S.current.claimAt > 3000) void restoreNative('unclaimed-next');
       if (S.current?.owns && !S.claim) progress(S.current);
       void takeover(); scheduleNext(); prefetch();
+      media?.sync();
     } catch (error) { bridge.onError(error); }
   }
   function initializeStore() {
@@ -638,6 +660,7 @@ plugin.onLoad(() => {
   const timer = setInterval(tick, 150);
   const gesture = () => {
     S.gestureAt = performance.now();
+    media?.retry();
     if (S.current) S.current.awaitingGesture = false;
     if (clock.ctx?.state === 'suspended') void clock.ctx.resume().then(() => takeover()).catch(() => {});
     if (!S.current?.owns) void takeover();
@@ -688,6 +711,7 @@ plugin.onLoad(() => {
   }
   window.addEventListener('beforeunload', () => {
     persistRecovery(); clearInterval(timer); S.unsubscribe?.(); resources.stop();
+    media?.release();
     // Recovery is driven by the next page, rather than a multi-stage asynchronous unload callback.
     stopCurrent(); void clock.close();
   });
@@ -712,7 +736,7 @@ plugin.onLoad(() => {
     } catch (error) { trace('reload-recovery-error', { reason: error.message }); }
   }
   window.gaplessMac = {
-    version: '0.1.6', status: () => {
+    version: '0.1.7', status: () => {
       reconcile(); const c = S.current;
       return { enabled: S.enabled, compatible: S.compatible, id: c?.id, phase: S.phase,
         ownsPlayback: !!c?.owns, playing: c?.owns ? !!c.playing : S.nativePlaying,
@@ -721,7 +745,7 @@ plugin.onLoad(() => {
         sourceRate: c?.entry?.spec.rate, decodedRate: c?.entry?.buffer.sampleRate, ...clock.status(),
         next: nextTrack()?.id, scheduled: S.scheduled?.id, claiming: S.claim,
         memory: resources.status(), mode: state()?.playing?.playingMode, nativeAllowed: allowed(c?.info),
-        queueVersion: S.queueVersion, loadEpoch: S.epoch, controlRevision: S.revision };
+        queueVersion: S.queueVersion, loadEpoch: S.epoch, controlRevision: S.revision, systemMedia: media?.status() };
     }, trace: () => [...log], disable, restoreNative,
   };
   trace('ready', { compatible: S.compatible, appVersion: window.APP_CONF?.appver });

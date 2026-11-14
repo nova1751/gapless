@@ -1,0 +1,403 @@
+{
+  "version": "0.1.7",
+  "recordedAt": "2026-11-14T10:35:41.746Z",
+  "status": {
+    "enabled": true,
+    "compatible": true,
+    "id": "1938192798",
+    "phase": "native",
+    "ownsPlayback": false,
+    "playing": true,
+    "seekPending": false,
+    "seekSettling": false,
+    "position": 1.7874000000953674,
+    "duration": 234,
+    "requestedLevel": "hires",
+    "actualLevel": "hires",
+    "sampleRate": 44100,
+    "contextState": "running",
+    "contextGeneration": 1,
+    "activeNodes": 0,
+    "deviceFormat": "unknown",
+    "next": "431811451",
+    "claiming": false,
+    "memory": {
+      "held": 0,
+      "reserved": 0,
+      "limit": 536870912,
+      "pending": 0
+    },
+    "mode": "playCycle",
+    "nativeAllowed": true,
+    "queueVersion": 2,
+    "loadEpoch": 10,
+    "controlRevision": 31,
+    "systemMedia": {
+      "supported": true,
+      "active": false,
+      "failed": false,
+      "seekPending": false
+    }
+  },
+  "mediaSessionState": "none",
+  "pauseButtonVisible": true,
+  "events": [
+    {
+      "at": 173166,
+      "event": "output-ready",
+      "waitMs": 11.400000095367432,
+      "contextTime": 123.13832199546485,
+      "outputContextTime": 123.05554866666667
+    },
+    {
+      "at": 173178,
+      "event": "takeover",
+      "id": "2670863319",
+      "position": 2.602,
+      "pauseAcknowledged": true
+    },
+    {
+      "at": 178361,
+      "event": "seek-replaced",
+      "id": "2670863319",
+      "switchLeadMs": 2.9024943310673734
+    },
+    {
+      "at": 178361,
+      "event": "seek",
+      "id": "2670863319",
+      "position": 133.632
+    },
+    {
+      "at": 180085,
+      "event": "seek-replaced",
+      "id": "2670863319",
+      "switchLeadMs": 2.9024943310673734
+    },
+    {
+      "at": 180085,
+      "event": "seek",
+      "id": "2670863319",
+      "position": 170.056
+    },
+    {
+      "at": 242198,
+      "event": "transition",
+      "from": "2670863319",
+      "to": "2670863152",
+      "scheduledGapFrames": 0
+    },
+    {
+      "at": 242333,
+      "event": "claimed",
+      "id": "2670863152",
+      "position": 0.1293786848072216,
+      "claimDelayMs": 134.40000009536743
+    },
+    {
+      "at": 242338,
+      "event": "play",
+      "id": "2670863152"
+    },
+    {
+      "at": 248969,
+      "event": "system-media-released"
+    },
+    {
+      "at": 251739,
+      "event": "output-ready",
+      "waitMs": 12.700000286102295,
+      "contextTime": 201.70884353741496,
+      "outputContextTime": 201.62643633333332
+    },
+    {
+      "at": 251749,
+      "event": "takeover",
+      "id": "2670863319",
+      "position": 2.6329000000953675,
+      "pauseAcknowledged": true
+    },
+    {
+      "at": 257590,
+      "event": "system-media-action",
+      "action": "seekto"
+    },
+    {
+      "at": 257590,
+      "event": "system-media-action",
+      "action": "seekto"
+    },
+    {
+      "at": 262408,
+      "event": "system-media-action",
+      "action": "seekto"
+    },
+    {
+      "at": 262410,
+      "event": "system-media-action",
+      "action": "seekto"
+    },
+    {
+      "at": 265189,
+      "event": "system-media-action",
+      "action": "seekto"
+    },
+    {
+      "at": 265190,
+      "event": "system-media-action",
+      "action": "seekto"
+    },
+    {
+      "at": 267937,
+      "event": "system-media-action",
+      "action": "seekto"
+    },
+    {
+      "at": 267938,
+      "event": "system-media-action",
+      "action": "seekto"
+    },
+    {
+      "at": 270457,
+      "event": "pause",
+      "id": "2670863319",
+      "position": 21.342378458145255
+    },
+    {
+      "at": 270465,
+      "event": "system-media-action",
+      "action": "pause"
+    },
+    {
+      "at": 281809,
+      "event": "play",
+      "id": "2670863319"
+    },
+    {
+      "at": 281817,
+      "event": "system-media-action",
+      "action": "play"
+    },
+    {
+      "at": 289044,
+      "event": "pause",
+      "id": "2670863319",
+      "position": 28.56539433116115
+    },
+    {
+      "at": 289049,
+      "event": "system-media-action",
+      "action": "pause"
+    },
+    {
+      "at": 290305,
+      "event": "play",
+      "id": "2670863319"
+    },
+    {
+      "at": 290313,
+      "event": "system-media-action",
+      "action": "play"
+    },
+    {
+      "at": 293762,
+      "event": "system-media-action",
+      "action": "seekto"
+    },
+    {
+      "at": 293762,
+      "event": "system-media-action",
+      "action": "seekto"
+    },
+    {
+      "at": 493910,
+      "event": "transition",
+      "from": "2670863319",
+      "to": "2670863152",
+      "scheduledGapFrames": 0
+    },
+    {
+      "at": 494171,
+      "event": "claimed",
+      "id": "2670863152",
+      "position": 0.26178888898431296,
+      "claimDelayMs": 261.59999990463257
+    },
+    {
+      "at": 494185,
+      "event": "play",
+      "id": "2670863152"
+    },
+    {
+      "at": 506212,
+      "event": "system-media-released"
+    },
+    {
+      "at": 512625,
+      "event": "output-ready",
+      "waitMs": 25.300000190734863,
+      "contextTime": 462.5937414965986,
+      "outputContextTime": 462.5115626666667
+    },
+    {
+      "at": 512633,
+      "event": "takeover",
+      "id": "2670863319",
+      "position": 5.4559999999999995,
+      "pauseAcknowledged": true
+    },
+    {
+      "at": 516633,
+      "event": "system-media-action",
+      "action": "seekto"
+    },
+    {
+      "at": 516639,
+      "event": "seek-replaced",
+      "id": "2670863319",
+      "switchLeadMs": 2.9024943310673734
+    },
+    {
+      "at": 516640,
+      "event": "seek",
+      "id": "2670863319",
+      "position": 148.669173
+    },
+    {
+      "at": 516645,
+      "event": "system-media-seek",
+      "id": "2670863319",
+      "position": 148.669173
+    },
+    {
+      "at": 516645,
+      "event": "system-media-action",
+      "action": "seekto"
+    },
+    {
+      "at": 521907,
+      "event": "system-media-action",
+      "action": "seekto"
+    },
+    {
+      "at": 521913,
+      "event": "seek-replaced",
+      "id": "2670863319",
+      "switchLeadMs": 2.902494331124217
+    },
+    {
+      "at": 521913,
+      "event": "seek",
+      "id": "2670863319",
+      "position": 207.324544
+    },
+    {
+      "at": 521918,
+      "event": "system-media-seek",
+      "id": "2670863319",
+      "position": 207.324544
+    },
+    {
+      "at": 521918,
+      "event": "system-media-action",
+      "action": "seekto"
+    },
+    {
+      "at": 524167,
+      "event": "system-media-action",
+      "action": "seekto"
+    },
+    {
+      "at": 524167,
+      "event": "seek-replaced",
+      "id": "2670863319",
+      "switchLeadMs": 2.902494331124217
+    },
+    {
+      "at": 524167,
+      "event": "seek",
+      "id": "2670863319",
+      "position": 106.555038
+    },
+    {
+      "at": 524173,
+      "event": "system-media-seek",
+      "id": "2670863319",
+      "position": 106.555038
+    },
+    {
+      "at": 524173,
+      "event": "system-media-action",
+      "action": "seekto"
+    },
+    {
+      "at": 525885,
+      "event": "system-media-action",
+      "action": "seekto"
+    },
+    {
+      "at": 525885,
+      "event": "seek-replaced",
+      "id": "2670863319",
+      "switchLeadMs": 2.9024943310673734
+    },
+    {
+      "at": 525885,
+      "event": "seek",
+      "id": "2670863319",
+      "position": 226.931933
+    },
+    {
+      "at": 525891,
+      "event": "system-media-seek",
+      "id": "2670863319",
+      "position": 226.931933
+    },
+    {
+      "at": 525891,
+      "event": "system-media-action",
+      "action": "seekto"
+    },
+    {
+      "at": 531118,
+      "event": "transition",
+      "from": "2670863319",
+      "to": "2670863152",
+      "scheduledGapFrames": 0
+    },
+    {
+      "at": 531253,
+      "event": "claimed",
+      "id": "2670863152",
+      "position": 0.13093526757359086,
+      "claimDelayMs": 135.5
+    },
+    {
+      "at": 531257,
+      "event": "play",
+      "id": "2670863152"
+    },
+    {
+      "at": 766038,
+      "event": "system-media-released"
+    }
+  ],
+  "rawNativeEvents": [
+    {
+      "at": 766185,
+      "command": "audioplayer.onPlayState",
+      "id": "1938192798",
+      "state": 1,
+      "ownedPlaying": false,
+      "declaredState": "none"
+    }
+  ],
+  "temporaryNativeObserverRemoved": true,
+  "userVerification": {
+    "titleButtonsAndSoundConsistent": true,
+    "systemSeekSoundFollowsTargetAfterRouterFix": true,
+    "systemButtonBrieflyTogglesDuringSeek": true,
+    "audiblePauseDuringSystemSeekReported": false
+  },
+  "scope": "Real client observations and user checks; Control Center title and pause button were also read through AX. Seek button flicker remains unresolved. No device audio loopback."
+}

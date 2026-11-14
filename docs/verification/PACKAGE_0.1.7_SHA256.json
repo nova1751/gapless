@@ -1,0 +1,14 @@
+{
+  "version": "0.1.7",
+  "packageSha256": "e1c4c5cc79a875ff5194c824c933497e535313a5a3b0bf22b0fdf96fbbce389a",
+  "releaseAndInstalledMatch": true,
+  "sources": {
+    "shared/audio-resources.js": "4a5c8353f3d14177a7447104db724a51134ff77c00e293e3bd170ba0ff635f1e",
+    "shared/playback-clock.js": "5319fe5c485de04b774e5020977170cd8c0e284b467196d7fb37ffbf06164190",
+    "mac/media-session.js": "68107b689c3b3780fd3f13d18fb0f8f058c316f97705c218f997a62c88770c50",
+    "mac/player.js": "8102b8c43fbe23f4189bb24da33ac4d5350795788f5605c104139002e86aa720",
+    "mac/manifest.json": "d2eab4f8b52c48f7f10c4f6bd50cbb2d6ac0510f983aed15e2ba9b8b20c9e383",
+    "mac/startup.js": "562b3e45f475ca53767e51e0eda401546dc2189a67188b3e214ed8a5a4e55c8f",
+    "mac/package.py": "d7d60e6944673a523d3301c0987f87d95c2e5c34a15722d165da64c62c5a12ac"
+  }
+}

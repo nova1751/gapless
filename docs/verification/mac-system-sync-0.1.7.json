@@ -1,0 +1,459 @@
+{
+  "version": "0.1.7",
+  "recordedAt": "2026-11-14T10:25:29.942Z",
+  "method": "Read-only observation during actual client playback and external controls; no device audio recording",
+  "samples": [
+    {
+      "elapsedMs": 0,
+      "id": "2670863319",
+      "phase": "owned",
+      "ownsPlayback": true,
+      "playing": true,
+      "uiPlayingState": 2,
+      "position": 205.2692666665713,
+      "mediaSessionState": "playing",
+      "title": "Baptized In Fear",
+      "systemMedia": {
+        "supported": true,
+        "active": true,
+        "failed": false
+      }
+    },
+    {
+      "elapsedMs": 1020,
+      "id": "2670863319",
+      "phase": "owned",
+      "ownsPlayback": true,
+      "playing": true,
+      "uiPlayingState": 2,
+      "position": 206.29094467110644,
+      "mediaSessionState": "playing",
+      "title": "Baptized In Fear",
+      "systemMedia": {
+        "supported": true,
+        "active": true,
+        "failed": false
+      }
+    },
+    {
+      "elapsedMs": 2041,
+      "id": "2670863319",
+      "phase": "owned",
+      "ownsPlayback": true,
+      "playing": true,
+      "uiPlayingState": 2,
+      "position": 207.31552516997266,
+      "mediaSessionState": "playing",
+      "title": "Baptized In Fear",
+      "systemMedia": {
+        "supported": true,
+        "active": true,
+        "failed": false
+      }
+    },
+    {
+      "elapsedMs": 3063,
+      "id": "2670863319",
+      "phase": "owned",
+      "ownsPlayback": true,
+      "playing": true,
+      "uiPlayingState": 2,
+      "position": 208.34010566883887,
+      "mediaSessionState": "playing",
+      "title": "Baptized In Fear",
+      "systemMedia": {
+        "supported": true,
+        "active": true,
+        "failed": false
+      }
+    },
+    {
+      "elapsedMs": 4094,
+      "id": "2670863319",
+      "phase": "owned",
+      "ownsPlayback": true,
+      "playing": true,
+      "uiPlayingState": 2,
+      "position": 209.3646861677051,
+      "mediaSessionState": "playing",
+      "title": "Baptized In Fear",
+      "systemMedia": {
+        "supported": true,
+        "active": true,
+        "failed": false
+      }
+    },
+    {
+      "elapsedMs": 5123,
+      "id": "2670863319",
+      "phase": "owned",
+      "ownsPlayback": true,
+      "playing": true,
+      "uiPlayingState": 2,
+      "position": 210.3892666665713,
+      "mediaSessionState": "playing",
+      "title": "Baptized In Fear",
+      "systemMedia": {
+        "supported": true,
+        "active": true,
+        "failed": false
+      }
+    },
+    {
+      "elapsedMs": 6145,
+      "id": "2670863319",
+      "phase": "owned",
+      "ownsPlayback": true,
+      "playing": true,
+      "uiPlayingState": 2,
+      "position": 211.41094467110645,
+      "mediaSessionState": "playing",
+      "title": "Baptized In Fear",
+      "systemMedia": {
+        "supported": true,
+        "active": true,
+        "failed": false
+      }
+    },
+    {
+      "elapsedMs": 7171,
+      "id": "2670863319",
+      "phase": "owned",
+      "ownsPlayback": true,
+      "playing": true,
+      "uiPlayingState": 2,
+      "position": 212.43552516997266,
+      "mediaSessionState": "playing",
+      "title": "Baptized In Fear",
+      "systemMedia": {
+        "supported": true,
+        "active": true,
+        "failed": false
+      }
+    },
+    {
+      "elapsedMs": 8194,
+      "id": "2670863319",
+      "phase": "owned",
+      "ownsPlayback": true,
+      "playing": true,
+      "uiPlayingState": 2,
+      "position": 213.46010566883888,
+      "mediaSessionState": "playing",
+      "title": "Baptized In Fear",
+      "systemMedia": {
+        "supported": true,
+        "active": true,
+        "failed": false
+      }
+    },
+    {
+      "elapsedMs": 9217,
+      "id": "2670863319",
+      "phase": "owned",
+      "ownsPlayback": true,
+      "playing": true,
+      "uiPlayingState": 2,
+      "position": 214.4846861677051,
+      "mediaSessionState": "playing",
+      "title": "Baptized In Fear",
+      "systemMedia": {
+        "supported": true,
+        "active": true,
+        "failed": false
+      }
+    },
+    {
+      "elapsedMs": 10233,
+      "id": "2670863319",
+      "phase": "owned",
+      "ownsPlayback": true,
+      "playing": true,
+      "uiPlayingState": 2,
+      "position": 215.50926666657128,
+      "mediaSessionState": "playing",
+      "title": "Baptized In Fear",
+      "systemMedia": {
+        "supported": true,
+        "active": true,
+        "failed": false
+      }
+    },
+    {
+      "elapsedMs": 11262,
+      "id": "2670863319",
+      "phase": "owned",
+      "ownsPlayback": true,
+      "playing": true,
+      "uiPlayingState": 2,
+      "position": 216.53094467110643,
+      "mediaSessionState": "playing",
+      "title": "Baptized In Fear",
+      "systemMedia": {
+        "supported": true,
+        "active": true,
+        "failed": false
+      }
+    },
+    {
+      "elapsedMs": 12284,
+      "id": "2670863319",
+      "phase": "owned",
+      "ownsPlayback": true,
+      "playing": true,
+      "uiPlayingState": 2,
+      "position": 217.55552516997264,
+      "mediaSessionState": "playing",
+      "title": "Baptized In Fear",
+      "systemMedia": {
+        "supported": true,
+        "active": true,
+        "failed": false
+      }
+    },
+    {
+      "elapsedMs": 13301,
+      "id": "2670863319",
+      "phase": "owned",
+      "ownsPlayback": true,
+      "playing": true,
+      "uiPlayingState": 2,
+      "position": 218.58010566883885,
+      "mediaSessionState": "playing",
+      "title": "Baptized In Fear",
+      "systemMedia": {
+        "supported": true,
+        "active": true,
+        "failed": false
+      }
+    },
+    {
+      "elapsedMs": 14322,
+      "id": "2670863319",
+      "phase": "owned",
+      "ownsPlayback": true,
+      "playing": true,
+      "uiPlayingState": 2,
+      "position": 219.60468616770507,
+      "mediaSessionState": "playing",
+      "title": "Baptized In Fear",
+      "systemMedia": {
+        "supported": true,
+        "active": true,
+        "failed": false
+      }
+    },
+    {
+      "elapsedMs": 15345,
+      "id": "2670863319",
+      "phase": "owned",
+      "ownsPlayback": true,
+      "playing": true,
+      "uiPlayingState": 2,
+      "position": 220.62926666657128,
+      "mediaSessionState": "playing",
+      "title": "Baptized In Fear",
+      "systemMedia": {
+        "supported": true,
+        "active": true,
+        "failed": false
+      }
+    },
+    {
+      "elapsedMs": 16371,
+      "id": "2670863319",
+      "phase": "owned",
+      "ownsPlayback": true,
+      "playing": true,
+      "uiPlayingState": 2,
+      "position": 221.65094467110643,
+      "mediaSessionState": "playing",
+      "title": "Baptized In Fear",
+      "systemMedia": {
+        "supported": true,
+        "active": true,
+        "failed": false
+      }
+    },
+    {
+      "elapsedMs": 17399,
+      "id": "2670863319",
+      "phase": "owned",
+      "ownsPlayback": true,
+      "playing": true,
+      "uiPlayingState": 2,
+      "position": 222.67552516997264,
+      "mediaSessionState": "playing",
+      "title": "Baptized In Fear",
+      "systemMedia": {
+        "supported": true,
+        "active": true,
+        "failed": false
+      }
+    },
+    {
+      "elapsedMs": 18426,
+      "id": "2670863319",
+      "phase": "owned",
+      "ownsPlayback": true,
+      "playing": true,
+      "uiPlayingState": 2,
+      "position": 223.70010566883886,
+      "mediaSessionState": "playing",
+      "title": "Baptized In Fear",
+      "systemMedia": {
+        "supported": true,
+        "active": true,
+        "failed": false
+      }
+    },
+    {
+      "elapsedMs": 19448,
+      "id": "2670863319",
+      "phase": "owned",
+      "ownsPlayback": true,
+      "playing": true,
+      "uiPlayingState": 2,
+      "position": 224.72468616770507,
+      "mediaSessionState": "playing",
+      "title": "Baptized In Fear",
+      "systemMedia": {
+        "supported": true,
+        "active": true,
+        "failed": false
+      }
+    },
+    {
+      "elapsedMs": 20472,
+      "id": "2670863319",
+      "phase": "owned",
+      "ownsPlayback": true,
+      "playing": true,
+      "uiPlayingState": 2,
+      "position": 225.7492666665713,
+      "mediaSessionState": "playing",
+      "title": "Baptized In Fear",
+      "systemMedia": {
+        "supported": true,
+        "active": true,
+        "failed": false
+      }
+    },
+    {
+      "elapsedMs": 21498,
+      "id": "2670863319",
+      "phase": "owned",
+      "ownsPlayback": true,
+      "playing": true,
+      "uiPlayingState": 2,
+      "position": 226.77094467110643,
+      "mediaSessionState": "playing",
+      "title": "Baptized In Fear",
+      "systemMedia": {
+        "supported": true,
+        "active": true,
+        "failed": false
+      }
+    },
+    {
+      "elapsedMs": 22517,
+      "id": "2670863319",
+      "phase": "owned",
+      "ownsPlayback": true,
+      "playing": true,
+      "uiPlayingState": 2,
+      "position": 227.79552516997265,
+      "mediaSessionState": "playing",
+      "title": "Baptized In Fear",
+      "systemMedia": {
+        "supported": true,
+        "active": true,
+        "failed": false
+      }
+    },
+    {
+      "elapsedMs": 23539,
+      "id": "2670863319",
+      "phase": "owned",
+      "ownsPlayback": true,
+      "playing": true,
+      "uiPlayingState": 2,
+      "position": 228.82010566883886,
+      "mediaSessionState": "playing",
+      "title": "Baptized In Fear",
+      "systemMedia": {
+        "supported": true,
+        "active": true,
+        "failed": false
+      }
+    }
+  ],
+  "finalStatus": {
+    "enabled": true,
+    "compatible": true,
+    "id": "2670863319",
+    "phase": "owned",
+    "ownsPlayback": true,
+    "playing": true,
+    "seekPending": false,
+    "seekSettling": false,
+    "position": 229.33094467110644,
+    "duration": 232.1764172335601,
+    "requestedLevel": "hires",
+    "actualLevel": "lossless",
+    "sourceRate": 44100,
+    "decodedRate": 44100,
+    "sampleRate": 44100,
+    "contextState": "running",
+    "contextGeneration": 1,
+    "activeNodes": 2,
+    "deviceFormat": "unknown",
+    "next": "2670863152",
+    "scheduled": "2670863152",
+    "claiming": false,
+    "memory": {
+      "held": 164792984,
+      "reserved": 0,
+      "limit": 536870912,
+      "pending": 0
+    },
+    "mode": "playCycle",
+    "nativeAllowed": true,
+    "queueVersion": 2,
+    "loadEpoch": 2,
+    "controlRevision": 3,
+    "systemMedia": {
+      "supported": true,
+      "active": true,
+      "failed": false
+    }
+  },
+  "events": [
+    {
+      "at": 50130,
+      "event": "system-media-acquired"
+    },
+    {
+      "at": 50134,
+      "event": "takeover",
+      "id": "1938192798",
+      "position": 158.62540000009537,
+      "pauseAcknowledged": true
+    },
+    {
+      "at": 121313,
+      "event": "system-media-released"
+    },
+    {
+      "at": 126585,
+      "event": "system-media-acquired"
+    },
+    {
+      "at": 126588,
+      "event": "takeover",
+      "id": "2670863319",
+      "position": 199.72259999990462,
+      "pauseAcknowledged": true
+    }
+  ]
+}
