@@ -21,6 +21,7 @@
 - [网易云缓存读取边界](docs/CACHE_PRIORITY.md)
 - [原生无缝能力实查](docs/NATIVE_GAPLESS_FEASIBILITY.md)
 - [纯原生入口复查与最小实施路线](docs/NATIVE_GAPLESS_RECHECK_2026-11-15.md)：原生输出复用有静态证据；独立预加载、原生桥及跨曲接认尚未实现
+- [原生接入实际尝试](docs/NATIVE_GAPLESS_ATTEMPT_2026-11-15.md)：主进程访问探针已运行，接入受阻；未执行原生播放原型，当前 0.2.3 保留
 
 ## 开发验证
 

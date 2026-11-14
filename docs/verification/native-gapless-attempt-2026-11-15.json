@@ -1,0 +1,39 @@
+{
+  "recordedAt": "2026-11-15",
+  "client": {"version": "3.1.12", "build": "3444", "platform": "macOS arm64"},
+  "hostVersion": "0.1.7",
+  "playbackPluginVersion": "0.2.3",
+  "nativeGaplessImplemented": false,
+  "nativePlaybackPrototypeExecuted": false,
+  "implementedArtifact": "tools/probe-native-access-mac.c",
+  "artifactPurpose": "probe native main-process access prerequisite; not a gapless player or loader",
+  "incrementalCompilerCheck": "clang -std=c11 -Wall -Wextra -Werror: passed",
+  "accessAttempts": [
+    {"caller": "ordinary local diagnostic", "selfTaskResult": 0, "targetTaskResult": 5, "controlPortAvailable": false},
+    {"caller": "temporary ad-hoc signed diagnostic with debugger entitlement", "selfTaskResult": 0, "targetTaskResult": 5, "controlPortAvailable": false}
+  ],
+  "targetSignature": {
+    "hardenedRuntime": true,
+    "appSandbox": true,
+    "disableLibraryValidation": true,
+    "getTaskAllowPresent": false,
+    "allowDyldEnvironmentVariablesPresent": false,
+    "strictVerificationPassed": true,
+    "modified": false
+  },
+  "hostNativeModulePath": "manifest native_plugin ignored; native_plugin API list empty; calls rejected in server and JS shim",
+  "stopReason": "native bridge prerequisites unavailable through checked paths with current host and unchanged signed client",
+  "limits": ["kernel failure does not identify unique permission check", "not proof that every possible native loading mechanism is impossible", "native candidate preload/adoption unverified", "native audible cross-track continuity unverified", "Windows untested"],
+  "debuggerAttached": false,
+  "processSuspended": false,
+  "remoteMemoryAccessed": false,
+  "nativeModuleLoaded": false,
+  "nativeHooksInstalled": false,
+  "playbackCommandsSent": [],
+  "clientRestartedOrReloaded": false,
+  "playerSourceOrInstalledPackageModified": false,
+  "nativeBinarySha256": "e9c6b5468749ccad69ffe24e6395d6d29af9e2f7514a2bc9697e265b89b40374",
+  "installedPackageSha256": "4c8cf6b97077970b2b2588c24b415b140e63394712fa77089da242e5039d300a",
+  "testCasesAdded": false,
+  "appBuildRun": false
+}
