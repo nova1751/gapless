@@ -1,0 +1,87 @@
+{
+  "transport": {
+    "paused": {
+      "playing": false,
+      "nodes": 0,
+      "revision": 8,
+      "system": {
+        "active": true,
+        "ready": true,
+        "supported": true,
+        "failed": false,
+        "seekPending": false
+      }
+    },
+    "duplicate": {
+      "playing": false,
+      "revision": 8
+    },
+    "resumed": {
+      "playing": true,
+      "nodes": 2,
+      "generation": 1,
+      "revision": 9
+    },
+    "events": [
+      {
+        "at": 261645,
+        "event": "system-media-action",
+        "action": "pause"
+      },
+      {
+        "at": 261700,
+        "event": "pause",
+        "id": "2670863319",
+        "position": 106.62657596371884
+      },
+      {
+        "at": 261810,
+        "event": "system-media-action",
+        "action": "pause"
+      },
+      {
+        "at": 261856,
+        "event": "system-media-action",
+        "action": "play"
+      },
+      {
+        "at": 261874,
+        "event": "play",
+        "id": "2670863319"
+      }
+    ]
+  },
+  "coalescedSeek": {
+    "position": 150.1683446712018,
+    "playing": true,
+    "generation": 1,
+    "nodes": 2,
+    "pending": false,
+    "events": [
+      {
+        "at": 279504,
+        "event": "system-media-action",
+        "action": "seekto"
+      },
+      {
+        "at": 279553,
+        "event": "seek-replaced",
+        "id": "2670863319",
+        "switchLeadMs": 2.902494331095795
+      },
+      {
+        "at": 279553,
+        "event": "seek",
+        "id": "2670863319",
+        "position": 150
+      },
+      {
+        "at": 279567,
+        "event": "system-media-seek",
+        "id": "2670863319",
+        "position": 150
+      }
+    ]
+  },
+  "systemPanelVerified": false
+}

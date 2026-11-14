@@ -1,0 +1,99 @@
+{
+  "before": {
+    "position": 115.80335600907028,
+    "generation": 1,
+    "nodes": 2
+  },
+  "result": {
+    "playId": "2670863319",
+    "seekId": "2670863319|seek|timing-1794647232881",
+    "code": 0,
+    "position": 70
+  },
+  "frames": [
+    {
+      "position": 70.04063492063491,
+      "nodes": 2,
+      "generation": 1,
+      "playing": true
+    },
+    {
+      "position": 70.08417233560093,
+      "nodes": 2,
+      "generation": 1,
+      "playing": true
+    },
+    {
+      "position": 70.10448979591837,
+      "nodes": 2,
+      "generation": 1,
+      "playing": true
+    },
+    {
+      "position": 70.12480725623584,
+      "nodes": 2,
+      "generation": 1,
+      "playing": true
+    },
+    {
+      "position": 70.14802721088435,
+      "nodes": 2,
+      "generation": 1,
+      "playing": true
+    },
+    {
+      "position": 70.16834467120182,
+      "nodes": 2,
+      "generation": 1,
+      "playing": true
+    },
+    {
+      "position": 70.1886621315193,
+      "nodes": 2,
+      "generation": 1,
+      "playing": true
+    },
+    {
+      "position": 70.2118820861678,
+      "nodes": 2,
+      "generation": 1,
+      "playing": true
+    },
+    {
+      "position": 70.23219954648528,
+      "nodes": 2,
+      "generation": 1,
+      "playing": true
+    },
+    {
+      "position": 70.25251700680272,
+      "nodes": 2,
+      "generation": 1,
+      "playing": true
+    }
+  ],
+  "heardBefore": {
+    "result": 1,
+    "playedTime": 197.47945578231293,
+    "playedAudioTime": 197.47945578231293
+  },
+  "heardAfter": {
+    "result": 1,
+    "playedTime": 197.7348752834467,
+    "playedAudioTime": 197.7348752834467
+  },
+  "trace": [
+    {
+      "at": 225072,
+      "event": "seek-replaced",
+      "id": "2670863319",
+      "switchLeadMs": 2.9024943310673734
+    },
+    {
+      "at": 225072,
+      "event": "seek",
+      "id": "2670863319",
+      "position": 70
+    }
+  ]
+}

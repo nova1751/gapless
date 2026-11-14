@@ -5,7 +5,7 @@
     constructor({ resources, onState, onEnded, trace }) {
       this.resources = resources; this.onState = onState; this.onEnded = onEnded; this.trace = trace;
       this.ctx = null; this.gain = null; this.generation = 0; this.volume = 1;
-      this.active = new Set();
+      this.active = new Set(); this.retiring = new Map();
     }
     async open(entry) {
       if (this.ctx?.state === 'closed') this.ctx = null;
@@ -55,11 +55,17 @@
     }
     heard(track) {
       return (track?.heard || 0) + (track?.node && track.playing
-        ? Math.max(0, Math.min(this.ctx.currentTime, track.end) - track.start) : 0);
+        ? Math.max(0, Math.min(this.ctx.currentTime, track.end) - track.start) : 0)
+        - (track?.heardUntil ? Math.max(0, track.heardUntil - this.ctx.currentTime) : 0);
     }
     stop(track) {
       if (!track) return;
       track.offset = this.position(track); track.heard = this.heard(track); track.playing = false;
+      track.heardUntil = 0;
+      for (const [node, retired] of this.retiring) if (retired.track === track) {
+        try { node.stop(); } catch { /* Already ended. */ }
+        retired.finish();
+      }
       if (!track.node) return;
       const node = track.node; track.node = null; node.onended = null;
       try { node.stop(); } catch { /* Already ended. */ }
@@ -83,6 +89,40 @@
       try { node.start(at, track.offset); }
       catch (error) { this.stop(track); throw error; }
     }
+    seek(track, offset) {
+      if (!track.node || !track.playing) { this.stop(track); track.offset = offset; return; }
+      if (this.ctx?.state !== 'running' || !this.matches(track.entry)) throw new Error('native-only-context');
+      // Keep sounding until the replacement starts at the same render boundary.
+      const quantum = 128 / this.ctx.sampleRate;
+      const at = Math.min(track.end, Math.ceil((this.ctx.currentTime + quantum) / quantum) * quantum);
+      const previous = track.node, entry = track.entry;
+      const node = this.ctx.createBufferSource(), generation = this.generation;
+      const heard = this.heard(track) + Math.max(0, at - this.ctx.currentTime);
+      node.buffer = entry.buffer; node.connect(this.gain);
+      try { node.start(at, offset); }
+      catch (error) { node.disconnect(); throw error; }
+      try { previous.stop(at); }
+      catch (error) {
+        // Leave the current track intact; the bridge can restore native playback.
+        try { node.stop(); } catch { /* Replacement already ended. */ }
+        node.disconnect(); throw error;
+      }
+      const retired = { track, finish: () => {
+        if (!this.retiring.delete(previous)) return;
+        previous.onended = null; previous.disconnect(); this.resources.unpin(entry);
+      } };
+      this.retiring.set(previous, retired); previous.onended = retired.finish;
+      this.resources.pin(entry);
+      track.heard = heard; track.heardUntil = at;
+      track.offset = offset; track.start = at; track.end = at + track.duration - offset; track.node = node;
+      node.onended = () => {
+        if (track.node !== node || generation !== this.generation) return;
+        track.heard = this.heard(track); track.heardUntil = 0; track.offset = track.duration; track.playing = false;
+        track.node = null; node.disconnect(); this.active.delete(track); this.resources.unpin(entry);
+        this.onEnded(track);
+      };
+      this.trace('seek-replaced', { id: track.id, switchLeadMs: (at - this.ctx.currentTime) * 1000 });
+    }
     setVolume(value) {
       if (!Number.isFinite(value)) return;
       this.volume = Math.max(0, Math.min(1, value));
@@ -90,11 +130,15 @@
     }
     async close() {
       for (const track of [...this.active]) this.stop(track);
+      for (const [node, retired] of [...this.retiring]) {
+        try { node.stop(); } catch { /* Already ended. */ }
+        retired.finish();
+      }
       const ctx = this.ctx; this.ctx = null; this.gain = null; this.generation++;
       if (ctx?.state !== 'closed') await ctx?.close();
     }
     status() { return { sampleRate: this.ctx?.sampleRate, contextState: this.ctx?.state,
-      contextGeneration: this.generation, activeNodes: this.active.size, deviceFormat: 'unknown' }; }
+      contextGeneration: this.generation, activeNodes: this.active.size + this.retiring.size, deviceFormat: 'unknown' }; }
   }
   globalThis.GaplessPlaybackClock = PlaybackClock;
 })();

@@ -1,0 +1,17 @@
+{
+  "pluginInjected": false,
+  "mediaSessionState": "none",
+  "track": "2670863319",
+  "playingState": 1,
+  "restorePosition": 228.4486349206349,
+  "systemPanelResult": "progress-rollback-reproduced",
+  "resultSource": "user-report",
+  "reportDate": "2026-11-14",
+  "verificationAtFollowUp": {
+    "gaplessInjected": false,
+    "mediaSessionState": "none",
+    "betterNcmEnvironmentPresent": true
+  },
+  "comparisonScope": "Gapless plugin disabled and Media Session absent; BetterNCM environment retained.",
+  "conclusion": "Rollback is not exclusive to the gapless plugin; source and relative severity remain undetermined."
+}

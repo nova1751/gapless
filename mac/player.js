@@ -275,6 +275,7 @@ plugin.onLoad(() => {
       const offset = Math.min(nativePosition(), c.duration - 0.001);
       c.offset = offset; c.heard = Number(nativeTime.playedAudioTime) + (c.nativeHeardBase || 0); c.owns = true; S.phase = 'owned';
       clock.start(c, clock.ctx.currentTime + 0.01, offset);
+      S.token = `${c.id}|resume|gapless-${epoch}`;
       emitState(c, 1); bridge.emit('audioplayer.onBuffering', [c.id, 0]);
       trace('takeover', { id: c.id, position: offset, pauseAcknowledged: true });
       scheduleNext();
@@ -386,9 +387,9 @@ plugin.onLoad(() => {
   }
   bridge.shouldSuppressNative = (command, args) => {
     const c = S.current;
-    // Seek subscribers are global in this SDK; a late native event for the old
-    // track must not complete a new owned request. Raw waiters observe it first.
-    if (c?.owns && command === 'audioplayer.onSeek') return true;
+    // Parked-backend events, including old track IDs, cannot replace owned
+    // state/progress or complete an owned Seek. Raw waiters observe them first.
+    if (c?.owns && /^audioplayer\.(onPlayState|onPlayProgress|onEnd|onSeek|onBuffering)$/.test(command)) return true;
     if (String(args?.[0]) === c?.id && command === 'audioplayer.onSeek'
       && c.nativeSeekBuffered?.has(args[1])) return true;
     if (String(args?.[0]) === c?.id && command === 'audioplayer.onPlayProgress'
@@ -577,10 +578,9 @@ plugin.onLoad(() => {
     }
     if (msg.command === 'audioplayer.seek') {
       if (!Number.isFinite(Number(p[2]))) return false;
-      const playing = c.playing, token = p[1] || c.id; S.revision++;
+      const token = p[1] || c.id; S.revision++;
       const offset = Math.max(0, Math.min(c.duration - 0.001, Number(p[2])));
-      stopCurrent(); c.offset = offset; c.endSent = false; c.missed = false; S.token = token;
-      if (playing) clock.start(c, clock.ctx.currentTime + 0.01, offset);
+      cancelScheduled(); clock.seek(c, offset); c.endSent = false; c.missed = false; S.token = token;
       completeSeek(msg, c, token, offset);
       trace('seek', { id: c.id, position: offset }); scheduleNext(); return true;
     }

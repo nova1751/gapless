@@ -1,0 +1,74 @@
+{
+  "id": "2670863152",
+  "position": 0.5135600907029811,
+  "playing": true,
+  "generation": 1,
+  "nodes": 1,
+  "system": {
+    "active": true,
+    "ready": true,
+    "supported": true,
+    "failed": false,
+    "seekPending": false
+  },
+  "mediaState": "playing",
+  "title": "Open Hearts",
+  "events": [
+    {
+      "at": 326359,
+      "event": "seek-replaced",
+      "id": "2670863319",
+      "switchLeadMs": 2.9024943310673734
+    },
+    {
+      "at": 326359,
+      "event": "seek",
+      "id": "2670863319",
+      "position": 230.1764172335601
+    },
+    {
+      "at": 326359,
+      "event": "scheduled",
+      "from": "2670863319",
+      "to": "2670863152",
+      "leadSeconds": 2.0029024943310674,
+      "sourceRate": 44100,
+      "decodedRate": 44100,
+      "contextRate": 44100,
+      "scheduledGapFrames": 0
+    },
+    {
+      "at": 328348,
+      "event": "transition",
+      "from": "2670863319",
+      "to": "2670863152",
+      "scheduledGapFrames": 0
+    },
+    {
+      "at": 328570,
+      "event": "native-load",
+      "id": "2670863152",
+      "phase": "claiming",
+      "current": "2670863152",
+      "epoch": 2
+    },
+    {
+      "at": 328570,
+      "event": "claimed",
+      "id": "2670863152",
+      "position": 0.2146031746032122,
+      "claimDelayMs": 221.7999997138977
+    },
+    {
+      "at": 328574,
+      "event": "play",
+      "id": "2670863152"
+    },
+    {
+      "at": 328667,
+      "event": "prefetch-fallback",
+      "id": "1938192798",
+      "reason": "native-only-file-size"
+    }
+  ]
+}
