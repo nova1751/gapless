@@ -8,12 +8,17 @@
 
 控制中心图标闪动、原生进度回跳尚未宣布全部修复；设备输出也未做声卡回录。音乐交还原生后，静音系统同步层仍保留，以避免释放会话导致系统控件失效。不能把本版理解为已达到所有设备的采样级零间隔。
 
+本轮源码/待复验发布包为 **0.1.11**，补接管失败和取消后的预热上下文释放；当前安装和运行页面仍为 0.1.10，尚未激活或实机验收新版本。
+
 ## 直接入口
 
+- [0.1.11 复查修正与确认范围](docs/IMPLEMENTATION_CHECK_0.1.11.md)
+- [Windows 一致实施方案 v8](docs/WINDOWS_GAPLESS_IMPLEMENTATION.md)
 - [0.1.9 临时 Web Audio 桥接并交还原生](docs/TEMPORARY_WEB_BRIDGE.md)
 - [0.1.10 网易云缓存优先读取](docs/CACHE_PRIORITY.md)
 - [Mac 安装与使用](mac/README.md)
-- [Mac 插件包](releases/gapless-player-mac-0.1.10.plugin)
+- [Mac 当前安装包 0.1.10](releases/gapless-player-mac-0.1.10.plugin)
+- [Mac 0.1.11 待复验包](releases/gapless-player-mac-0.1.11.plugin)
 - [0.1.8 系统控制路由与会话生命周期修正](docs/SYSTEM_SYNC_0.1.8.md)
 - [0.1.7 历史系统同步记录](docs/SYSTEM_SYNC_0.1.7.md)
 - [0.1.6 无缝功能恢复与实际跨曲记录](docs/RESTORE_GAPLESS_0.1.6.md)
@@ -24,7 +29,6 @@
 - [Baptized In Fear → Open Hearts 间隔排查与实际缓冲验证](docs/AUDIBLE_GAP_REVIEW.md)
 - [进度回跳、副作用与精简审查](docs/SIDE_EFFECTS_REVIEW.md)
 - [0.1.1 修正、验证和已知边界](docs/REMEDIATION.md)
-- [Windows 详细实施方案](docs/WINDOWS_GAPLESS_IMPLEMENTATION.md)
 - [0.1.0 历史问题审查](docs/MAC_GAPLESS_AUDIT.md)
 
 ## 原理与范围
@@ -47,7 +51,7 @@ releases/   可安装的 Mac ZIP 插件包
 tools/      可选的本机 CDP 协议诊断脚本
 ```
 
-在根目录执行 `python3 mac/package.py` 可重新打包至 `dist/`。当前 manifest 为 0.1.10，发布包与本机安装包一致；旧版本保留在 `releases/`，安装时只保留一个同 slug 的插件包。不需要安装前端依赖，不执行应用构建。源码只对实测 Mac 网易云 3.1.12（3444）启用，未知版本保持原生。
+在根目录执行 `python3 mac/package.py` 可重新打包至 `dist/`。当前 manifest 为 0.1.11，组合源码与发布包已核对；本机安装/运行仍为 0.1.10，新包待激活复验。旧版本保留在 `releases/`，安装时只保留一个同 slug 的插件包。不需要安装前端依赖，不执行应用构建。源码只对实测 Mac 网易云 3.1.12（3444）启用，未知版本保持原生。
 
 ## 来源与许可
 

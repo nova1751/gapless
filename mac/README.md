@@ -4,6 +4,8 @@
 
 0.1.10 新增完整、同音质的网易云缓存优先读取；当前页面已接入，最终磁盘命中和跨曲复验仍受锁屏/文件读取等待阻挡。读取失败会回到原授权音源，不修改网易云缓存。见 [缓存检查和验证状态](../docs/CACHE_PRIORITY.md)。
 
+本轮源码已到 0.1.11，补接管失败/取消后的预热资源释放；[新包](../releases/gapless-player-mac-0.1.11.plugin) 尚未安装/激活，运行仍为 0.1.10。见 [本轮检查](../docs/IMPLEMENTATION_CHECK_0.1.11.md)。
+
 ## 使用范围
 
 - 距当前曲尾约 10 秒，当前及可信下一首已准备且规格匹配时才进入桥接；接管前先预热并校准，准备好缓存不会提前接管整首。
@@ -25,6 +27,6 @@
 
 `player.js` 管理原生协议、临时桥接、恢复与宿主开关；`native-cache.js` 只读查询和校验网易云缓存；`media-session.js` 同步系统控制；`startup.js` 包装原生桥。共享目录管理独立解码、限额缓存和音频时钟。原生静默准备暂时关闭该后端输出，保留并恢复用户音量；用户音量选择、界面数值和 Web 输出音量保持一致，失败与退出路径亦恢复。
 
-根目录执行 `python3 mac/package.py` 生成 `dist/gapless-player-mac-0.1.10.plugin`；这是 ZIP 打包，不是应用构建。没有新增测试或全量 lint/tsc。此前桥接协议场景见 [0.1.9 历史验证](../docs/verification/mac-temporary-bridge-0.1.9.json)；本版缓存确认状态及源码/安装包核对结果见 [缓存记录](../docs/verification/mac-cache-priority-0.1.10.json) 和 [包校验](../docs/verification/PACKAGE_0.1.10_SHA256.json)。
+根目录执行 `python3 mac/package.py` 生成当前源码的 `dist/gapless-player-mac-0.1.11.plugin`；这是 ZIP 打包，不是应用构建。没有新增测试或全量 lint/tsc。新包仅做组合源码/ZIP 核对，见 [0.1.11 包校验](../docs/verification/PACKAGE_0.1.11_SHA256.json)。此前桥接协议场景见 [0.1.9 历史验证](../docs/verification/mac-temporary-bridge-0.1.9.json)；本版缓存确认状态及源码/安装包核对结果见 [缓存记录](../docs/verification/mac-cache-priority-0.1.10.json) 和 [包校验](../docs/verification/PACKAGE_0.1.10_SHA256.json)。
 
 历史实现与排查保留在 [0.1.1 恢复记录](../docs/REMEDIATION.md)、[卡顿排查](../docs/HANDOFF_HITCH_REVIEW.md) 和 [间隔排查](../docs/AUDIBLE_GAP_REVIEW.md)。这些结果不代表本版已经完成声卡回录。Windows 尚未实现，不能安装 Mac 包。

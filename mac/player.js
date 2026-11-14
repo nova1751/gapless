@@ -363,7 +363,7 @@ plugin.onLoad(() => {
     if (!candidate?.hash || !c?.entry || candidate.spec.rate !== c.entry.spec.rate
       || candidate.spec.channels !== c.entry.spec.channels) return;
     const remaining = c.duration - nativePosition();
-    if (c.blocked || c.owns || (c.awaitingGesture && clock.ctx?.state === 'suspended')
+    if (c.blocked || c.owns || c.awaitingGesture
       || !S.nativePlaying || !allowed(c.info) || c.nativeSeekTokens?.size
       || performance.now() < Math.max(c.seekStableAt || 0, c.bridgeNotBefore || 0)
       || S.starting || S.handingBack || S.phase !== 'native' || remaining > BRIDGE_LEAD || remaining < 0.5) return;
@@ -448,8 +448,13 @@ plugin.onLoad(() => {
             [c.id, `${c.id}|resume|cancelled-takeover-${epoch}`]).catch(() => {});
         }
       }
-      S.starting = false;
-      if (!S.current?.owns) media?.sync(true);
+      try {
+        // Failed/cancelled prewarming must not leave a silent output device
+        // running throughout native playback. Keep starting locked until close.
+        if (!S.current?.owns) { await clock.close(); media?.sync(true); }
+      } catch (error) {
+        trace('takeover-cleanup-error', { id: c.id, reason: error.message });
+      } finally { S.starting = false; }
     }
   }
   function validRecovery(c, epoch) { return S.current === c && S.epoch === epoch; }
@@ -1096,7 +1101,7 @@ plugin.onLoad(() => {
     } catch (error) { trace('reload-recovery-error', { reason: error.message }); }
   }
   window.gaplessMac = {
-    version: '0.1.10', status: () => {
+    version: '0.1.11', status: () => {
       reconcile(); const c = S.current;
       return { enabled: S.enabled, compatible: S.compatible, id: c?.id, phase: S.phase,
         ownsPlayback: !!c?.owns, playing: c?.owns ? !!c.playing : S.nativePlaying,

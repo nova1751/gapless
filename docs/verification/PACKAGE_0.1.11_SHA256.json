@@ -1,0 +1,21 @@
+{
+  "version": "0.1.11",
+  "sourceSha256": {
+    "shared/audio-resources.js": "ba2a30c8781d34a41072e411234f49a01cd111bfcd4311801735882d70ac5bb6",
+    "shared/playback-clock.js": "46f9ce9f5677c650b083fcc024e96239851368b55bcb059c406da09568dc277e",
+    "mac/native-cache.js": "3f9ad6d35b2d379ae9e8ccbc7dcbd9c962e387fc0d4ce3fbc52c99e2c99e7799",
+    "mac/media-session.js": "9331a782e96a58ffdc5bf796b61924d96e092c74a9ac449eef3776b15f21a81e",
+    "mac/player.js": "529d68299bedffd4c67074fbad32366abcc2e7a8e12ae04baab168ce48b3f616",
+    "mac/startup.js": "d31a4769909df23fce58a9460150789e57c0e0a669eb7ff758f916c6abd06566",
+    "mac/manifest.json": "20f14e24b3ddb82a630341cac35fa7109d7f1d5634a433e1d57a3888cae0a906",
+    "mac/package.py": "91922f5d9267083823fce199ac77aebde8ae17b0db96fca15add5c69ed2e2ca9"
+  },
+  "releaseSha256": "82f5d6a8a415aa6ac1ac109a9183cfa51a1e68817ad09dc1d6802bf33c569144",
+  "zipValid": true,
+  "packagedSourceMatches": true,
+  "latestPackageInstalled": false,
+  "observedRuntimeVersion": "0.1.10",
+  "installedPreviousPackageExists": true,
+  "physicalAudioLoopback": false,
+  "activationAndRuntimeAcceptance": "pending"
+}
