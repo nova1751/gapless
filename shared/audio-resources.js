@@ -56,7 +56,13 @@
       const requestKey = this.requestKey(ref);
       const cached = this.lookup(ref, info);
       if (cached) return cached;
-      if (this.jobs.has(requestKey)) return this.jobs.get(requestKey).promise;
+      if (this.jobs.has(requestKey)) {
+        const entry = await this.jobs.get(requestKey).promise;
+        // A current Native Load can select a different authorized file from a
+        // prefetch already in flight. Never return that older file as a match.
+        if (info && (entry.hash !== fingerprint(info) || entry.level !== info.level)) return this.obtain(ref, info);
+        return entry;
+      }
       const failure = this.failures.get(requestKey);
       if (failure && (failure.permanent || failure.retryAt > performance.now())) throw new Error(failure.reason);
       const controller = new AbortController();

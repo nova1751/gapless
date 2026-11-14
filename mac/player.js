@@ -6,13 +6,13 @@ plugin.onLoad(() => {
   const bridge = window.__gpMacBridge, Resources = globalThis.GaplessAudioResources;
   if (!bridge?.hooked || !Resources || !globalThis.GaplessPlaybackClock || window.gaplessMac) return;
   const QUALITY = { 128: 'standard', 192: 'higher', 320: 'exhigh', 999: 'lossless', 1999: 'hires' };
-  const BRIDGE_LEAD = 10, BRIDGE_HEAD = 10, ALIGN_TOLERANCE = 0.025;
+  const ALIGN_TOLERANCE = 0.025;
   const log = [], seekReplies = [], recoveryKey = 'gapless-mac-reload-v2', gateRecoveryKey = 'gapless-mac-native-output-v1';
   const S = { enabled: true, compatible: false, current: null, scheduled: null, claim: false,
     store: null, phase: 'native', epoch: 0, revision: 0, serial: 0, queueVersion: 0,
     account: '', signature: '', selection: '', token: '', nativePosition: 0, nativeAt: performance.now(), nativePlaying: false,
     gestureAt: -Infinity, recovering: null, unsubscribe: null, starting: false, recoveryConsumed: false,
-    handingBack: null, nativeGate: null, volumeLatencyMs: 2, nativeStartCorrection: 0.04 };
+    nativeGate: null, volumeLatencyMs: 2 };
   const trace = (event, detail = {}) => {
     log.push({ at: Math.round(performance.now()), event, ...detail }); if (log.length > 180) log.shift();
   };
@@ -34,21 +34,15 @@ plugin.onLoad(() => {
     if (!require?.c || !require?.m) throw new Error('native-api-unavailable');
     return S.require = require;
   }
-  function signedRequest() {
-    if (S.request) return S.request;
-    const require = webpackRequire();
-    for (const [id, factory] of Object.entries(require.m)) {
-      const source = factory.toString(); if (!source.includes('/api/song/enhance/player/url/v1')) continue;
-      const binding = /([\w$]+)=Object\([^)]*\)\("\/api\/song\/enhance\/player\/url\/v1"\)/.exec(source)?.[1];
-      if (!binding) continue;
-      const exports = require.c[id]?.exports;
-      if (!exports) continue;
-      for (const [name, descriptor] of Object.entries(Object.getOwnPropertyDescriptors(exports))) {
-        if (descriptor.get && new RegExp(`return\\s+${binding.replace(/\$/g, '\\$')}[;} ]`).test(descriptor.get.toString())
-          && typeof exports[name] === 'function') return S.request = exports[name];
-      }
-    }
-    throw new Error('native-api-unavailable');
+  function nativeSourceResolver() {
+    if (S.resolveNativeSource) return S.resolveNativeSource;
+    // Verified 3.1.12 source selector: reuses the client's rights, cache,
+    // download preference and quality policy without loading its audio backend.
+    const resolver = webpackRequire().c[100]?.exports?.f;
+    const code = typeof resolver === 'function' ? String(resolver) : '';
+    if (!code.includes('requestSoundQuality') || !code.includes('getTrackFromCacheFast')
+      || !code.includes('isNextTrack')) throw new Error('native-source-selector-unavailable');
+    return S.resolveNativeSource = resolver;
   }
   function nativePlayer() {
     if (S.nativePlayer) return S.nativePlayer;
@@ -58,11 +52,22 @@ plugin.onLoad(() => {
     }
     throw new Error('native-player-unavailable');
   }
+  function nativeRandomNext(list, current) {
+    // Use the client's existing shuffled order. Never create a second random
+    // queue, which could make the audible next track differ from the UI.
+    const resolver = webpackRequire().c[161]?.exports?.a;
+    const code = typeof resolver === 'function' ? String(resolver) : '';
+    if (!code.includes('PlayRandom') || !code.includes('randomOrder') || !code.includes('displayOrder')) return null;
+    if (list.some(row => !Number.isFinite(row.randomOrder))
+      || new Set(list.map(row => Number(row.randomOrder))).size !== list.length) return null;
+    const selected = resolver('playRandom', list, current, 1);
+    return list.includes(selected) ? selected : null;
+  }
   function capabilityCheck() {
     try {
       if (window.APP_CONF?.appver !== '3.1.12' || !state()?.playing || !state()?.playingList || !state()?.['page:vinylPage']) return false;
       if (!['onSeek', 'onPlayState', 'onPlayProgress', 'onEnd'].every(n => bridge.registrations[`audioplayer.${n}`])) return false;
-      nativePlayer(); signedRequest(); return true;
+      nativePlayer(); nativeSourceResolver(); return true;
     } catch (error) { trace('capability-fallback', { reason: error.message }); return false; }
   }
   const quality = info => info?.soundQuality || QUALITY[state()?.playing?.resourcePlayingQuality] || info?.level;
@@ -87,17 +92,19 @@ plugin.onLoad(() => {
   const resources = new Resources.AudioResources({ trace,
     readCache: nativeCache && ((r, source, signal) => nativeCache.read(r, source, signal)), resolve: async (r, signal) => {
     if (!Object.values(QUALITY).includes(r.level)) throw new Error('native-only-quality');
-    const result = await signedRequest()({ ids: JSON.stringify([r.id]), level: r.level, encodeType: 'flac' });
+    if (!r.row || rowId(r.row) !== r.id) throw new Error('native-only-source-selection');
+    const result = await nativeSourceResolver()({ track: r.row, requestSoundQuality: r.level, isNextTrack: true });
     if (signal.aborted) throw new Error('cancelled');
-    const data = result?.data?.[0];
-    if (!data?.url || data.code !== 200 || data.freeTrialInfo) throw new Error('native-only-rights');
-    return { ...data, duration: r.duration };
+    const info = result?.playInfo;
+    if (!result?.canPlay || !info?.musicurl || info.freeTrialInfo) throw new Error('native-only-rights');
+    return { ...info, url: info.musicurl, size: Number(info.fileSize),
+      duration: Number(info.songDuration) / 1000, code: 200 };
   }, acceptRate: (r, rate) => {
     const c = S.current;
-    return !!c && r.account === S.account && (r.id === c.id || c.entry?.spec.rate === rate);
+    return !!c && r.account === S.account && (rate >= 8000 && rate <= 192000);
   } });
   const clock = new globalThis.GaplessPlaybackClock({ resources, trace,
-    onState: value => { if (S.current?.owns && value !== 'running') void restoreNative(`context-${value}`); },
+    onState: value => { if (S.current?.owns && S.current.entry && !S.current.loading && value !== 'running') void restoreNative(`context-${value}`); },
     onEnded: c => { if (S.current === c && c.owns) boundary(c); } });
   const position = () => S.current?.owns ? clock.position(S.current) : nativePosition();
   const media = globalThis.GaplessMacMediaSession && new globalThis.GaplessMacMediaSession({ trace,
@@ -137,23 +144,24 @@ plugin.onLoad(() => {
     return { owns: true, controlsReady: S.phase !== 'pausing' && S.phase !== 'restoring',
       canAcquire: S.enabled && ((c.owns && S.phase !== 'restoring') || preparing),
       id: c.id, playing: S.phase === 'restoring' ? !!c.recoveryPlaying : S.phase === 'pausing' ? !!c.takeoverPlaying
-        : c.owns ? !!c.playing : S.nativePlaying, duration: c.duration,
+        : c.owns ? !!(c.playing || (c.loading || c.transitioning) && c.loadIntent) : S.nativePlaying, duration: c.duration,
       position: c.owns ? clock.position(c) : nativePosition(), revision: S.revision, metadata: c.mediaMetadata };
   } });
   function nextTrack() {
     const c = S.current, s = state(); if (!c || !allowed(c.info)) return null;
     const mode = s.playing.playingMode;
-    if (!['playOrder', 'playCycle', 'playOneCycle'].includes(mode)) return null;
+    if (!['playOrder', 'playCycle', 'playOneCycle', 'playRandom'].includes(mode)) return null;
     const list = [...rows()].sort((a, b) => Number(a.displayOrder) - Number(b.displayOrder));
     // Duplicate track IDs cannot be tied to an occurrence by this version's native Load protocol.
     const matches = list.filter(row => rowId(row) === c.id);
     if (matches.length !== 1) return null;
     const index = list.indexOf(matches[0]);
-    const row = mode === 'playOneCycle' ? matches[0] : list[index + 1] || (mode === 'playCycle' ? list[0] : null);
+    const row = mode === 'playRandom' ? nativeRandomNext(list, matches[0])
+      : mode === 'playOneCycle' ? matches[0] : list[index + 1] || (mode === 'playCycle' ? list[0] : null);
     if (!row || row.resourceType !== 'track' || list.filter(item => rowId(item) === rowId(row)).length !== 1) return null;
     const id = rowId(row), duration = Number(row.track?.duration || row.duration) / 1000;
     return { id, level: c.requestedLevel, account: S.account, duration, row, queueVersion: S.queueVersion,
-      occurrence: `${row.id}:${row.displayOrder}`, key: `${S.account}:${id}:${c.requestedLevel}:${row.id}:${row.displayOrder}` };
+      occurrence: `${row.id}:${row.displayOrder}`, key: `${S.account}:${id}:${c.requestedLevel}:${row.id}:${row.displayOrder}:${row.randomOrder}` };
   }
   function cancelScheduled() { clock.stop(S.scheduled); S.scheduled = null; }
   function stopCurrent() { cancelScheduled(); clock.stop(S.current); }
@@ -175,7 +183,10 @@ plugin.onLoad(() => {
       clock.stop(c); S.scheduled = null; S.current = candidate; S.claim = true;
       S.phase = 'claiming'; candidate.claimAt = performance.now();
       trace('transition', { from: c.id, to: candidate.id, scheduledGapFrames: Math.round((candidate.start - c.end) * clock.ctx.sampleRate) });
-    } else { cancelScheduled(); c.owns = false; S.phase = 'native'; }
+    } else {
+      cancelScheduled(); c.playing = false; c.loadIntent = true;
+      c.transitioning = !!nextTrack() || state()?.playing?.playingMode === 'playRandom'; S.phase = 'owned';
+    }
     media?.sync(true);
     bridge.emit('audioplayer.onEnd', [c.id, { code: 0, errorCode: 0, errorString: '', playedTime: clock.heard(c) }]);
   }
@@ -191,7 +202,7 @@ plugin.onLoad(() => {
       if (S.compatible) { trace('capabilities', { compatible: true }); queueMicrotask(consumeRecovery); }
     }
     const account = String(s.host?.uid || s.user?.profile?.userId || 'anonymous');
-    const signature = JSON.stringify([s.playing?.playingMode, rows().map(r => [r.id, rowId(r), r.displayOrder])]);
+    const signature = JSON.stringify([s.playing?.playingMode, rows().map(r => [r.id, rowId(r), r.displayOrder, r.randomOrder])]);
     if (signature !== S.signature) {
       S.signature = signature; S.queueVersion++; cancelScheduled(); trace('queue-changed', { queueVersion: S.queueVersion });
       if (S.claim) void restoreNative('queue-during-claim');
@@ -211,7 +222,6 @@ plugin.onLoad(() => {
       }
       void restoreNative('native-settings');
     }
-    if (c?.owns && c.bridgeSide !== 'head' && S.phase === 'owned' && !nextTrack()) void restoreNative('no-trusted-next');
     refreshLyrics(c);
   }
   function refreshLyrics(c) {
@@ -235,7 +245,7 @@ plugin.onLoad(() => {
   }
   function scheduleNext() {
     reconcile(); const c = S.current;
-    if (!c?.owns || c.bridgeSide === 'head' || c.handbackRequested || !c.playing || S.claim || S.phase !== 'owned') return;
+    if (!c?.owns || c.loading || !c.playing || S.claim || S.phase !== 'owned') return;
     const next = nextTrack();
     if (S.scheduled && S.scheduled.selectionKey !== next?.key) cancelScheduled();
     if (!next || S.scheduled) return;
@@ -245,24 +255,16 @@ plugin.onLoad(() => {
     if (lead < 0.08) { if (!c.missed) { c.missed = true; trace('missed-schedule', { id: c.id, lead }); } return; }
     const candidate = { id: next.id, requestedLevel: next.level, account: next.account, row: next.row,
       selectionKey: next.key, queueVersion: S.queueVersion, info: null, entry, level: entry.level,
-      duration: entry.duration, offset: 0, heard: 0, owns: true, bridgeSide: 'head', serial: ++S.serial };
+      duration: entry.duration, offset: 0, heard: 0, owns: true, serial: ++S.serial };
     clock.start(candidate, c.end, 0); S.scheduled = candidate;
     trace('scheduled', { from: c.id, to: candidate.id, leadSeconds: lead,
       sourceRate: entry.spec.rate, decodedRate: entry.buffer.sampleRate, contextRate: clock.ctx.sampleRate, scheduledGapFrames: 0 });
   }
   function prefetch() {
     const c = S.current;
-    // One bridge covers A -> B only. B must return to native before another
-    // gapless boundary; never chain B -> C in the Web backend.
-    if (c?.owns && (c.bridgeSide === 'head' || c.handbackRequested)) {
-      resources.retain([ref(c)]); return;
-    }
     const active = c?.owns ? c.playing : S.nativePlaying;
     const next = c && !c.blocked
-      && ['native', 'owned', 'warming', 'pausing'].includes(S.phase) ? nextTrack() : null;
-    if (!next && c && !c.owns && !S.starting) {
-      c.entry = null; resources.retain([]); if (clock.ctx) void clock.close(); return;
-    }
+      && ['native', 'owned', 'warming', 'pausing', 'loading'].includes(S.phase) ? nextTrack() : null;
     resources.retain([S.current?.blocked && !S.current.owns ? null : ref(S.current), next, ref(S.scheduled)]);
     // Retain an already decoded next track across pause; do not start new
     // background requests until playback resumes. Discarding it creates gaps
@@ -279,8 +281,50 @@ plugin.onLoad(() => {
       }
     });
   }
+  async function loadOwned(msg, c) {
+    const epoch = S.epoch;
+    try {
+      if (msg.resumeExisting) {
+        const [count] = await bridge.raw('audioplayer.getPlayedTime', [{ playId: c.id }]);
+        if (!validRecovery(c, epoch)) throw new Error('cancelled');
+        if (Number(count?.result) === 1) c.heard = Number(count.playedAudioTime) + (c.nativeHeardBase || 0);
+      }
+      c.entry ||= await resources.obtain(ref(c), c.info);
+      if (!c.entry.hash || c.entry.hash !== Resources.fingerprint(c.info) || c.entry.level !== c.info.level)
+        throw new Error('native-only-source-identity');
+      if (!validRecovery(c, epoch) || !allowed(c.info)) throw new Error('cancelled');
+      c.duration = c.entry.duration; c.level = c.entry.level;
+      await clock.open(c.entry);
+      if (!validRecovery(c, epoch) || !allowed(c.info)) throw new Error('cancelled');
+      // Direct Web Load/resume also parks the native output. Otherwise an
+      // unwrapped native system command could revive the old audio instance.
+      if (S.nativeGate?.releasing) await S.nativeGate.releasing;
+      if (!validRecovery(c, epoch) || !allowed(c.info) || S.phase === 'restoring') throw new Error('cancelled');
+      if (!S.nativeGate) await acquireNativeGate(c, epoch, 'continuous-web');
+      else await S.nativeGate.ready;
+      if (!validRecovery(c, epoch) || !allowed(c.info) || S.phase === 'restoring') throw new Error('cancelled');
+      clearTimeout(S.nativeGate?.watchdog);
+      clock.setOutput(true); c.loading = false; c.transitioning = false; S.phase = 'owned';
+      if (c.playing) clock.start(c, clock.ctx.currentTime + 0.01, c.offset);
+      if (msg.resumeExisting) {
+        ack(msg); emitState(c, c.playing ? 1 : 2, S.token); progress(c, true);
+      } else answerLoad(msg, c);
+      media?.sync(true); prefetch(); scheduleNext();
+      trace('web-loaded', { id: c.id, origin: c.entry.origin, rate: c.entry.spec.rate });
+    } catch (error) {
+      if (!validRecovery(c, epoch)) { bridge.dispatch(msg.seq, [c.id, { code: -1 }]); return; }
+      c.loading = false; c.playing = c.loadIntent;
+      trace('web-load-fallback', { id: c.id, reason: error.message });
+      // Reuse the exact authorized Native Load, never substitute a lower quality.
+      await restoreNative(`web-load-${error.message}`);
+      if (validRecovery(c, epoch)) {
+        if (msg.resumeExisting) ack(msg);
+        else bridge.dispatch(msg.seq, [c.id, { code: c.recoverySucceeded ? 0 : -1 }]);
+      }
+    }
+  }
   async function prepareCurrent(c) {
-    if (c.preparing || !S.nativePlaying || !nextTrack()) return; c.preparing = true;
+    if (c.preparing || !S.nativePlaying) return; c.preparing = true;
     const epoch = S.epoch;
     try {
       const entry = await resources.obtain(ref(c), c.info);
@@ -329,31 +373,6 @@ plugin.onLoad(() => {
     if (deviations[Math.floor(deviations.length / 2)] > 0.015) throw new Error('native-to-web-clock-not-stable');
     return { count, at, position: at / 1000 + offset };
   }
-  async function sampleNativeCounter(c, valid) {
-    const edges = [], started = performance.now(); let previous;
-    while (performance.now() - started < 200) {
-      if (!valid()) throw new Error('handoff-cancelled');
-      const sent = performance.now();
-      const [count] = await bridge.raw('audioplayer.getPlayedTime', [{ playId: c.id }]);
-      const at = (sent + performance.now()) / 2, heard = Number(count?.playedAudioTime);
-      if (Number(count?.result) !== 1 || !Number.isFinite(heard)) throw new Error('native-handoff-clock-unavailable');
-      if (previous && heard > previous.heard) {
-        if (heard - previous.heard > 0.15) throw new Error('native-handoff-clock-discontinuous');
-        // Locate the counter block edge between the two observations, then
-        // interpolate its phase. A single quantized read can be ~46 ms stale.
-        edges.push(heard - (previous.at + at) / 2000);
-      } else if (previous && heard < previous.heard) throw new Error('native-handoff-clock-discontinuous');
-      previous = { at, heard, count };
-      await new Promise(resolve => setTimeout(resolve,8));
-    }
-    if (!valid()) throw new Error('handoff-cancelled');
-    if (edges.length < 2) throw new Error('native-handoff-clock-not-advancing');
-    edges.sort((a,b) => a-b);
-    const base = edges[Math.floor(edges.length / 2)];
-    const deviations = edges.map(x => Math.abs(x-base)).sort((a,b) => a-b);
-    if (deviations[Math.floor(deviations.length / 2)] > 0.015) throw new Error('native-handoff-clock-unstable');
-    return { heard: base + performance.now()/1000, count: previous.count, at: performance.now() };
-  }
   function primeNativeBridge(c, reading) {
     // Starting at currentTime can miss a render callback already in flight.
     // Schedule ahead, and advance the source offset to that future output time.
@@ -371,17 +390,16 @@ plugin.onLoad(() => {
     return latency * 1000 + S.volumeLatencyMs;
   }
   async function takeover() {
-    const c = S.current, next = nextTrack(), candidate = next && resources.lookup(next);
-    if (!candidate?.hash || !c?.entry || candidate.spec.rate !== c.entry.spec.rate
-      || candidate.spec.channels !== c.entry.spec.channels) return;
+    const c = S.current;
+    if (!c?.entry) return;
     const remaining = c.duration - nativePosition();
     if (c.blocked || c.owns || c.awaitingGesture
       || !S.nativePlaying || !allowed(c.info) || c.nativeSeekTokens?.size
       || performance.now() < Math.max(c.seekStableAt || 0, c.bridgeNotBefore || 0)
-      || S.starting || S.handingBack || S.phase !== 'native' || remaining > BRIDGE_LEAD || remaining < 0.5) return;
+      || S.starting || S.phase !== 'native' || remaining < 0.5) return;
     const epoch = S.epoch, revision = S.revision, queueVersion = S.queueVersion;
     const valid = () => S.current === c && S.epoch === epoch && S.revision === revision
-      && S.queueVersion === queueVersion && nextTrack()?.key === next.key && allowed(c.info) && !c.blocked;
+      && S.queueVersion === queueVersion && allowed(c.info) && !c.blocked;
     S.starting = true; c.takeoverPlaying = true;
     let pauseIssued = false;
     try {
@@ -435,13 +453,13 @@ plugin.onLoad(() => {
       if (S.nativeGate?.c !== c || S.nativeGate.epoch !== epoch) throw new Error('native-takeover-gate-lost');
       c.heard = Number(nativeTime.playedAudioTime) + (c.nativeHeardBase || 0)
         + Math.max(0, (performance.now() - nativeReadAt) / 1000) - Math.max(0, clock.ctx.currentTime - c.start);
-      c.owns = true; c.bridgeSide = 'tail'; S.phase = 'owned';
-      // Keep native muted until B has been loaded into a confirmed paused
-      // backend. Restoring gain on the pause acknowledgement revives its fade.
+      c.owns = true; S.phase = 'owned';
+      // Keep the parked backend muted throughout Web playback. Restoring gain
+      // on its pause acknowledgement would revive residual native output.
       clearTimeout(S.nativeGate?.watchdog);
       S.token = `${c.id}|resume|gapless-${epoch}`;
       emitState(c, 1); bridge.emit('audioplayer.onBuffering', [c.id, 0]);
-      trace('takeover', { id: c.id, position: clock.outputPosition(c), bridgeLeadSeconds: c.duration - clock.outputPosition(c),
+      trace('takeover', { id: c.id, position: clock.outputPosition(c), remainingSeconds: c.duration - clock.outputPosition(c),
         alignmentErrorMs: error * 1000, outputDelayMs: outputDelay * 1000, pauseAcknowledged: true,
         nativeOutputControlLeadMs: controlLeadMs, pauseAcknowledgementMs: pausedAt - started,
         switchTimingErrorMs: pausedAt - cutWall });
@@ -521,161 +539,8 @@ plugin.onLoad(() => {
       if (validRecovery(c, epoch) && c.owns) void restoreNative('native-gate-timeout');
       else void releaseNativeGate().catch(error => trace('native-volume-restore-error', { reason: error.message }));
     }, 3000);
-    await bridge.raw('audioplayer.setVolume', ['', '', 0]);
-  }
-  async function prepareHandback(c) {
-    // A pause notification during takeover is not a fully parked backend.
-    // Early Seek/pause must reload A silently before trying to play it again.
-    if (c.nativeReady && !(S.nativeGate?.purpose === 'takeover' && S.nativeGate.c === c)) return;
-    if (c.nativePreparing) return c.nativePreparing;
-    const epoch = S.epoch;
-    c.nativePreparing = (async () => {
-      if (!c.info || !c.entry?.hash || Resources.fingerprint({ ...c.info, url: c.info.musicurl }) !== c.entry.hash)
-        throw new Error('native-handoff-source-unavailable');
-      const started = performance.now(); c.handbackLoading = true;
-      try {
-        // Suppress this internal onLoad: SDK.play auto-resumes when notified.
-        // The UI already accepted B through answerLoad; it must not load twice.
-        await eventCall('audioplayer.load', [c.id, c.info], 'audioplayer.onLoad',
-          a => String(a[0]) === c.id && Number(a[1]?.code) === 0);
-        if (!validRecovery(c, epoch)) return;
-        await bridge.raw('audioplayer.pause', [c.id, `${c.id}|pause|prepare-native-${epoch}`]);
-        if (!validRecovery(c, epoch)) return;
-        c.nativeReady = true;
-        c.nativeClock = { position: 0, at: performance.now(), playing: false };
-        if (S.nativeGate?.purpose === 'takeover' && S.nativeGate.epoch === epoch) await releaseNativeGate();
-        trace('native-prepared', { id: c.id, elapsedMs: performance.now() - started });
-      } finally { c.handbackLoading = false; c.nativePreparing = null; }
-    })();
-    return c.nativePreparing;
-  }
-  async function handback(c, reason) {
-    if (!c?.owns || S.claim || S.starting || S.handingBack || S.phase === 'restoring') return;
-    const epoch = S.epoch, revision = S.revision;
-    const valid = () => validRecovery(c, epoch) && c.owns && S.revision === revision && S.phase !== 'restoring';
-    const run = async () => {
-      let committed = false;
-      try {
-        S.phase = 'handoff';
-        await prepareHandback(c);
-        if (!valid()) throw new Error('handoff-cancelled');
-        cancelScheduled();
-        if (!c.playing) {
-          const target = clock.position(c), token = `${c.id}|seek|handoff-paused-${revision}`;
-          await eventCall('audioplayer.seek', [c.id, token, target], 'audioplayer.onSeek',
-            a => String(a[0]) === c.id && a[1] === token && Number(a[2]) === 0);
-          if (!valid()) throw new Error('handoff-cancelled');
-          await finishHandback(c, false, reason, 0, valid); committed = true; return;
-        }
-        await acquireNativeGate(c, epoch);
-        if (!valid()) throw new Error('handoff-cancelled');
-        let error = Infinity, correction = S.nativeStartCorrection;
-        for (let attempt = 0; attempt < 3; attempt++) {
-          if (!valid()) throw new Error('handoff-cancelled');
-          // A running Seek does not expose the phase of native's quantized
-          // counter. Reset the silent backend before another alignment attempt;
-          // every counter anchor must follow a confirmed paused Load/Seek.
-          if (attempt) { c.nativeReady = false; await prepareHandback(c); }
-          if (!valid()) throw new Error('handoff-cancelled');
-          const target = Math.min(c.duration - 0.15, clock.outputPosition(c) + correction);
-          const token = `${c.id}|seek|handoff-align-${revision}-${attempt}`, started = performance.now();
-          await eventCall('audioplayer.seek', [c.id, token, target], 'audioplayer.onSeek',
-            a => String(a[0]) === c.id && a[1] === token && Number(a[2]) === 0);
-          const seekMs = performance.now() - started;
-          if (!valid()) throw new Error('handoff-cancelled');
-          const [baseline] = await bridge.raw('audioplayer.getPlayedTime', [{ playId: c.id }]);
-          if (Number(baseline?.result) !== 1 || !Number.isFinite(Number(baseline.playedAudioTime)))
-            throw new Error('native-handoff-clock-unavailable');
-          c.nativeSegment = { position: target, heard: Number(baseline.playedAudioTime) };
-          if (!valid()) throw new Error('handoff-cancelled');
-          if (!c.nativeClock?.playing) {
-            const playToken = `${c.id}|resume|handoff-align-${revision}-${attempt}`;
-            await eventCall('audioplayer.play', [c.id, playToken], 'audioplayer.onPlayState',
-              a => String(a[0]) === c.id && a[1] === playToken && Number(a[2]) === 1);
-          }
-          // Require a fresh native progress report from a running source.
-          // A play RPC or a seek completion alone is not an output clock.
-          const progressReport = bridge.waitNative('audioplayer.onPlayProgress',
-            a => String(a[0]) === c.id && c.nativeClock?.playing, 1000);
-          try { await progressReport.promise; } finally { progressReport.cancel(); }
-          const sample = await sampleNativeCounter(c, valid);
-          // Native progress notifications are delayed/coarse. Measure the
-          // cumulative playback clock since a confirmed, paused Seek instead.
-          // This counter measures processed PCM ahead of output. The supported
-          // client capture shows one render buffer of lead, not an audible clock.
-          const measured = target + sample.heard - c.nativeSegment.heard - clock.ctx.baseLatency;
-          error = measured - clock.outputPosition(c);
-          c.nativeAligned = { position: measured, at: sample.at };
-          trace('handoff-alignment', { id: c.id, attempt, errorMs: error * 1000, seekMs,
-            progressErrorMs: (nativeClockPosition(c) - clock.outputPosition(c)) * 1000 });
-          if (Math.abs(error) <= 0.004) break;
-          correction = Math.max(-0.25, Math.min(0.25, correction - error));
-        }
-        if (!Number.isFinite(error) || Math.abs(error) > ALIGN_TOLERANCE) throw new Error('web-to-native-not-aligned');
-        S.nativeStartCorrection = Math.max(-0.25, Math.min(0.25, correction - error));
-        if (!valid()) throw new Error('handoff-cancelled');
-        const cutAt = clock.ctx.currentTime + 0.04, cutWall = clock.outputWallTime(cutAt);
-        clock.setOutput(false, cutAt);
-        const controlLeadMs = nativeOutputControlLead();
-        await waitUntil(cutWall - controlLeadMs, valid);
-        await releaseNativeGate();
-        if (!valid()) throw new Error('handoff-cancelled');
-        const switchTimingErrorMs = performance.now() - cutWall;
-        // Do not close the Web output while its scheduled cut is still queued.
-        await waitUntil(cutWall, valid);
-        await finishHandback(c, true, reason, error * 1000, valid); committed = true;
-        trace('handoff-output-switched', { id: c.id, switchTimingErrorMs, nativeOutputControlLeadMs: controlLeadMs });
-      } catch (error) {
-        if (validRecovery(c, epoch) && c.owns && S.phase !== 'restoring') {
-          if (error.message === 'handoff-cancelled') {
-            // The native pause/fade completion can stall at zero gain. Cancel
-            // a running rehearsal by reloading it into the confirmed paused
-            // state while Web keeps the latest user's sound/position.
-            if (S.nativeGate || c.nativeClock?.playing) {
-              c.nativeReady = false;
-              try { await prepareHandback(c); }
-              catch (prepareError) {
-                if (validRecovery(c, epoch) && c.owns) await restoreNative(`cancel-prepare-${prepareError.message}`);
-                return;
-              }
-            }
-            if (validRecovery(c, epoch) && c.owns) {
-              clock.setOutput(true); S.phase = 'owned'; c.handbackRequested = 'control-after-cancel';
-            }
-          } else {
-            trace('handoff-fallback', { id: c.id, reason: error.message });
-            await restoreNative(`handoff-${error.message}`);
-          }
-        }
-      } finally {
-        await releaseNativeGate().catch(error => trace('native-volume-restore-error', { reason: error.message }));
-        if (!committed && validRecovery(c, epoch) && c.owns && S.phase === 'handoff') S.phase = 'owned';
-      }
-    };
-    S.handingBack = run();
-    try { await S.handingBack; } finally { S.handingBack = null; }
-  }
-  async function finishHandback(c, playing, reason, errorMs, valid) {
-    const [nativeTime] = await bridge.raw('audioplayer.getPlayedTime', [{ playId: c.id }]);
-    if (!valid()) throw new Error('handoff-cancelled');
-    const native = c.nativeClock;
-    const target = playing && c.nativeAligned
-      ? c.nativeAligned.position + Math.max(0, performance.now() - c.nativeAligned.at)/1000 : nativeClockPosition(c);
-    const heard = clock.heard(c)
-      - (playing ? Math.max(0, clock.position(c) - clock.outputPosition(c)) : 0);
-    clock.stop(c); c.owns = false; c.bridgeSide = null; c.handbackRequested = null;
-    c.nativeSegment = null; c.nativeAligned = null;
-    c.nativeHeardBase = heard - (Number(nativeTime?.result) === 1 ? Number(nativeTime.playedAudioTime) : 0);
-    c.bridgeNotBefore = performance.now() + 1000;
-    S.phase = 'native'; S.nativePosition = Number.isFinite(target) ? target : c.offset;
-    S.nativeAt = performance.now(); S.nativePlaying = playing;
-    c.nativeClock = { ...native, position: S.nativePosition, at: S.nativeAt, playing };
-    bridge.emit('audioplayer.onPlayProgress', [c.id, S.nativePosition.toFixed(3), '1.0000', true]);
-    media?.sync(true);
-    trace('returned-native', { id: c.id, reason, position: S.nativePosition, playing, alignmentErrorMs: errorMs });
-    // No Web music node survives the handoff. A fresh context is opened only
-    // for the next eligible end-of-track bridge.
-    void clock.close();
+    gate.ready = bridge.raw('audioplayer.setVolume', ['', '', 0]);
+    await gate.ready;
   }
   async function restoreNative(reason) {
     reconcile(); const c = S.current;
@@ -745,15 +610,18 @@ plugin.onLoad(() => {
         desired = c.recoveryPlaying;
         await bridge.raw(`audioplayer.${desired ? 'play' : 'pause'}`, [c.id, `${c.id}|${desired ? 'resume' : 'pause'}|recovery-fallback-${epoch}`]).catch(() => {});
         trace('recovery-error', { id: c.id, reason: error.message, nativeFallbackIssued: true });
-      } finally { resources.retain([ref(S.current)]); }
+      } finally {
+        resources.retain([ref(S.current)]);
+        if (!S.current?.owns) await clock.close();
+      }
     };
     S.recovering = run(); await S.recovering;
     if (validRecovery(c, epoch)) S.recovering = null;
   }
   bridge.shouldSuppressNative = (command, args) => {
     const c = S.current;
-    if (command === 'audioplayer.onVolume' && S.nativeGate) return true;
-    if (command === 'audioplayer.onLoad' && c?.handbackLoading && String(args[0]) === c.id) return true;
+    if (command === 'audioplayer.onVolume' && (S.nativeGate || c?.owns)) return true;
+    if (command === 'audioplayer.onLoad' && c?.owns && S.phase !== 'restoring') return true;
     if (command === 'winhelper.onHotkey') {
       const action = { play_pause: 'toggle', play: 'play', pause: 'pause', next: 'nexttrack', prev: 'previoustrack' }[args[0]];
       if (action && media?.requestTransport(action)) return true;
@@ -771,7 +639,7 @@ plugin.onLoad(() => {
       && /^audioplayer\.(onPlayState|onPlayProgress|onEnd|onSeek|onBuffering)$/.test(command);
   };
   bridge.onNativeEvent = (command, args) => {
-    if (command === 'audioplayer.onVolume' && !S.nativeGate) clock.setVolume(Number(args[3]));
+    if (command === 'audioplayer.onVolume' && !S.nativeGate && !S.current?.owns) clock.setVolume(Number(args[3]));
     const c = S.current; if (!c || String(args[0]) !== c.id) return;
     if (command === 'audioplayer.onPlayProgress') {
       c.nativeClock = { position: Number(args[1]), at: performance.now(), playing: !!c.nativeClock?.playing };
@@ -805,8 +673,7 @@ plugin.onLoad(() => {
   function seekOwned(c, value, token) {
     S.revision++;
     const offset = Math.max(0, Math.min(c.duration - 0.001, Number(value)));
-    cancelScheduled(); clock.seek(c, offset); c.endSent = false; c.missed = false; S.token = token;
-    c.handbackRequested = 'user-seek';
+    cancelScheduled(); if (c.loading) c.offset = offset; else clock.seek(c, offset); c.endSent = false; c.missed = false; S.token = token;
     trace('seek', { id: c.id, position: offset }); scheduleNext();
     return offset;
   }
@@ -850,13 +717,11 @@ plugin.onLoad(() => {
         if (!c.playing) c.pauseAfterClaimRevision = S.revision;
         trace('claimed', { id, position: clock.position(c), claimDelayMs: performance.now() - c.claimAt });
         answerLoad(msg, c);
-        queueMicrotask(() => { void prepareHandback(c).catch(error => {
-          if (S.current === c && c.owns) void restoreNative(`native-prepare-${error.message}`);
-        }); });
+        prefetch(); scheduleNext();
         return true;
       }
       if (S.claim) trace('claim-rejected', { expected: c?.id, received: id, reason: 'native-source-or-queue-changed' });
-      void releaseNativeGate().catch(error => trace('native-volume-restore-error', { reason: error.message }));
+      const wasPlaying = c?.owns ? !!(c.playing || c.transitioning && c.loadIntent) : S.nativePlaying;
       S.epoch++; S.revision++; stopCurrent(); S.claim = false; S.phase = 'native';
       S.nativePlaying = false; S.nativePosition = 0; S.nativeAt = performance.now();
       S.current = c = { id, info, requestedLevel: level, account: S.account, duration: Number(info?.songDuration) / 1000,
@@ -867,12 +732,18 @@ plugin.onLoad(() => {
       const cached = allowed(info) && resources.lookup(ref(c), info);
       if (cached) { c.entry = cached; c.duration = cached.duration; c.level = cached.level; }
       resources.resetFailures(); resources.retain([ref(c), nextTrack()]);
+      if (allowed(info) && !msg.observedNative) {
+        c.owns = true; c.loading = true; c.playing = false; c.offset = 0;
+        c.loadIntent = wasPlaying; S.phase = 'loading';
+        void loadOwned(msg, c); return true;
+      }
+      void releaseNativeGate().catch(error => trace('native-volume-restore-error', { reason: error.message }));
       if (allowed(info)) void prepareCurrent(c);
       return false;
     }
     if (msg.command === 'audioplayer.setVolume') {
       clock.setVolume(Number(p[2]));
-      if (S.nativeGate) {
+      if (S.nativeGate || c?.owns) {
         try { localStorage.setItem(gateRecoveryKey, String(clock.volume)); } catch { /* Optional crash recovery. */ }
         ack(msg); bridge.emit('audioplayer.onVolume', [p[0] || '', p[1] || '', 0, clock.volume]); return true;
       }
@@ -916,6 +787,14 @@ plugin.onLoad(() => {
         else ack(msg, args);
       }).catch(() => ack(msg, [{ result: 0 }]));
       return true;
+    }
+    if (!c?.owns && c?.info && S.phase === 'native' && !S.nativePlaying && !S.starting
+      && allowed(c.info) && msg.command === 'audioplayer.play' && (!p[0] || String(p[0]) === c.id)) {
+      // A confirmed paused native source need not start just to hand it off.
+      // Resume directly into Web at its saved position and listening-time base.
+      S.revision++; S.token = p[1] || c.id; c.offset = nativePosition();
+      c.owns = true; c.loading = true; c.playing = true; c.loadIntent = true; S.phase = 'loading';
+      void loadOwned({ ...msg, resumeExisting: true }, c); return true;
     }
     if (!c?.owns) {
       if (/^audioplayer\.(play|pause|seek|stop|unload)$/.test(msg.command)) {
@@ -977,13 +856,15 @@ plugin.onLoad(() => {
       }
       c.pauseAfterClaimRevision = null;
       S.revision++; const token = p[1] || c.id; S.token = token;
+      if (c.loading) { c.playing = true; c.loadIntent = true; ack(msg); return true; }
+      c.transitioning = false;
       if (clock.ctx?.state !== 'running') { void restoreNative('play-context-unavailable'); return false; }
       if (!c.playing) { cancelScheduled(); clock.start(c, clock.ctx.currentTime + 0.01, c.offset); }
       emitState(c, 1, token); ack(msg); trace('play', { id: c.id }); prefetch(); scheduleNext(); return true;
     }
     if (msg.command === 'audioplayer.pause') {
       S.revision++; S.token = p[1] || c.id; stopCurrent(); progress(c, true); emitState(c, 2, S.token); ack(msg);
-      c.handbackRequested = 'user-pause';
+      c.loadIntent = false; c.transitioning = false; if (c.loading) c.pauseAfterClaimRevision = S.revision;
       trace('pause', { id: c.id, position: clock.position(c) }); return true;
     }
     if (msg.command === 'audioplayer.seek') {
@@ -994,8 +875,9 @@ plugin.onLoad(() => {
       return true;
     }
     if (/^audioplayer\.(stop|unload)$/.test(msg.command)) {
-      void releaseNativeGate().catch(error => trace('native-volume-restore-error', { reason: error.message }));
-      S.epoch++; S.revision++; stopCurrent(); c.owns = false; S.phase = 'native'; return false;
+      const intent = c.playing || c.loadIntent;
+      S.epoch++; S.revision++; stopCurrent(); c.loading = false;
+      c.transitioning = true; c.loadIntent = !!intent; S.phase = 'owned'; ack(msg); return true;
     }
     if (msg.command === 'audioplayer.getPlayedTime') {
       const requested = String(p[0]?.playId || p[0] || '').split('_')[0];
@@ -1016,11 +898,6 @@ plugin.onLoad(() => {
       reconcile(); updateEnvironment();
       if (S.claim && performance.now() - S.current.claimAt > 3000) void restoreNative('unclaimed-next');
       if (S.current?.owns && !S.claim) progress(S.current);
-      const c = S.current;
-      if (c?.owns && !S.claim && (!c.playing || c.handbackRequested
-        || c.bridgeSide === 'head' && clock.outputPosition(c) >= Math.min(BRIDGE_HEAD, c.duration - 0.5))) {
-        void handback(c, c.handbackRequested || 'bridge-head-complete');
-      }
       void takeover(); scheduleNext(); prefetch();
       media?.sync();
     } catch (error) { bridge.onError(error); }
@@ -1049,7 +926,7 @@ plugin.onLoad(() => {
   clock.setVolume(Number(bridge.events['audioplayer.onVolume']?.[3] ?? state()?.playing?.playingVolume ?? 1));
   const initial = bridge.calls.filter(call => call.command === 'audioplayer.load').at(-1);
   if (initial) {
-    bridge.handle(initial);
+    bridge.handle({ ...initial, observedNative: true });
     const e = bridge.events['audioplayer.onPlayProgress'];
     if (e && String(e[0]) === S.current.id) {
       S.nativePosition = Number(e[1]); S.nativeAt = bridge.eventAt['audioplayer.onPlayProgress'] || performance.now();
@@ -1139,12 +1016,11 @@ plugin.onLoad(() => {
     } catch (error) { trace('reload-recovery-error', { reason: error.message }); }
   }
   window.gaplessMac = {
-    version: '0.1.12', status: () => {
+    version: '0.2.0', status: () => {
       reconcile(); const c = S.current;
       return { enabled: S.enabled, compatible: S.compatible, id: c?.id, phase: S.phase,
         ownsPlayback: !!c?.owns, playing: c?.owns ? !!c.playing : S.nativePlaying,
-        bridgeSide: c?.bridgeSide || null, bridgeLeadSeconds: BRIDGE_LEAD, bridgeHeadSeconds: BRIDGE_HEAD,
-        nativePrepared: !!c?.nativeReady, nativeOutputGated: !!S.nativeGate,
+        playbackMode: 'continuous-web', loading: !!c?.loading, nativeOutputGated: !!S.nativeGate,
         seekPending: !!c?.nativeSeekTokens?.size, seekSettling: performance.now() < (c?.seekStableAt || 0),
         position: position(), duration: c?.duration, requestedLevel: c?.requestedLevel, actualLevel: c?.level || c?.info?.level,
         sourceRate: c?.entry?.spec.rate, decodedRate: c?.entry?.buffer.sampleRate, ...clock.status(),

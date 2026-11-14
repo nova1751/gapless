@@ -1,0 +1,11 @@
+{
+  "version": "0.2.0",
+  "candidate": true,
+  "packageSha256": "28ab23941912baf6dea8aefab51136f4f09da7445e55206179742a3905d9e62c",
+  "playerSha256": "915d9e6d32bda20a7a29fb66302f7a13c0e7d998a21827a3d93fe62d0a26b93e",
+  "installedPackageMatches": false,
+  "runtimeFileMatches": false,
+  "newIncrementsInstalled": false,
+  "systemSeekAccepted": false,
+  "validation": "incremental JS syntax, code review, ZIP CRC; runtime observations cover earlier candidate only"
+}

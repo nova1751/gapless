@@ -1,0 +1,193 @@
+{
+  "version": "0.2.0",
+  "candidate": true,
+  "scope": "application-output-only",
+  "captureRate": 48000,
+  "captureSeconds": 31.38,
+  "afterBoundarySeconds": 13.4185,
+  "boundary": "Moth To A Flame -> The Hills",
+  "scheduledGapFrames": 0,
+  "capturedPositionDiscontinuityMs": 0.0208333,
+  "tailCorrelation": 0.757,
+  "headCorrelation": 0.99933,
+  "referenceHasTrailingSilence": true,
+  "limit": "tail correlation is weaker in quiet tail; one capture does not prove all tracks/devices",
+  "observedStatus": {
+    "enabled": true,
+    "compatible": true,
+    "id": "431811451",
+    "phase": "owned",
+    "ownsPlayback": true,
+    "playing": true,
+    "playbackMode": "continuous-web",
+    "loading": false,
+    "nativeOutputGated": true,
+    "seekPending": false,
+    "seekSettling": false,
+    "position": 40.84761904761902,
+    "duration": 242.52,
+    "requestedLevel": "hires",
+    "actualLevel": "lossless",
+    "sourceRate": 44100,
+    "decodedRate": 44100,
+    "sampleRate": 44100,
+    "contextState": "running",
+    "contextGeneration": 4,
+    "activeNodes": 2,
+    "deviceFormat": "unknown",
+    "resourceOrigin": "native-cache",
+    "next": "548785555",
+    "scheduled": "548785555",
+    "claiming": false,
+    "memory": {
+      "held": 170609376,
+      "reserved": 0,
+      "limit": 536870912,
+      "pending": 0
+    },
+    "mode": "playCycle",
+    "nativeAllowed": true,
+    "queueVersion": 2,
+    "loadEpoch": 1,
+    "controlRevision": 4,
+    "systemMedia": {
+      "supported": true,
+      "active": true,
+      "failed": false,
+      "seekPending": false
+    }
+  },
+  "trace": [
+    {
+      "at": 557,
+      "event": "restore-start",
+      "id": "2670863152",
+      "reason": "page-reload",
+      "position": 1.583626564625888
+    },
+    {
+      "at": 1033,
+      "event": "restored-native",
+      "id": "2670863152",
+      "reason": "page-reload",
+      "position": 1.583626564625888,
+      "playing": true,
+      "confirmed": true
+    },
+    {
+      "at": 26900,
+      "event": "scheduled",
+      "from": "2670863152",
+      "to": "1938192798",
+      "leadSeconds": 207.47239113595904,
+      "sourceRate": 44100,
+      "decodedRate": 44100,
+      "contextRate": 44100,
+      "scheduledGapFrames": 0
+    },
+    {
+      "at": 26912,
+      "event": "takeover",
+      "id": "2670863152",
+      "position": 27.402013666571303,
+      "remainingSeconds": 207.52186388444912,
+      "alignmentErrorMs": -4.096000381473175,
+      "outputDelayMs": 39.02741487061896,
+      "pauseAcknowledged": true,
+      "nativeOutputControlLeadMs": 25.219954648526077,
+      "pauseAcknowledgementMs": 0.5999999046325684,
+      "switchTimingErrorMs": -23.218079555812437
+    },
+    {
+      "at": 88742,
+      "event": "scheduled",
+      "from": "2670863152",
+      "to": "1938192798",
+      "leadSeconds": 7.00290249433106,
+      "sourceRate": 44100,
+      "decodedRate": 44100,
+      "contextRate": 44100,
+      "scheduledGapFrames": 0
+    },
+    {
+      "at": 95723,
+      "event": "transition",
+      "from": "2670863152",
+      "to": "1938192798",
+      "scheduledGapFrames": 0
+    },
+    {
+      "at": 95809,
+      "event": "claimed",
+      "id": "1938192798",
+      "position": 0.09950113378685899,
+      "claimDelayMs": 85.30000019073486
+    },
+    {
+      "at": 96826,
+      "event": "scheduled",
+      "from": "1938192798",
+      "to": "431811451",
+      "leadSeconds": 232.9194557823129,
+      "sourceRate": 44100,
+      "decodedRate": 44100,
+      "contextRate": 44100,
+      "scheduledGapFrames": 0
+    },
+    {
+      "at": 149474,
+      "event": "scheduled",
+      "from": "1938192798",
+      "to": "431811451",
+      "leadSeconds": 7.002902494331096,
+      "sourceRate": 44100,
+      "decodedRate": 44100,
+      "contextRate": 44100,
+      "scheduledGapFrames": 0
+    },
+    {
+      "at": 156459,
+      "event": "transition",
+      "from": "1938192798",
+      "to": "431811451",
+      "scheduledGapFrames": 0
+    },
+    {
+      "at": 156615,
+      "event": "claimed",
+      "id": "431811451",
+      "position": 0.16625850340133752,
+      "claimDelayMs": 155.59999990463257
+    },
+    {
+      "at": 157620,
+      "event": "scheduled",
+      "from": "431811451",
+      "to": "548785555",
+      "leadSeconds": 241.3726984126984,
+      "sourceRate": 44100,
+      "decodedRate": 44100,
+      "contextRate": 44100,
+      "scheduledGapFrames": 0
+    }
+  ],
+  "systemSeekUserFeedback": [
+    "still rolls back with continuous Web",
+    "still rolls back after releasing parked native instance"
+  ],
+  "goalComplete": false,
+  "systemPositionDiagnostics": {
+    "readOnly": true,
+    "sampleSeconds": 64.973,
+    "samples": 2600,
+    "webPublishedSamples": 67,
+    "systemSeekEvents": 0,
+    "seekAcceptance": "not measured: no system drag occurred in sampling window",
+    "nativeCodeReview": "system Seek calls native setCurrentTime; native NowPlaying reload reads native currentTime/currentStatus; causal trace during drag still needed"
+  },
+  "latestSourceIncrementsNotInstalled": [
+    "Native Load/in-flight source identity guards",
+    "native random-order selection",
+    "direct Web resume native-output gate"
+  ]
+}

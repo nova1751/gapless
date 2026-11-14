@@ -10,10 +10,6 @@
     }
     async open(entry) {
       if (this.ctx?.state === 'closed') this.ctx = null;
-      if (this.ctx && this.ctx.sampleRate !== entry.spec.rate) {
-        if (this.active.size) throw new Error('native-only-sample-rate');
-        const previous = this.ctx; this.ctx = null; await previous.close();
-      }
       if (!this.ctx) {
         const ctx = this.ctx = new AudioContext({ sampleRate: entry.spec.rate, latencyHint: 'playback' });
         this.generation++;
@@ -48,7 +44,7 @@
       }
     }
     matches(entry) { return !!entry?.buffer && entry.spec.rate === entry.buffer.sampleRate
-      && entry.spec.channels === entry.buffer.numberOfChannels && this.ctx?.sampleRate === entry.spec.rate; }
+      && entry.spec.channels === entry.buffer.numberOfChannels && !!this.ctx; }
     position(track) {
       if (!track) return 0;
       const advance = track.node && track.playing ? Math.max(0, this.ctx.currentTime - track.start) : 0;

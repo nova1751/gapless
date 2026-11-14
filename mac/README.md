@@ -1,3 +1,11 @@
+# macOS 持续Web Audio 0.2.0候选
+
+当前源码与实机安装候选为0.2.0。持续由Web Audio播放、取消十秒交还；原有音源选择、窗口、歌词和播放入口保留。全部效果一致仍在验收，系统进度回跳未解决。见[实现与待验收项](../docs/CONTINUOUS_WEB_AUDIO.md)。最新源身份、随机队列及直接Web继续播放的输出隔离增量尚未接入当前页面；实机证据不包含这些增量。此前0.1.12安装包已备份，可恢复。
+
+0.2.0源码候选包：[gapless-player-mac-0.2.0.plugin](../releases/gapless-player-mac-0.2.0.plugin)。最新增量尚未安装验收；包与当前运行页面的差异见[SHA记录](../docs/verification/PACKAGE_CONTINUOUS_WEB_0.2.0_SHA256.json)。
+
+以下保留0.1.12历史说明，不代表当前代码仍采用临时桥接。
+
 # macOS 无缝播放 0.1.12
 
 本版已安装并启用。0.1.12 修正暂停通知后的残留双路输出、约 22 ms 的交还静音及计时锚点问题；短时应用输出回录和控制验证见 [输出交接检查](../docs/OUTPUT_HANDOFF_0.1.12.md)。正常播放由网易云原生后端负责；Web Audio 仅临时覆盖曲尾与下一首开头，完成对齐后交还原生。见 [实现、取消和已知边界](../docs/TEMPORARY_WEB_BRIDGE.md)。
