@@ -1,8 +1,8 @@
-# macOS 持续Web Audio 0.2.1候选
+# macOS 持续Web Audio 0.2.2候选
 
-当前源码与安装候选为0.2.1。持续由Web Audio播放、取消十秒交还；原有音源选择、窗口、歌词和播放入口保留。同采样率曲目继续预约，混合采样率边界重建输出，避免较高采样率音源进入较低采样率上下文。见[音质保护](../docs/AUDIO_QUALITY_0.2.1.md)。全部效果一致仍未验收，系统进度回跳未解决。
+当前源码与安装候选为0.2.2。持续由Web Audio播放、取消十秒交还；原有音源选择、窗口、歌词和播放入口保留。同采样率继续预约，混合采样率边界重建输出。新增只读可视化PCM，补回原有频谱／随节拍效果，不进入音乐输出链路；见[动态修复](../docs/VISUAL_PCM_0.2.2.md)。全部效果一致仍未验收，系统进度回跳未解决。
 
-候选包：[gapless-player-mac-0.2.1.plugin](../releases/gapless-player-mac-0.2.1.plugin)。旧0.2.0包备份在插件目录之外，相同slug只保留一个安装版本。当前播放时钟的open/matches/status已应用采样率保护，音乐和预约继续；完整包已安装并重新注册，但未刷新正在播放的页面，所以当前协调器仍为0.2.0，下次页面加载才完整运行0.2.1。文件与运行范围见[本轮验证](../docs/verification/mac-audio-quality-0.2.1.json)。
+候选包：[gapless-player-mac-0.2.2.plugin](../releases/gapless-player-mac-0.2.2.plugin)。旧0.2.1包备份在插件目录之外，相同slug只保留一个安装版本。完整包已安装、重载，实读运行版本0.2.2，原环形频谱、Seek、暂停/继续及同采样率跨曲已核对；原生恢复后Web采样停止、原生PCM回调恢复。最终恢复The Hills暂停于51.49秒。文件SHA和范围见[本轮验证](../docs/verification/mac-visual-pcm-0.2.2.json)。
 
 以下保留0.1.12历史说明，不代表当前代码仍采用临时桥接。
 

@@ -147,6 +147,22 @@ plugin.onLoad(() => {
         : c.owns ? !!(c.playing || (c.loading || c.transitioning) && c.loadIntent) : S.nativePlaying, duration: c.duration,
       position: c.owns ? clock.position(c) : nativePosition(), revision: S.revision, metadata: c.mediaMetadata };
   } });
+  // Native visual effects consume stereo s16le at 48 kHz with millisecond
+  // timestamps. This copy is for their existing renderer, never the music graph.
+  const hexByte = Array.from({ length: 256 }, (_, value) => value.toString(16).padStart(2, '0'));
+  const visual = new globalThis.GaplessVisualPCM({ rate: 48000, channels: 2, trace,
+    snapshot: () => {
+      const c = S.current;
+      const active = S.enabled && c?.owns && !c.loading && !S.claim && S.phase === 'owned'
+        && bridge.audioDataEnabled && !!bridge.registrations['audioplayer.onAudioData'] && !document.hidden;
+      return { active, playing: !!c?.playing, id: c?.id, serial: c?.serial,
+        revision: S.revision, generation: clock.generation, buffer: active ? c.entry?.buffer : null,
+        position: active && c.playing ? clock.outputPosition(c) : 0 };
+    }, emit: (bytes, pts) => {
+      const encoded = new Array(bytes.length);
+      for (let i = 0; i < bytes.length; i++) encoded[i] = hexByte[bytes[i]];
+      bridge.emit('audioplayer.onAudioData', [{ data: encoded.join(''), pts }]);
+    } });
   function nextTrack() {
     const c = S.current, s = state(); if (!c || !allowed(c.info)) return null;
     const mode = s.playing.playingMode;
@@ -560,7 +576,7 @@ plugin.onLoad(() => {
     const epoch = S.epoch, target = clock.position(c); let desired = c.playing;
     c.recoveryPosition = target; c.recoveryPlaying = desired; c.recoveryHeard = clock.heard(c);
     c.recoverySucceeded = false; c.blocked = true; S.claim = false;
-    S.phase = 'restoring'; stopCurrent(); trace('restore-start', { id: c.id, reason, position: target });
+    S.phase = 'restoring'; stopCurrent(); visual.stop(); trace('restore-start', { id: c.id, reason, position: target });
     const run = async () => {
       try {
         await releaseNativeGate();
@@ -636,6 +652,7 @@ plugin.onLoad(() => {
   }
   bridge.shouldSuppressNative = (command, args) => {
     const c = S.current;
+    if (command === 'audioplayer.onAudioData' && c?.owns) return true;
     if (command === 'audioplayer.onVolume' && (S.nativeGate || c?.owns)) return true;
     if (command === 'audioplayer.onLoad' && c?.owns && S.phase !== 'restoring') return true;
     // Raw recovery loads only reconstruct the parked backend. Native waiters
@@ -919,7 +936,7 @@ plugin.onLoad(() => {
       if (S.claim && performance.now() - S.current.claimAt > 3000) void restoreNative('unclaimed-next');
       if (S.current?.owns && !S.claim) progress(S.current);
       void takeover(); scheduleNext(); prefetch();
-      media?.sync();
+      media?.sync(); visual.sync();
     } catch (error) { bridge.onError(error); }
   }
   function initializeStore() {
@@ -965,7 +982,7 @@ plugin.onLoad(() => {
   };
   window.addEventListener('pointerdown', gesture, true); window.addEventListener('keydown', gesture, true);
   async function disable() {
-    S.enabled = false; resources.stop(); await restoreNative('disabled');
+    S.enabled = false; visual.stop(); resources.stop(); await restoreNative('disabled');
     resources.retain([]); await clock.close(); if (S.current) S.current.entry = null; trace('disabled');
   }
   const hostFetch = window.fetch.bind(window);
@@ -1009,7 +1026,7 @@ plugin.onLoad(() => {
   }
   window.addEventListener('beforeunload', () => {
     persistRecovery(); clearInterval(timer); S.unsubscribe?.(); resources.stop();
-    media?.release();
+    media?.release(); visual.stop();
     // The native gain is never left at the rehearsal value across navigation.
     if (S.nativeGate) bridge.callNative('audioplayer.setVolume', ['', '', clock.volume]);
     // Recovery is driven by the next page, rather than a multi-stage asynchronous unload callback.
@@ -1036,7 +1053,7 @@ plugin.onLoad(() => {
     } catch (error) { trace('reload-recovery-error', { reason: error.message }); }
   }
   window.gaplessMac = {
-    version: '0.2.0', status: () => {
+    version: '0.2.2', status: () => {
       reconcile(); const c = S.current;
       return { enabled: S.enabled, compatible: S.compatible, id: c?.id, phase: S.phase,
         ownsPlayback: !!c?.owns, playing: c?.owns ? !!c.playing : S.nativePlaying,
@@ -1047,7 +1064,8 @@ plugin.onLoad(() => {
         resourceOrigin: c?.entry?.origin || null,
         next: nextTrack()?.id, scheduled: S.scheduled?.id, claiming: S.claim,
         memory: resources.status(), mode: state()?.playing?.playingMode, nativeAllowed: allowed(c?.info),
-        queueVersion: S.queueVersion, loadEpoch: S.epoch, controlRevision: S.revision, systemMedia: media?.status() };
+        queueVersion: S.queueVersion, loadEpoch: S.epoch, controlRevision: S.revision,
+        systemMedia: media?.status(), visualization: visual.status() };
     }, trace: () => [...log], disable, restoreNative,
   };
   trace('ready', { compatible: S.compatible, appVersion: window.APP_CONF?.appver });

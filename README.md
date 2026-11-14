@@ -1,20 +1,21 @@
 # gapless — 网易云无缝播放解决方案
 
-当前开发候选为 **0.2.1**：无缝模式持续由 Web Audio 播放；同采样率曲目保持同一输出时钟，不再十秒交还原生。新增音源采样率保护，混合采样率边界重新打开输出，优先保留音源规格，可能出现短间隔。见 [音质保护和验证边界](docs/AUDIO_QUALITY_0.2.1.md)。
+当前开发候选为 **0.2.2**：无缝模式持续由Web Audio播放；同采样率保持同一输出时钟，混合采样率边界重新打开输出以保留音源规格，可能有间隔。0.2.2补回原生频谱／随节拍动态效果的音频数据输入，保持原有渲染器与样式，不改变音乐输出。见[动态效果修复](docs/VISUAL_PCM_0.2.2.md)及[音质保护](docs/AUDIO_QUALITY_0.2.1.md)。
 
 实际已观察连续跨曲、普通暂停/Seek、原有窗口及歌词；应用输出回录覆盖一次跨曲及下一首超过十秒。**macOS 控制中心进度回跳仍未解决，不能宣布所有原生特性等价或全部检查通过。** 最新候选已安装；已核对恢复后缓存预算、下一首预约和暂停意图。实际系统拖动记录确认原生旧状态会覆盖 Web 发布约半秒，见[系统状态证据](docs/verification/mac-system-seek-0.2.0.json)。随机模式及其他设备仍未完成验收。
 
 网易云决定授权音源、音质、音量、队列和界面。后台源选择复用原有客户端流程，优先同源内存/完整磁盘缓存；不增加 CSS、歌词布局、EQ、混音或静音裁剪。Web 解码、float32 PCM 和系统重采样不能承诺与原生比特相同。不兼容设置和错误仍保留原生恢复路径。
 
-开发候选包：[gapless-player-mac-0.2.1.plugin](releases/gapless-player-mac-0.2.1.plugin)。采样率保护已应用到当前播放时钟，未中断音乐；完整包已安装并注册供下次页面加载使用。当前页面仍保留0.2.0播放协调器，详见[验证记录](docs/verification/mac-audio-quality-0.2.1.json)。系统Seek仍未通过，不能当作已验收稳定版。
+开发候选包：[gapless-player-mac-0.2.2.plugin](releases/gapless-player-mac-0.2.2.plugin)。完整包已安装、重载并实读运行0.2.2；原环形频谱在Web播放、Seek及一次实际跨曲后均已观察恢复。暂停停止可视化采样，原生恢复后收到原生PCM；检查后恢复原曲暂停位置。见[本轮验证](docs/verification/mac-visual-pcm-0.2.2.json)。系统Seek仍未通过，不能当作已验收稳定版。
 
 ## 入口
 
-- [0.2.1 实现、验收与已知限制](docs/CONTINUOUS_WEB_AUDIO.md)
+- [0.2.2 实现、验收与已知限制](docs/CONTINUOUS_WEB_AUDIO.md)
+- [0.2.2 原有频谱动态修复](docs/VISUAL_PCM_0.2.2.md)
 - [0.2.1 采样率与音质保护](docs/AUDIO_QUALITY_0.2.1.md)
 - [0.2.0 实际跨曲回录记录](docs/verification/mac-continuous-web-0.2.0.json)
 - [Mac 安装及历史说明](mac/README.md)
-- [Windows 持续 Web 实施方案 v12](docs/WINDOWS_CONTINUOUS_WEB_AUDIO.md)：尚无 Windows 适配器、安装包或实机验收
+- [Windows 持续 Web 实施方案 v13](docs/WINDOWS_CONTINUOUS_WEB_AUDIO.md)：含宿主建议、系统控制及原有可视化接入要求；尚无Windows适配器、安装包或实机验收
 - [播放范围与原生特性风险](docs/PLAYBACK_SCOPE_AND_RISKS.md)
 - [网易云缓存读取边界](docs/CACHE_PRIORITY.md)
 - [原生无缝能力实查](docs/NATIVE_GAPLESS_FEASIBILITY.md)

@@ -1,0 +1,238 @@
+{
+  "recordedAtUTC": "2026-11-14T18:27:22.793928+00:00",
+  "candidate": "0.2.2",
+  "scope": "Restore original visualizer PCM input without changing the music graph",
+  "nativeContract": {
+    "command": "audioplayer.enableAudioData",
+    "event": "audioplayer.onAudioData",
+    "encoding": "hex byte string",
+    "format": "s16le stereo 48000 Hz",
+    "ptsUnit": "milliseconds",
+    "observedPacketBytes": 1600,
+    "evidence": "Current SDK callback and renderer consumer inspected; loaded vendor WASM entry divides byte length by 4 and duration by 48000; timestamp scaled by 0.001. Native PCM interpreted as s16le had plausible amplitude; float interpretations invalid."
+  },
+  "seek70Observed": {
+    "id": "431811451",
+    "playing": true,
+    "position": 70.25251700680272,
+    "visualPosition": 70.17589583333333,
+    "sourceRate": 44100,
+    "musicOutputRate": 44100,
+    "visualRate": 48000
+  },
+  "observed": {
+    "record": {
+      "seek": {
+        "id": "431811451",
+        "position": 114.45750566893423,
+        "playing": true,
+        "owns": true,
+        "generation": 2,
+        "sourceRate": 44100,
+        "outputRate": 44100,
+        "visualization": {
+          "active": true,
+          "failed": false,
+          "frames": 5765,
+          "lastPosition": 114.3849375,
+          "maxWorkMs": 5.199999809265137,
+          "averageWorkMs": 0.7238334783965985,
+          "visualRate": 48000,
+          "visualChannels": 2,
+          "affectsAudioOutput": false
+        }
+      },
+      "paused": {
+        "id": "431811451",
+        "position": 114.4778231292517,
+        "playing": false,
+        "owns": true,
+        "generation": 2,
+        "sourceRate": 44100,
+        "outputRate": 44100,
+        "visualization": {
+          "active": false,
+          "failed": false,
+          "frames": 5765,
+          "lastPosition": 114.3849375,
+          "maxWorkMs": 5.199999809265137,
+          "averageWorkMs": 0.7238334783965985,
+          "visualRate": 48000,
+          "visualChannels": 2,
+          "affectsAudioOutput": false
+        }
+      },
+      "pausedLater": {
+        "id": "431811451",
+        "position": 114.4778231292517,
+        "playing": false,
+        "owns": true,
+        "generation": 2,
+        "sourceRate": 44100,
+        "outputRate": 44100,
+        "visualization": {
+          "active": false,
+          "failed": false,
+          "frames": 5765,
+          "lastPosition": 114.3849375,
+          "maxWorkMs": 5.199999809265137,
+          "averageWorkMs": 0.7238334783965985,
+          "visualRate": 48000,
+          "visualChannels": 2,
+          "affectsAudioOutput": false
+        }
+      },
+      "resumed": {
+        "id": "431811451",
+        "position": 114.74646258503401,
+        "playing": true,
+        "owns": true,
+        "generation": 2,
+        "sourceRate": 44100,
+        "outputRate": 44100,
+        "visualization": {
+          "active": true,
+          "failed": false,
+          "frames": 5777,
+          "lastPosition": 114.6705,
+          "maxWorkMs": 5.199999809265137,
+          "averageWorkMs": 0.7239224516604627,
+          "visualRate": 48000,
+          "visualChannels": 2,
+          "affectsAudioOutput": false
+        }
+      },
+      "crossed": {
+        "id": "548785555",
+        "position": 1.5040816326530546,
+        "playing": true,
+        "owns": true,
+        "generation": 2,
+        "sourceRate": 44100,
+        "outputRate": 44100,
+        "visualization": {
+          "active": true,
+          "failed": false,
+          "frames": 5933,
+          "lastPosition": 1.4379375,
+          "maxWorkMs": 5.199999809265137,
+          "averageWorkMs": 0.7189785952353466,
+          "visualRate": 48000,
+          "visualChannels": 2,
+          "affectsAudioOutput": false
+        }
+      },
+      "events": [
+        {
+          "at": 142275,
+          "event": "transition",
+          "from": "431811451",
+          "to": "548785555",
+          "scheduledGapFrames": 0
+        },
+        {
+          "at": 142435,
+          "event": "claimed",
+          "id": "548785555",
+          "position": 0.16022675736959968,
+          "claimDelayMs": 160
+        }
+      ],
+      "nativeRecovery": {
+        "id": "548785555",
+        "playing": true,
+        "owns": false,
+        "visualization": {
+          "active": false,
+          "failed": false,
+          "frames": 7964,
+          "lastPosition": 36.373645833333335,
+          "maxWorkMs": 5.199999809265137,
+          "averageWorkMs": 0.7438221996840013,
+          "visualRate": 48000,
+          "visualChannels": 2,
+          "affectsAudioOutput": false
+        },
+        "nativePackets": 16
+      },
+      "final": {
+        "id": "431811451",
+        "position": 51.49,
+        "playing": false,
+        "owns": true,
+        "enabled": true,
+        "visualization": {
+          "active": false,
+          "failed": false,
+          "frames": 7964,
+          "lastPosition": 36.373645833333335,
+          "maxWorkMs": 5.199999809265137,
+          "averageWorkMs": 0.7438221996840013,
+          "visualRate": 48000,
+          "visualChannels": 2,
+          "affectsAudioOutput": false
+        }
+      }
+    },
+    "live": {
+      "version": "0.2.2",
+      "enabled": true,
+      "id": "431811451",
+      "playing": false,
+      "position": 51.49,
+      "owns": true,
+      "sourceRate": 44100,
+      "decodedRate": 44100,
+      "outputRate": 44100,
+      "visualization": {
+        "active": false,
+        "failed": false,
+        "frames": 7964,
+        "lastPosition": 36.373645833333335,
+        "maxWorkMs": 5.199999809265137,
+        "averageWorkMs": 0.7438221996840013,
+        "visualRate": 48000,
+        "visualChannels": 2,
+        "affectsAudioOutput": false
+      }
+    }
+  },
+  "uiObserved": [
+    "Original ring spectrum changes during Web playback",
+    "Seek retains original layout, lyrics and ring renderer",
+    "The Hills to I Was Never There changes cover, title, lyrics and spectrum",
+    "Final The Hills original page restored; SDK confirms paused position 51.49"
+  ],
+  "package": {
+    "path": "releases/gapless-player-mac-0.2.2.plugin",
+    "sha256": "11c94954ddd93ef30dd53e63b43dabef8c85555af37b0202fc1b9ba9c706cce8",
+    "playerSHA256": "4ca64efb7eb0321ca4fdb3fe387c5f8345fea5680fc2e4caec1d0426fbd3fc73",
+    "startupSHA256": "938cad2856786828239392f5b261bc4adfb6e1f7aa3cd20abd180b4d1bf28c21",
+    "checks": {
+      "zipCRC": true,
+      "packagePlayerEqualsSource": true,
+      "packageStartupEqualsSource": true,
+      "installedEqualsPackage": true,
+      "runtimePlayerEqualsPackage": true,
+      "runtimeStartupEqualsPackage": true,
+      "runtimeManifestEqualsPackage": true,
+      "runningVersion": true
+    }
+  },
+  "checks": [
+    "Incremental node --check on shared/visual-pcm.js, mac/player.js, mac/startup.js",
+    "Diff whitespace review",
+    "Manual native PCM contract probe and real renderer observation",
+    "Web seek, pause/resume, actual gapless boundary, native recovery",
+    "ZIP CRC and source/package/install/runtime hashes"
+  ],
+  "notVerified": [
+    "All other visual effect resources",
+    "Hi-Res/multichannel visual equivalence",
+    "Page hidden/resume and long-running CPU behavior",
+    "Windows adapter and system controls",
+    "macOS Control Center rollback remains unresolved"
+  ],
+  "newTestsOrApplicationBuilds": false,
+  "containsAudioSamples": false
+}

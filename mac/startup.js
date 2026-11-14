@@ -5,6 +5,7 @@
   const bridge = window.__gpMacBridge = {
     registrations: Object.create(null), events: Object.create(null), eventAt: Object.create(null),
     calls: [], loads: new Map(), handle: null, hooked: false, nativePost: null, synthetic: false,
+    audioDataEnabled: false,
   };
   const waiters = new Set(), protectedDispatchers = new WeakSet();
   const report = error => { try { bridge.onError?.(error); } catch { /* Preserve native delivery. */ } };
@@ -85,6 +86,7 @@
         bridge.registrations[msg.command] = msg.seq; bridge.protect();
       }
       if (msg?.method === 'call' && /^audioplayer\./.test(msg.command)) {
+        if (msg.command === 'audioplayer.enableAudioData') bridge.audioDataEnabled = Number(msg.params?.[0]) === 1;
         if (msg.command === 'audioplayer.load') {
           bridge.loads.set(String(msg.params?.[0]), msg.params?.[1]);
           if (bridge.loads.size > 8) bridge.loads.delete(bridge.loads.keys().next().value);
