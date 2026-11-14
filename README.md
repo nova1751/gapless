@@ -13,8 +13,9 @@
 ## 直接入口
 
 - [0.1.12 输出交接修正与声音验证](docs/OUTPUT_HANDOFF_0.1.12.md)
+- [播放接管范围、歌词依赖与已知风险](docs/PLAYBACK_SCOPE_AND_RISKS.md)
 - [0.1.11 复查修正与确认范围](docs/IMPLEMENTATION_CHECK_0.1.11.md)
-- [Windows 一致实施方案 v9](docs/WINDOWS_GAPLESS_IMPLEMENTATION.md)
+- [Windows 一致实施方案 v10](docs/WINDOWS_GAPLESS_IMPLEMENTATION.md)
 - [临时 Web Audio 桥接并交还原生](docs/TEMPORARY_WEB_BRIDGE.md)
 - [0.1.10 网易云缓存优先读取](docs/CACHE_PRIORITY.md)
 - [Mac 安装与使用](mac/README.md)
