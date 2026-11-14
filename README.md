@@ -20,6 +20,7 @@
 - [播放范围与原生特性风险](docs/PLAYBACK_SCOPE_AND_RISKS.md)
 - [网易云缓存读取边界](docs/CACHE_PRIORITY.md)
 - [原生无缝能力实查](docs/NATIVE_GAPLESS_FEASIBILITY.md)
+- [纯原生入口复查与最小实施路线](docs/NATIVE_GAPLESS_RECHECK_2026-11-15.md)：原生输出复用有静态证据；独立预加载、原生桥及跨曲接认尚未实现
 
 ## 开发验证
 

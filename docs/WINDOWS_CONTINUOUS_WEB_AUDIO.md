@@ -2,6 +2,8 @@
 
 本方案对应macOS 0.2.3开发候选：同采样率曲目持续使用一个Web Audio输出时钟，混合采样率边界重建输出；固定小包的只读可视化PCM与原动画共同读取声音输出时钟，驱动原有频谱和随节拍效果。不在每首尾部和开头反复切换后端。Windows尚无适配器、运行包或实机验收。Mac控制中心回跳仍未解决，不能照搬后宣布系统控制等价。
 
+2026-11-15 原生路线补充：先验证 Windows 客户端独立预加载、同一输出持续及原管理器接认；能力通过则做原生薄适配，不必接入下文 Web 音乐核心。Mac 原生底层有条件复用输出，但现有宿主没有原生插件桥；不能据此推断 Windows 能力。见[纯原生入口与最小实施路线](NATIVE_GAPLESS_RECHECK_2026-11-15.md)。
+
 ## 推荐宿主与安装边界
 
 Windows优先沿用[BetterNCM官方安装器](https://github.com/std-microblock/BetterNCM-Installer)和其[官方使用说明](https://github.com/std-microblock/chromatic/wiki/%E4%BD%BF%E7%94%A8%E8%AF%B4%E6%98%8E)接入插件。安装器README给出了最低版本要求，但不能将最低版本理解为对所有新版3.x的兼容保证；实际客户端版本必须先验证宿主可加载、原生桥可用及能卸载恢复。

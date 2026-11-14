@@ -1,0 +1,47 @@
+{
+  "recordedAt": "2026-11-15",
+  "scope": "read-only SDK source, installed host source, Objective-C metadata and offline arm64 disassembly",
+  "client": {"version": "3.1.12", "build": "3444", "platform": "macOS arm64"},
+  "installedHostVersion": "0.1.7",
+  "playbackPluginVersion": "0.2.3",
+  "binarySha256": "e9c6b5468749ccad69ffe24e6395d6d29af9e2f7514a2bc9697e265b89b40374",
+  "sdkMethodsRechecked": {
+    "AudioPlayer.preLoad": "empty asynchronous implementation, no native command",
+    "AudioPlayer.subscribePreloadInfo": "returns inactive unsubscribe function",
+    "AudioPlayer.setPreloadInfoResult": "returns false",
+    "AudioPlayer.setRangeConfig": "empty asynchronous implementation",
+    "AudioPlayer.getPlaybackInfo": "returns empty object"
+  },
+  "nativeEvidence": [
+    {"method": "YYYPlayManager.setPlayLoadModel:", "address": "0x1001522d4", "finding": "releases old manager-held streamer, changes play model and creates/configures new streamer; calls prepareToPlay at 0x100153190"},
+    {"method": "NTESAudioStreamer.prepareToPlay", "address": "0x100377b30", "finding": "when threads are ready and streamer differs, selects itself on shared runLoop via setStreamer: at 0x100377ba0; not isolated next-track preparation"},
+    {"method": "NTESAudioRunLoop.setStreamer:", "address": "0x100376da0", "finding": "changes shared streamer, switching state and events; separate crossfade path exists but is outside requested scope"},
+    {"method": "NTESAudioRunLoop.makeStreamerFinish:", "address": "0x100375f50", "finding": "cleans provider then assigns streamer status 4"},
+    {"method": "NTESAudioRunLoop.handleEvent:streamer:userInfo:", "address": "0x1003757d0", "checks": ["shared stream gaplessEnable at 0x100375b3c", "event stream gaplessEnable at 0x100375b48", "event stream status equals 4", "avoidMutexWaitingWhenSwitching"], "finding": "one qualifying path writes _shouldGapless at offset 0xda and bypasses output stop; different policy path still stops", "runtimeEventIdentityVerified": false},
+    {"method": "NTESAudioRunLoop.resetPlayerWithStreamer:pcmFormat:bufferSize:", "address": "0x100374694", "checks": ["same render API", "output already initialized", "_shouldGapless", "ASBD equality at 0x1003748b8", "channel layout equality at 0x1003748e8", "buffer size equality at 0x100374904"], "finding": "qualifying branch bypasses resetPlayerWithOutputFormat and retains output with original resetVolume; incompatibility enters normal output reset"},
+    {"method": "NTESAudioDecoder.decode", "address": "0x100368728", "finding": "contains readiness, data and decoder dispatch; isolated candidate decoding and adoption not proven"},
+    {"method": "NTESAudioProvider.loadData / prepareToProvide", "addresses": ["0x1003721a8", "0x1003721fc"], "finding": "base methods enter shared helper; actual provider subclass preparation must be traced before use"}
+  ],
+  "hostEvidence": {
+    "installedPluginsFile": "src/plugins.mjs:234",
+    "installedServerFile": "src/server.mjs:337-340",
+    "finding": "native_plugin ignored; registered API list empty; native_plugin.call throws Invalid api id",
+    "upstreamCommit": "b3e3ab89c4e368c41b984453bd79a599f270f2c8",
+    "upstreamFinding": "same native-plugin limitations verified in fixed source"
+  },
+  "windows": {
+    "nativePluginBindingsCommit": "764b38155a31518560e9dc346c75d4527f9dde37",
+    "nativePluginBindingsFinding": "DLL registration ecosystem exists; current client compatibility and gapless access unverified",
+    "cdpHostCommit": "438dddf6d6b6b6e75db2715828f47cb9a7a71446",
+    "cdpHostFinding": "README still declares native_plugin unimplemented",
+    "implementationOrRuntimeValidation": false
+  },
+  "conclusion": "conditional native output reuse exists; pure native prototype is plausible but cannot be delivered through current Mac JS bridge alone",
+  "stillUnproven": ["in-process bridge loading and safe ownership", "isolated native next-track preparation", "original manager adoption without reloading", "runtime event ordering", "audible native sample continuity", "cancellation and lifecycle coverage"],
+  "processAttached": false,
+  "binaryModified": false,
+  "privatePlaybackMethodsInvoked": false,
+  "playbackOrSettingCommandsInvoked": [],
+  "playerSourceOrInstalledPackageModified": false,
+  "testsAddedOrAppBuildRun": false
+}
