@@ -1,10 +1,10 @@
-# macOS 无缝播放 0.1.11
+# macOS 无缝播放 0.1.12
 
-本版已安装并启用。正常播放由网易云原生后端负责；Web Audio 仅临时覆盖曲尾与下一首开头，完成对齐后交还原生。见 [实现、取消和已知边界](../docs/TEMPORARY_WEB_BRIDGE.md)。
+本版已安装并启用。0.1.12 修正暂停通知后的残留双路输出、约 22 ms 的交还静音及计时锚点问题；短时应用输出回录和控制验证见 [输出交接检查](../docs/OUTPUT_HANDOFF_0.1.12.md)。正常播放由网易云原生后端负责；Web Audio 仅临时覆盖曲尾与下一首开头，完成对齐后交还原生。见 [实现、取消和已知边界](../docs/TEMPORARY_WEB_BRIDGE.md)。
 
 本版已实测完整、同音质的网易云缓存优先读取，Baptized In Fear 与 Open Hearts 均命中磁盘缓存、完整 MD5 与解码校验通过，Web 预加载音频下载为零；随后完成同钟跨曲及交还原生。读取失败回到原授权音源，不修改缓存。见 [缓存检查和验证状态](../docs/CACHE_PRIORITY.md)。
 
-0.1.11 已安装并激活，补接管失败/取消后的预热资源释放，已实测主动 Seek 取消预热及一次临时注入的输出时戳失败后上下文关闭。见 [本轮检查](../docs/IMPLEMENTATION_CHECK_0.1.11.md)。
+此前 0.1.11 补接管失败/取消后的预热资源释放，已实测主动 Seek 取消预热及一次临时注入的输出时戳失败后上下文关闭。见 [本轮检查](../docs/IMPLEMENTATION_CHECK_0.1.11.md)。
 
 ## 使用范围
 
@@ -17,7 +17,7 @@
 
 ## 安装和开关
 
-发布包为 [gapless-player-mac-0.1.11.plugin](../releases/gapless-player-mac-0.1.11.plugin)。复制到 `~/Library/Application Support/BetterNCM-mac/plugins/`，相同 slug 只保留一个版本；旧包备份放到插件目录之外。由 BetterNCM 重新加载并刷新页面后生效，本机安装包/解压文件已核对，宿主已重新注册并刷新页面，实读运行版本为 0.1.11，普通播放、缓存桥接和原生恢复已确认。
+发布包为 [gapless-player-mac-0.1.12.plugin](../releases/gapless-player-mac-0.1.12.plugin)。复制到 `~/Library/Application Support/BetterNCM-mac/plugins/`，相同 slug 只保留一个版本；旧包备份放到插件目录之外。由 BetterNCM 重新加载并刷新页面后生效，本机安装包/解压文件已核对，宿主已重新注册并刷新页面，实读运行版本为 0.1.12，普通播放、缓存桥接和原生恢复已确认。
 
 标题栏插件菜单只有「无缝播放」开关，复用宿主样式与保存接口。关闭会恢复原生音乐播放，停止插件下载和 Web 音乐输出；开关操作无需刷新页面。
 
@@ -27,6 +27,6 @@
 
 `player.js` 管理原生协议、临时桥接、恢复与宿主开关；`native-cache.js` 只读查询和校验网易云缓存；`media-session.js` 同步系统控制；`startup.js` 包装原生桥。共享目录管理独立解码、限额缓存和音频时钟。原生静默准备暂时关闭该后端输出，保留并恢复用户音量；用户音量选择、界面数值和 Web 输出音量保持一致，失败与退出路径亦恢复。
 
-根目录执行 `python3 mac/package.py` 生成当前源码的 `dist/gapless-player-mac-0.1.11.plugin`；这是 ZIP 打包，不是应用构建。没有新增测试或全量 lint/tsc。本机包及运行记录见 [0.1.11 实机记录](../docs/verification/mac-runtime-0.1.11.json) 和 [0.1.11 包校验](../docs/verification/PACKAGE_0.1.11_SHA256.json)。此前桥接协议场景见 [0.1.9 历史验证](../docs/verification/mac-temporary-bridge-0.1.9.json)；0.1.10 首次缓存接入时的受阻历史见 [旧缓存记录](../docs/verification/mac-cache-priority-0.1.10.json)。
+根目录执行 `python3 mac/package.py` 生成当前源码的 `dist/gapless-player-mac-0.1.12.plugin`；这是 ZIP 打包，不是应用构建。没有新增测试或全量 lint/tsc。本机包及运行记录见 [0.1.11 历史实机记录](../docs/verification/mac-runtime-0.1.11.json) ；当前版本见 [0.1.12 包校验](../docs/verification/PACKAGE_0.1.12_SHA256.json)。此前桥接协议场景见 [0.1.9 历史验证](../docs/verification/mac-temporary-bridge-0.1.9.json)；0.1.10 首次缓存接入时的受阻历史见 [旧缓存记录](../docs/verification/mac-cache-priority-0.1.10.json)。
 
-历史实现与排查保留在 [0.1.1 恢复记录](../docs/REMEDIATION.md)、[卡顿排查](../docs/HANDOFF_HITCH_REVIEW.md) 和 [间隔排查](../docs/AUDIBLE_GAP_REVIEW.md)。这些结果不代表本版已经完成声卡回录。Windows 尚未实现，不能安装 Mac 包。
+历史实现与排查保留在 [0.1.1 恢复记录](../docs/REMEDIATION.md)、[卡顿排查](../docs/HANDOFF_HITCH_REVIEW.md) 和 [间隔排查](../docs/AUDIBLE_GAP_REVIEW.md)。0.1.12 完成应用级输出回录，尚未覆盖 DAC、蓝牙或声学输出。Windows 尚未实现，不能安装 Mac 包。
