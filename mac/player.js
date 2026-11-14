@@ -287,8 +287,37 @@ plugin.onLoad(() => {
     queueMicrotask(() => {
       if (S.current !== c || S.epoch !== epoch) { bridge.dispatch(msg.seq, [c.id, { code: -1 }]); return; }
       const args = [c.id, { code: 0, duration: c.duration }];
-      bridge.dispatch(msg.seq, args); bridge.emit('audioplayer.onLoad', args);
+      if (msg.seq) {
+        bridge.dispatch(msg.seq, args); bridge.emit('audioplayer.onLoad', args);
+        releaseLoadPlayGuard(c, epoch);
+      } else {
+        // A saved snapshot has no pending SDK Load. Do not complete an
+        // unrelated subscriber or consume the user's first manual Play.
+        emitState(c, c.playing ? 1 : 2); progress(c, true);
+      }
       c.needsLyrics = true; refreshLyrics(c);
+    });
+  }
+  function releaseLoadPlayGuard(c, epoch) {
+    const revision = S.revision;
+    // The SDK's Load callback calls Play synchronously. This guard applies to
+    // that automatic Play only, never to a later manual resume.
+    setTimeout(() => {
+      if (validRecovery(c, epoch) && S.revision === revision) {
+        if (c.pauseAfterClaimRevision === revision) c.pauseAfterClaimRevision = null;
+        c.nativeLoadPlayPending = false;
+      }
+    }, 0);
+  }
+  function answerNativeLoad(msg, c, code) {
+    const epoch = S.epoch;
+    queueMicrotask(() => {
+      if (!validRecovery(c, epoch)) { bridge.dispatch(msg.seq, [c.id, { code: -1 }]); return; }
+      const args = [c.id, { code, duration: c.duration }];
+      if (!msg.seq) return;
+      if (code === 0) c.nativeLoadPlayPending = true;
+      bridge.dispatch(msg.seq, args); bridge.emit('audioplayer.onLoad', args);
+      releaseLoadPlayGuard(c, epoch);
     });
   }
   function scheduleNext() {
@@ -339,6 +368,8 @@ plugin.onLoad(() => {
     });
   }
   async function loadOwned(msg, c) {
+    if (c.webLoadRunning) return;
+    c.webLoadRunning = true;
     const epoch = S.epoch;
     try {
       if (msg.resumeExisting) {
@@ -372,15 +403,28 @@ plugin.onLoad(() => {
       trace('web-loaded', { id: c.id, origin: c.entry.origin, rate: c.entry.spec.rate });
     } catch (error) {
       if (!validRecovery(c, epoch)) { bridge.dispatch(msg.seq, [c.id, { code: -1 }]); return; }
+      if (error.message === 'native-only-context-awaiting-gesture' && allowed(c.info)) {
+        // A cold autoplay request must not sound natively while Web waits for
+        // user activation. Keep the original Load pending and resume on input.
+        c.pendingWebLoad = msg; c.awaitingGesture = true;
+        trace('web-start-awaiting-gesture', { id: c.id }); return;
+      }
       c.loading = false; c.playing = c.loadIntent;
       trace('web-load-fallback', { id: c.id, reason: error.message });
       // Reuse the exact authorized Native Load, never substitute a lower quality.
       await restoreNative(`web-load-${error.message}`);
       if (validRecovery(c, epoch)) {
         if (msg.resumeExisting) ack(msg);
-        else bridge.dispatch(msg.seq, [c.id, { code: c.recoverySucceeded ? 0 : -1 }]);
+        else answerNativeLoad(msg, c, c.recoverySucceeded ? 0 : -1);
       }
-    }
+    } finally { c.webLoadRunning = false; }
+  }
+  function settlePendingWebLoad(c, code = -1, nativeResult = false) {
+    const msg = c?.pendingWebLoad; if (!msg) return;
+    c.pendingWebLoad = null; c.awaitingGesture = false;
+    if (msg.resumeExisting) ack(msg);
+    else if (nativeResult) answerNativeLoad(msg, c, code);
+    else bridge.dispatch(msg.seq, [c.id, { code }]);
   }
   async function prepareCurrent(c) {
     if (c.preparing || !S.nativePlaying) return; c.preparing = true;
@@ -607,14 +651,17 @@ plugin.onLoad(() => {
     if (S.phase === 'restoring') return S.recovering;
     const epoch = S.epoch, target = clock.position(c); let desired = c.playing;
     c.recoveryPosition = target; c.recoveryPlaying = desired; c.recoveryHeard = clock.heard(c);
-    c.recoverySucceeded = false; c.blocked = true; S.claim = false;
+    c.recoverySucceeded = false; c.blocked = true; c.loading = false; S.claim = false;
     S.phase = 'restoring'; stopCurrent(); visual.stop(); trace('restore-start', { id: c.id, reason, position: target });
     const run = async () => {
       try {
         await releaseNativeGate();
         // Only the SDK queue-selection workflow installs an onLoad auto-play
         // callback. A raw load does not; its first Play may be real user intent.
-        const needsSelection = !c.info || c.restoreSelection;
+        // Direct startup restoration may precede the SDK's first Load, which
+        // is also when it registers onLoad. Use its original selection flow
+        // to establish that callback before waiting for native completion.
+        const needsSelection = !c.info || c.restoreSelection || !bridge.registrations['audioplayer.onLoad'];
         c.recoverySelecting = !!needsSelection;
         c.ignoreSelectionPlay = !!needsSelection;
         if (needsSelection) {
@@ -677,6 +724,7 @@ plugin.onLoad(() => {
         c.ignoreSelectionPlay = false;
         resources.retain([ref(S.current)]);
         if (!S.current?.owns) await clock.close();
+        if (validRecovery(c, epoch)) settlePendingWebLoad(c, c.recoverySucceeded ? 0 : -1, true);
       }
     };
     S.recovering = run(); await S.recovering;
@@ -790,11 +838,16 @@ plugin.onLoad(() => {
         return true;
       }
       if (S.claim) trace('claim-rejected', { expected: c?.id, received: id, reason: 'native-source-or-queue-changed' });
+      const snapshot = c?.restoreSnapshot && c.id === id ? {
+        position: position(), heard: clock.heard(c), playing: !!c.playing,
+      } : null;
       const wasPlaying = c?.owns ? !!(c.playing || c.transitioning && c.loadIntent) : S.nativePlaying;
+      settlePendingWebLoad(c);
       S.epoch++; S.revision++; stopCurrent(); S.claim = false; S.phase = 'native';
       S.nativePlaying = false; S.nativePosition = 0; S.nativeAt = performance.now();
       S.current = c = { id, info, requestedLevel: level, account: S.account, duration: Number(info?.songDuration) / 1000,
-        serial: ++S.serial, offset: 0, heard: 0, owns: false, playing: false };
+        serial: ++S.serial, offset: snapshot?.position || 0, heard: snapshot?.heard || 0, owns: false, playing: false,
+        loadRevision: S.revision, blocked: !!msg.startupNativeFallback };
       // Adopt a matching cached source synchronously. Waiting for native play
       // before the async preparation would let a store update evict both warm
       // buffers between Load and play, especially when selecting the same track.
@@ -802,8 +855,10 @@ plugin.onLoad(() => {
       if (cached) { c.entry = cached; c.duration = cached.duration; c.level = cached.level; }
       resources.resetFailures(); resources.retain([ref(c), nextTrack()]);
       if (allowed(info) && !msg.observedNative) {
-        c.owns = true; c.loading = true; c.playing = false; c.offset = 0;
-        c.loadIntent = wasPlaying; S.phase = 'loading';
+        c.owns = true; c.loading = true; c.playing = !!snapshot?.playing;
+        c.loadIntent = snapshot ? snapshot.playing : wasPlaying; S.phase = 'loading';
+        if (snapshot && !snapshot.playing && performance.now() - S.gestureAt >= 1500)
+          c.pauseAfterClaimRevision = S.revision;
         void loadOwned(msg, c); return true;
       }
       void releaseNativeGate().catch(error => trace('native-volume-restore-error', { reason: error.message }));
@@ -857,7 +912,17 @@ plugin.onLoad(() => {
       }).catch(() => ack(msg, [{ result: 0 }]));
       return true;
     }
-    if (!c?.owns && c?.info && S.phase === 'native' && !S.nativePlaying && !S.starting
+    if (!c?.owns && c?.nativeLoadPlayPending && msg.command === 'audioplayer.play'
+      && (!p[0] || String(p[0]) === c.id)) {
+      c.nativeLoadPlayPending = false;
+      if (S.nativePlaying || c.pauseAfterClaimRevision === S.revision || !S.enabled && c.suppressPausedNativeProgress) {
+        // Recovery already restored transport. Completing the SDK Load must
+        // not send a second native Play and retrigger its playback envelope.
+        c.pauseAfterClaimRevision = null; ack(msg); emitState(c, S.nativePlaying ? 1 : 2, p[1] || c.id); return true;
+      }
+      return false;
+    }
+    if (!c?.owns && !c?.blocked && c?.info && S.phase === 'native' && !S.nativePlaying && !S.starting
       && allowed(c.info) && msg.command === 'audioplayer.play' && (!p[0] || String(p[0]) === c.id)) {
       // A confirmed paused native source need not start just to hand it off.
       // Resume directly into Web at its saved position and listening-time base.
@@ -924,6 +989,7 @@ plugin.onLoad(() => {
         return true;
       }
       c.pauseAfterClaimRevision = null;
+      c.restoreSnapshot = false;
       S.revision++; const token = p[1] || c.id; S.token = token;
       if (c.loading) { c.playing = true; c.loadIntent = true; ack(msg); return true; }
       c.transitioning = false;
@@ -932,6 +998,7 @@ plugin.onLoad(() => {
       emitState(c, 1, token); ack(msg); trace('play', { id: c.id }); prefetch(); scheduleNext(); return true;
     }
     if (msg.command === 'audioplayer.pause') {
+      c.restoreSnapshot = false;
       S.revision++; S.token = p[1] || c.id; stopCurrent(); progress(c, true); emitState(c, 2, S.token); ack(msg);
       c.loadIntent = false; c.transitioning = false; if (c.loading) c.pauseAfterClaimRevision = S.revision;
       trace('pause', { id: c.id, position: clock.position(c) }); return true;
@@ -939,12 +1006,15 @@ plugin.onLoad(() => {
     if (msg.command === 'audioplayer.seek') {
       if (!Number.isFinite(Number(p[2]))) return false;
       const token = p[1] || c.id;
+      c.restoreSnapshot = false;
       const offset = seekOwned(c, p[2], token);
       completeSeek(msg, c, token, offset);
       return true;
     }
     if (/^audioplayer\.(stop|unload)$/.test(msg.command)) {
       const intent = c.playing || c.loadIntent;
+      c.restoreSnapshot = false;
+      settlePendingWebLoad(c);
       S.epoch++; S.revision++; stopCurrent(); c.loading = false;
       c.transitioning = true; c.loadIntent = !!intent; S.phase = 'owned'; ack(msg); return true;
     }
@@ -965,6 +1035,7 @@ plugin.onLoad(() => {
     try {
       if (!S.store) initializeStore();
       reconcile(); updateEnvironment();
+      bridge.flushStartup(); consumeRecovery();
       if (S.claim && performance.now() - S.current.claimAt > 3000) void restoreNative('unclaimed-next');
       if (S.current?.owns && !S.claim) progress(S.current);
       void takeover(); scheduleNext(); prefetch();
@@ -1010,6 +1081,11 @@ plugin.onLoad(() => {
   const gesture = () => {
     S.gestureAt = performance.now();
     media?.retry();
+    const c = S.current;
+    if (c?.owns && c.loading && c.pendingWebLoad && !c.webLoadRunning && S.phase === 'loading' && allowed(c.info)) {
+      const msg = c.pendingWebLoad; c.pendingWebLoad = null; c.awaitingGesture = false;
+      void loadOwned(msg, c); return;
+    }
     if (S.current) S.current.awaitingGesture = false;
     if (clock.ctx?.state === 'suspended') void clock.ctx.resume().then(() => takeover()).catch(() => {});
     if (!S.current?.owns) void takeover();
@@ -1069,6 +1145,7 @@ plugin.onLoad(() => {
   });
   function consumeRecovery() {
     if (S.recoveryConsumed || !S.compatible) return;
+    if (bridge.startup.phase === 'waiting' && bridge.startup.held > bridge.startup.released) return;
     S.recoveryConsumed = true;
     try {
     const saved = JSON.parse(sessionStorage.getItem(recoveryKey) || 'null'); sessionStorage.removeItem(recoveryKey);
@@ -1077,22 +1154,43 @@ plugin.onLoad(() => {
       const info = saved.info || bridge.loads.get(saved.id);
       if (info && saved.row) {
         if (!rows().length) S.store.dispatch({ type: 'playingList/restoreCurPlayingList' });
+        const current = S.current;
+        if (current?.owns && current.loading && S.phase === 'loading') {
+          // An intercepted fresh Load is authoritative for the source. Only
+          // restore intent when no newer user control superseded this Load.
+          if (current.loadRevision === S.revision) {
+            current.offset = Math.max(0, Math.min(current.duration - 0.001, saved.position));
+            current.heard = saved.heard || 0; current.playing = !!saved.playing; current.loadIntent = !!saved.playing;
+            if (!saved.playing) current.pauseAfterClaimRevision = S.revision;
+            trace('startup-web-intent', { id: current.id, position: current.offset, playing: current.playing });
+          }
+          return;
+        }
         stopCurrent(); S.epoch++;
         S.current = { id: saved.id, info, requestedLevel: quality(info), account: S.account,
           duration: Number(info.songDuration) / 1000, serial: ++S.serial, offset: saved.position,
-          heard: saved.heard || 0, playing: saved.playing, owns: true, row: saved.row, restoreSelection: true };
-        // No audio node survives navigation; the saved native transaction is the only owner.
-        void restoreNative('page-reload');
+          heard: saved.heard || 0, playing: !!saved.playing, loadIntent: !!saved.playing,
+          owns: true, loading: true, row: saved.row, restoreSnapshot: true };
+        if (allowed(info) && !S.nativePlaying) {
+          S.phase = 'loading';
+          trace('startup-web-restore', { id: saved.id, position: saved.position, playing: !!saved.playing });
+          void loadOwned({ seq: null, command: 'audioplayer.load', params: [saved.id, info] }, S.current);
+        } else {
+          S.current.restoreSelection = true; S.current.loading = false;
+          void restoreNative('page-reload');
+        }
       }
     }
     } catch (error) { trace('reload-recovery-error', { reason: error.message }); }
   }
   window.gaplessMac = {
-    version: '0.2.3', status: () => {
+    version: '0.2.4', status: () => {
       reconcile(); const c = S.current;
       return { enabled: S.enabled, compatible: S.compatible, id: c?.id, phase: S.phase,
         ownsPlayback: !!c?.owns, playing: c?.owns ? !!c.playing : S.nativePlaying,
         playbackMode: 'continuous-web', loading: !!c?.loading, nativeOutputGated: !!S.nativeGate,
+        startup: { ...bridge.startup }, awaitingGesture: !!c?.awaitingGesture,
+        nativeTransport: { ...bridge.nativeTransport },
         seekPending: !!c?.nativeSeekTokens?.size, seekSettling: performance.now() < (c?.seekStableAt || 0),
         position: position(), duration: c?.duration, requestedLevel: c?.requestedLevel, actualLevel: c?.level || c?.info?.level,
         sourceRate: c?.entry?.spec.rate, decodedRate: c?.entry?.buffer.sampleRate, ...clock.status(),
@@ -1104,5 +1202,7 @@ plugin.onLoad(() => {
           renderClockHooks: [...visualRenderHooks.keys()] } };
     }, trace: () => [...log], disable, restoreNative,
   };
+  bridge.readyForStartup = () => !!(S.enabled && S.compatible && S.store && !S.recovering);
+  bridge.flushStartup(); consumeRecovery();
   trace('ready', { compatible: S.compatible, appVersion: window.APP_CONF?.appver });
 });

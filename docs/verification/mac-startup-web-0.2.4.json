@@ -1,0 +1,426 @@
+{
+  "date": "2026-11-15",
+  "version": "0.2.4",
+  "client": "NetEase Cloud Music 3.1.12 (3444), macOS arm64",
+  "host": "BetterNCM-mac 0.1.7",
+  "scope": "Page restoration, real keyboard input, actual SDK/bridge controlled startup delays, native fallback and final installation. Not a complete process cold-start or hardware output certification.",
+  "package": {
+    "sha256": "3d99c43f05887e64c7b675c0041eda7899f8748c671f9a2e9d730122a42360dd",
+    "installedZipIdentical": true,
+    "sourceBundleIdentical": true,
+    "runtimeMatches": {
+      "manifest.json": true,
+      "startup_script.js": true,
+      "player.js": true,
+      "LICENSE": true
+    },
+    "fileHashes": {
+      "manifest.json": "b33192257c787e5ed9e4c694e720e359609a2f4901ede5c2ee0a262d596c1e2c",
+      "startup_script.js": "e2f7b38deae00fd8cbe733340bf9f85289c6aa9989f0a455360206a2a71b251b",
+      "player.js": "f4377f5cb88632a9aac69ecfc58b51d81aaa661dc9ef69a8204461570fde61b1",
+      "LICENSE": "6238f6a51a6bc87420e66834d9e53aac07de39be30e5b7886db4d121d56b548b"
+    }
+  },
+  "firstRealInput": {
+    "method": "CUA space key",
+    "singleInputStartedWeb": true,
+    "windowShowsPauseButton": true,
+    "playingPositionObserved": 190.94648526077097,
+    "nativeTransport": {
+      "load": 0,
+      "play": 0,
+      "pause": 0,
+      "seek": 0,
+      "stop": 0,
+      "unload": 0
+    }
+  },
+  "controlledStartupDelay": {
+    "milliseconds": 1000,
+    "held": 1,
+    "released": 1,
+    "nativeTransport": {
+      "load": 0,
+      "play": 0,
+      "pause": 0,
+      "seek": 0,
+      "stop": 0,
+      "unload": 0
+    },
+    "pauseWhileLoadingPreserved": true
+  },
+  "controlledStartupTimeout": {
+    "adapterNotReadyMilliseconds": 3300,
+    "gateTimeoutMilliseconds": 2500,
+    "phase": "native",
+    "ownsPlayback": false,
+    "sdkPlayPromiseCompleted": true,
+    "nativeLoadCount": 1,
+    "nativePlayCount": 1,
+    "pauseAfterFallback": true,
+    "positionAfterSeek": 177.85
+  },
+  "sameRateBoundary": {
+    "from": "2670863152",
+    "to": "1938192798",
+    "sampleRate": 44100,
+    "scheduledGapFrames": 0,
+    "claimDelayMilliseconds": 124.90000009536743,
+    "nextPositionObserved": 2.00970521541948,
+    "nativeTransport": {
+      "load": 0,
+      "play": 0,
+      "pause": 0,
+      "seek": 0,
+      "stop": 0,
+      "unload": 0
+    },
+    "note": "Observed earlier in this 0.2.4 run; subsequent source edits only corrected native fallback notification setup and loading state."
+  },
+  "disableWhileAwaitingGesture": {
+    "before": {
+      "phase": "loading",
+      "playing": false,
+      "position": 177.85019047619042,
+      "awaitingGesture": true,
+      "registeredNativeLoad": false
+    },
+    "after": {
+      "phase": "native",
+      "enabled": false,
+      "ownsPlayback": false,
+      "playing": false,
+      "position": 177.85019047619042,
+      "loading": false,
+      "awaitingGesture": false,
+      "memoryHeld": 0,
+      "memoryReserved": 0,
+      "pendingResources": 0
+    },
+    "nativeRecoveryConfirmed": true,
+    "bugFixed": "Native onLoad was not registered before the SDK first Load. Recovery now uses original SDK selection when needed."
+  },
+  "sourceFailureFallback": {
+    "reason": "native-only-format",
+    "controlledSourceInput": true,
+    "nativeRecoveryConfirmed": true,
+    "playing": false,
+    "position": 177.85019047619042
+  },
+  "validation": {
+    "incrementalJavascriptSyntax": true,
+    "zipConsistency": true,
+    "fullLintOrTypecheck": false,
+    "applicationBuild": false,
+    "testsAddedOrModified": false,
+    "hardwareOutputRecording": false,
+    "fullProcessColdStart": false,
+    "windowsImplemented": false
+  },
+  "finalRuntime": {
+    "version": "0.2.4",
+    "id": "2670863152",
+    "enabled": true,
+    "phase": "owned",
+    "ownsPlayback": true,
+    "playing": false,
+    "loading": false,
+    "awaitingGesture": false,
+    "position": 177.85019047619042,
+    "sourceRate": 44100,
+    "decodedRate": 44100,
+    "outputRate": 44100,
+    "nativeTransport": {
+      "load": 0,
+      "play": 0,
+      "pause": 0,
+      "seek": 0,
+      "stop": 0,
+      "unload": 0
+    },
+    "startup": {
+      "phase": "web-ready",
+      "held": 0,
+      "released": 0
+    },
+    "trace": [
+      {
+        "at": 254,
+        "event": "ready",
+        "compatible": false,
+        "appVersion": "3.1.12"
+      },
+      {
+        "at": 737,
+        "event": "queue-changed",
+        "queueVersion": 1
+      },
+      {
+        "at": 737,
+        "event": "capabilities",
+        "compatible": false
+      },
+      {
+        "at": 801,
+        "event": "capabilities",
+        "compatible": true
+      },
+      {
+        "at": 802,
+        "event": "startup-web-restore",
+        "id": "2670863152",
+        "position": 177.85019047619042,
+        "playing": false
+      },
+      {
+        "at": 817,
+        "event": "queue-changed",
+        "queueVersion": 2
+      },
+      {
+        "at": 2031,
+        "event": "native-cache-hit",
+        "id": "2670863152",
+        "level": "lossless",
+        "bytes": 27865486,
+        "md5Verified": true
+      },
+      {
+        "at": 2256,
+        "event": "decoded",
+        "id": "2670863152",
+        "level": "lossless",
+        "origin": "native-cache",
+        "sourceRate": 44100,
+        "decodedRate": 44100,
+        "channels": 2,
+        "size": 82881144
+      },
+      {
+        "at": 3762,
+        "event": "web-start-awaiting-gesture",
+        "id": "2670863152"
+      },
+      {
+        "at": 29666,
+        "event": "native-load",
+        "id": "2670863152",
+        "phase": "loading",
+        "current": "2670863152",
+        "epoch": 1
+      },
+      {
+        "at": 30456,
+        "event": "output-ready",
+        "waitMs": 937,
+        "contextTime": 0.9839455782312925,
+        "outputContextTime": 0.901113
+      },
+      {
+        "at": 30457,
+        "event": "output-ready",
+        "waitMs": 783.6999998092651,
+        "contextTime": 0.9839455782312925,
+        "outputContextTime": 0.901113
+      },
+      {
+        "at": 30468,
+        "event": "web-loaded",
+        "id": "2670863152",
+        "origin": "native-cache",
+        "rate": 44100
+      },
+      {
+        "at": 30478,
+        "event": "system-media-acquired"
+      },
+      {
+        "at": 30479,
+        "event": "play",
+        "id": "2670863152"
+      },
+      {
+        "at": 30498,
+        "event": "seek-replaced",
+        "id": "2670863152",
+        "switchLeadMs": 2.902494331065819
+      },
+      {
+        "at": 30498,
+        "event": "seek",
+        "id": "2670863152",
+        "position": 177
+      },
+      {
+        "at": 31338,
+        "event": "native-cache-hit",
+        "id": "1938192798",
+        "level": "hires",
+        "bytes": 28631824,
+        "md5Verified": true
+      },
+      {
+        "at": 31507,
+        "event": "decoded",
+        "id": "1938192798",
+        "level": "hires",
+        "origin": "native-cache",
+        "sourceRate": 44100,
+        "decodedRate": 44100,
+        "channels": 2,
+        "size": 82555200
+      },
+      {
+        "at": 31507,
+        "event": "scheduled",
+        "from": "2670863152",
+        "to": "1938192798",
+        "leadSeconds": 56.925419501133796,
+        "sourceRate": 44100,
+        "decodedRate": 44100,
+        "contextRate": 44100,
+        "scheduledGapFrames": 0
+      },
+      {
+        "at": 88437,
+        "event": "transition",
+        "from": "2670863152",
+        "to": "1938192798",
+        "scheduledGapFrames": 0
+      },
+      {
+        "at": 88584,
+        "event": "native-load",
+        "id": "1938192798",
+        "phase": "claiming",
+        "current": "1938192798",
+        "epoch": 2
+      },
+      {
+        "at": 88584,
+        "event": "claimed",
+        "id": "1938192798",
+        "position": 0.14052154195010758,
+        "claimDelayMs": 147.09999990463257
+      },
+      {
+        "at": 88588,
+        "event": "play",
+        "id": "1938192798"
+      },
+      {
+        "at": 89395,
+        "event": "native-cache-hit",
+        "id": "431811451",
+        "level": "lossless",
+        "bytes": 26511114,
+        "md5Verified": true
+      },
+      {
+        "at": 89568,
+        "event": "decoded",
+        "id": "431811451",
+        "level": "lossless",
+        "origin": "native-cache",
+        "sourceRate": 44100,
+        "decodedRate": 44100,
+        "channels": 2,
+        "size": 85561056
+      },
+      {
+        "at": 89568,
+        "event": "scheduled",
+        "from": "1938192798",
+        "to": "431811451",
+        "leadSeconds": 232.85521541950118,
+        "sourceRate": 44100,
+        "decodedRate": 44100,
+        "contextRate": 44100,
+        "scheduledGapFrames": 0
+      },
+      {
+        "at": 99014,
+        "event": "pause",
+        "id": "1938192798",
+        "position": 10.551768707482992
+      },
+      {
+        "at": 99185,
+        "event": "native-load",
+        "id": "2670863152",
+        "phase": "owned",
+        "current": "1938192798",
+        "epoch": 3
+      },
+      {
+        "at": 99959,
+        "event": "native-cache-hit",
+        "id": "2670863152",
+        "level": "lossless",
+        "bytes": 27865486,
+        "md5Verified": true
+      },
+      {
+        "at": 100127,
+        "event": "decoded",
+        "id": "2670863152",
+        "level": "lossless",
+        "origin": "native-cache",
+        "sourceRate": 44100,
+        "decodedRate": 44100,
+        "channels": 2,
+        "size": 82881144
+      },
+      {
+        "at": 100127,
+        "event": "output-ready",
+        "waitMs": 0.09999990463256836,
+        "contextTime": 70.65832199546485,
+        "outputContextTime": 70.57547366666667
+      },
+      {
+        "at": 100127,
+        "event": "web-loaded",
+        "id": "2670863152",
+        "origin": "native-cache",
+        "rate": 44100
+      },
+      {
+        "at": 100128,
+        "event": "scheduled",
+        "from": "2670863152",
+        "to": "1938192798",
+        "leadSeconds": 234.93387755102043,
+        "sourceRate": 44100,
+        "decodedRate": 44100,
+        "contextRate": 44100,
+        "scheduledGapFrames": 0
+      },
+      {
+        "at": 100130,
+        "event": "play",
+        "id": "2670863152"
+      },
+      {
+        "at": 100568,
+        "event": "pause",
+        "id": "2670863152",
+        "position": 0.3731292517006892
+      },
+      {
+        "at": 100570,
+        "event": "seek",
+        "id": "2670863152",
+        "position": 177.85019047619042
+      }
+    ]
+  },
+  "limitations": [
+    "macOS system Control Center seek rollback remains unresolved.",
+    "Counters cover JavaScript bridge transport, not independent native media handlers.",
+    "Source loading or genuine input authorization may delay first sound.",
+    "Native playback already sounding before injection and native fallback still require handoff.",
+    "Mixed sample-rate boundaries can have a gap."
+  ],
+  "finalRuntimeNote": "Final native-auto-Play acknowledgement guard was syntax/code reviewed and installed by full reload. CUA could not return a window observation (cgWindowNotFound), but its space key was delivered: protocol records confirm Web playing with zero native transport commands. SDK pause and seek restored the original paused track and position. Earlier complete window observations confirmed the original UI buttons."
+}

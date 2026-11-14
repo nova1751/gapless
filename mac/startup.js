@@ -5,10 +5,60 @@
   const bridge = window.__gpMacBridge = {
     registrations: Object.create(null), events: Object.create(null), eventAt: Object.create(null),
     calls: [], loads: new Map(), handle: null, hooked: false, nativePost: null, synthetic: false,
-    audioDataEnabled: false,
+    audioDataEnabled: false, nativeTransport: { load: 0, play: 0, pause: 0, seek: 0, stop: 0, unload: 0 },
   };
   const waiters = new Set(), protectedDispatchers = new WeakSet();
   const report = error => { try { bridge.onError?.(error); } catch { /* Preserve native delivery. */ } };
+  const countNativeTransport = msg => {
+    const name = msg?.method === 'call' && msg.command?.replace(/^audioplayer\./, '');
+    if (Object.hasOwn(bridge.nativeTransport, name)) bridge.nativeTransport[name]++;
+  };
+  const pendingStartup = [];
+  let startupTimer;
+  bridge.startup = { phase: 'waiting', held: 0, released: 0 };
+  const rememberNative = msg => {
+    if (bridge.handle) return;
+    bridge.calls.push({ command: msg.command, params: msg.params, seq: msg.seq,
+      startupNativeFallback: !!msg.startupNativeFallback });
+    if (bridge.calls.length > 120) bridge.calls.shift();
+  };
+  bridge.flushStartup = (nativeFallback = false) => {
+    if (!pendingStartup.length || (!nativeFallback && !bridge.readyForStartup?.())) return;
+    clearTimeout(startupTimer);
+    const messages = pendingStartup.splice(0);
+    bridge.startup.phase = nativeFallback ? 'native-fallback' : 'web-ready';
+    bridge.startup.released += messages.length;
+    for (const msg of messages) {
+      if (!nativeFallback) {
+        try { if (bridge.handle?.(msg)) continue; } catch (error) { report(error); }
+      } else if (bridge.handle && msg.command === 'audioplayer.load') {
+        // Keep native fallback as this instance's owner; do not later chase a
+        // startup timeout by switching already sounding music to Web.
+        try { bridge.handle({ ...msg, observedNative: true, startupNativeFallback: true }); }
+        catch (error) { report(error); }
+      }
+      rememberNative(nativeFallback ? { ...msg, startupNativeFallback: true } : msg); bridge.nativePost(msg);
+    }
+  };
+  function holdStartup(msg) {
+    if (bridge.startup.phase !== 'waiting') return false;
+    const load = msg.command === 'audioplayer.load';
+    if (!load && (!pendingStartup.length || !/^audioplayer\.(play|pause|seek|stop|unload)$/.test(msg.command))) return false;
+    const version = window.APP_CONF?.appver, info = load && msg.params?.[1];
+    if ((version && version !== '3.1.12') || (load && (info?.audioType !== 'track' || info.freeTrialInfo))) {
+      bridge.flushStartup(true); bridge.startup.phase = 'native-fallback'; return false;
+    }
+    if (bridge.readyForStartup?.() && !pendingStartup.length) {
+      bridge.startup.phase = 'web-ready'; return false;
+    }
+    pendingStartup.push(msg); bridge.startup.held++;
+    // Bound adapter initialization only. Source preparation has its own budget
+    // and starts after ownership is established, before either backend sounds.
+    if (!startupTimer) startupTimer = setTimeout(() => bridge.flushStartup(true), 2500);
+    if (pendingStartup.length >= 32) bridge.flushStartup(true);
+    else bridge.flushStartup();
+    return true;
+  }
   function observe(command, args) {
     bridge.events[command] = args; bridge.eventAt[command] = performance.now();
     for (const waiter of [...waiters]) {
@@ -80,7 +130,7 @@
     const channel = window.ncmChannelOSX;
     if (!channel || typeof channel.postMessage !== 'function' || bridge.hooked) return;
     const original = channel.postMessage;
-    bridge.nativePost = msg => original.call(channel, msg);
+    bridge.nativePost = msg => { countNativeTransport(msg); return original.call(channel, msg); };
     channel.postMessage = function (msg) {
       if (msg?.method === 'registerCall' && (msg.command?.startsWith('audioplayer.') || msg.command === 'winhelper.onHotkey')) {
         bridge.registrations[msg.command] = msg.seq; bridge.protect();
@@ -91,13 +141,11 @@
           bridge.loads.set(String(msg.params?.[0]), msg.params?.[1]);
           if (bridge.loads.size > 8) bridge.loads.delete(bridge.loads.keys().next().value);
         }
-        if (!bridge.handle) {
-          bridge.calls.push({ command: msg.command, params: msg.params, seq: msg.seq });
-          if (bridge.calls.length > 120) bridge.calls.shift();
-        }
+        if (holdStartup(msg)) return;
+        rememberNative(msg);
         try { if (bridge.handle?.(msg)) return; } catch (error) { report(error); }
       }
-      return original.apply(this, arguments);
+      countNativeTransport(msg); return original.apply(this, arguments);
     };
     bridge.hooked = true;
   }
