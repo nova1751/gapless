@@ -81,7 +81,7 @@
     const original = channel.postMessage;
     bridge.nativePost = msg => original.call(channel, msg);
     channel.postMessage = function (msg) {
-      if (msg?.method === 'registerCall' && msg.command?.startsWith('audioplayer.')) {
+      if (msg?.method === 'registerCall' && (msg.command?.startsWith('audioplayer.') || msg.command === 'winhelper.onHotkey')) {
         bridge.registrations[msg.command] = msg.seq; bridge.protect();
       }
       if (msg?.method === 'call' && /^audioplayer\./.test(msg.command)) {

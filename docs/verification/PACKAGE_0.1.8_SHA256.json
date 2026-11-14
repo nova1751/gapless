@@ -1,0 +1,20 @@
+{
+  "version": "0.1.8",
+  "releaseAndInstalledSha256": "313df0f4bbc3f6103ca38471e0a5d53f68dc20b98c41265658be8bbca785ba0a",
+  "sourceSha256": {
+    "shared/audio-resources.js": "4a5c8353f3d14177a7447104db724a51134ff77c00e293e3bd170ba0ff635f1e",
+    "shared/playback-clock.js": "5319fe5c485de04b774e5020977170cd8c0e284b467196d7fb37ffbf06164190",
+    "mac/media-session.js": "9331a782e96a58ffdc5bf796b61924d96e092c74a9ac449eef3776b15f21a81e",
+    "mac/player.js": "954e6090b5dbeda67ac656471a8256503310f1f268ab8efc0eaec1ab9452b131",
+    "mac/startup.js": "d31a4769909df23fce58a9460150789e57c0e0a669eb7ff758f916c6abd06566",
+    "mac/manifest.json": "d37dd9e146a9a24f29fbd82ffe23888a7f00dde898d22198fb280fa2e62fb0b0",
+    "mac/package.py": "d7d60e6944673a523d3301c0987f87d95c2e5c34a15722d165da64c62c5a12ac"
+  },
+  "checks": {
+    "zipMembers": true,
+    "packedSourcesEqual": true,
+    "installedPackageEqual": true,
+    "singleInstalledSlug": true,
+    "gaplessEnabled": true
+  }
+}

@@ -1,0 +1,1249 @@
+{
+  "version": "0.1.8",
+  "status": {
+    "enabled": true,
+    "compatible": true,
+    "id": "2670863319",
+    "phase": "owned",
+    "ownsPlayback": true,
+    "playing": true,
+    "seekPending": false,
+    "seekSettling": false,
+    "position": 217.6926819229025,
+    "duration": 232.1764172335601,
+    "requestedLevel": "hires",
+    "actualLevel": "lossless",
+    "sourceRate": 44100,
+    "decodedRate": 44100,
+    "sampleRate": 44100,
+    "contextState": "running",
+    "contextGeneration": 3,
+    "activeNodes": 2,
+    "deviceFormat": "unknown",
+    "next": "2670863152",
+    "scheduled": "2670863152",
+    "claiming": false,
+    "memory": {
+      "held": 164792984,
+      "reserved": 0,
+      "limit": 536870912,
+      "pending": 0
+    },
+    "mode": "playCycle",
+    "nativeAllowed": true,
+    "queueVersion": 2,
+    "loadEpoch": 8,
+    "controlRevision": 29,
+    "systemMedia": {
+      "supported": true,
+      "active": true,
+      "failed": false,
+      "seekPending": false
+    }
+  },
+  "mediaState": "playing",
+  "mediaTitle": "Baptized In Fear",
+  "trace": [
+    {
+      "at": 288,
+      "event": "ready",
+      "compatible": false,
+      "appVersion": "3.1.12"
+    },
+    {
+      "at": 451,
+      "event": "queue-changed",
+      "queueVersion": 1
+    },
+    {
+      "at": 451,
+      "event": "capabilities",
+      "compatible": false
+    },
+    {
+      "at": 522,
+      "event": "capabilities",
+      "compatible": true
+    },
+    {
+      "at": 525,
+      "event": "restore-start",
+      "id": "2670863319",
+      "reason": "page-reload",
+      "position": 70.9337000002861
+    },
+    {
+      "at": 531,
+      "event": "recovery-native-cleanup",
+      "command": "audioplayer.stop",
+      "id": ""
+    },
+    {
+      "at": 629,
+      "event": "queue-changed",
+      "queueVersion": 2
+    },
+    {
+      "at": 773,
+      "event": "native-load",
+      "id": "2670863319",
+      "phase": "restoring",
+      "current": "2670863319",
+      "epoch": 1
+    },
+    {
+      "at": 1035,
+      "event": "restored-native",
+      "id": "2670863319",
+      "reason": "page-reload",
+      "position": 70.9337000002861,
+      "playing": true,
+      "confirmed": true
+    },
+    {
+      "at": 3700,
+      "event": "decoded",
+      "id": "2670863319",
+      "level": "lossless",
+      "sourceRate": 44100,
+      "decodedRate": 44100,
+      "channels": 2,
+      "size": 81911840
+    },
+    {
+      "at": 6380,
+      "event": "decoded",
+      "id": "2670863152",
+      "level": "lossless",
+      "sourceRate": 44100,
+      "decodedRate": 44100,
+      "channels": 2,
+      "size": 82881144
+    },
+    {
+      "at": 7888,
+      "event": "awaiting-gesture",
+      "id": "2670863319"
+    },
+    {
+      "at": 13188,
+      "event": "output-ready",
+      "waitMs": 72.30000019073486,
+      "contextTime": 0.08707482993197278,
+      "outputContextTime": 0.005210000000000002
+    },
+    {
+      "at": 13189,
+      "event": "system-media-acquired"
+    },
+    {
+      "at": 13208,
+      "event": "scheduled",
+      "from": "2670863319",
+      "to": "2670863152",
+      "leadSeconds": 149.10141723356008,
+      "sourceRate": 44100,
+      "decodedRate": 44100,
+      "contextRate": 44100,
+      "scheduledGapFrames": 0
+    },
+    {
+      "at": 13222,
+      "event": "takeover",
+      "id": "2670863319",
+      "position": 83.075,
+      "pauseAcknowledged": true
+    },
+    {
+      "at": 22454,
+      "event": "seek-replaced",
+      "id": "2670863319",
+      "switchLeadMs": 2.902494331065597
+    },
+    {
+      "at": 22454,
+      "event": "seek",
+      "id": "2670863319",
+      "position": 230.1764172335601
+    },
+    {
+      "at": 22454,
+      "event": "scheduled",
+      "from": "2670863319",
+      "to": "2670863152",
+      "leadSeconds": 2.002902494331062,
+      "sourceRate": 44100,
+      "decodedRate": 44100,
+      "contextRate": 44100,
+      "scheduledGapFrames": 0
+    },
+    {
+      "at": 22456,
+      "event": "system-media-seek",
+      "id": "2670863319",
+      "position": 230.1764172335601
+    },
+    {
+      "at": 24442,
+      "event": "transition",
+      "from": "2670863319",
+      "to": "2670863152",
+      "scheduledGapFrames": 0
+    },
+    {
+      "at": 24591,
+      "event": "native-load",
+      "id": "2670863152",
+      "phase": "claiming",
+      "current": "2670863152",
+      "epoch": 1
+    },
+    {
+      "at": 24591,
+      "event": "claimed",
+      "id": "2670863152",
+      "position": 0.15074829931973177,
+      "claimDelayMs": 149.40000009536743
+    },
+    {
+      "at": 24595,
+      "event": "play",
+      "id": "2670863152"
+    },
+    {
+      "at": 24707,
+      "event": "prefetch-fallback",
+      "id": "1938192798",
+      "reason": "native-only-file-size"
+    },
+    {
+      "at": 66102,
+      "event": "seek-replaced",
+      "id": "2670863152",
+      "switchLeadMs": 2.9024943310673734
+    },
+    {
+      "at": 66102,
+      "event": "seek",
+      "id": "2670863152",
+      "position": 232.9238775510204
+    },
+    {
+      "at": 66105,
+      "event": "system-media-seek",
+      "id": "2670863152",
+      "position": 232.9238775510204
+    },
+    {
+      "at": 68183,
+      "event": "native-load",
+      "id": "1938192798",
+      "phase": "native",
+      "current": "2670863152",
+      "epoch": 1
+    },
+    {
+      "at": 68262,
+      "event": "native-fallback",
+      "id": "1938192798",
+      "reason": "download-403"
+    },
+    {
+      "at": 78312,
+      "event": "native-fallback",
+      "id": "1938192798",
+      "reason": "download-403"
+    },
+    {
+      "at": 98429,
+      "event": "native-fallback",
+      "id": "1938192798",
+      "reason": "download-403"
+    },
+    {
+      "at": 103293,
+      "event": "system-media-control",
+      "id": "1938192798",
+      "action": "previoustrack"
+    },
+    {
+      "at": 103339,
+      "event": "system-media-action",
+      "action": "previoustrack"
+    },
+    {
+      "at": 103403,
+      "event": "native-load",
+      "id": "2670863152",
+      "phase": "native",
+      "current": "1938192798",
+      "epoch": 2
+    },
+    {
+      "at": 105346,
+      "event": "system-media-control",
+      "id": "2670863152",
+      "action": "previoustrack"
+    },
+    {
+      "at": 105400,
+      "event": "system-media-action",
+      "action": "previoustrack"
+    },
+    {
+      "at": 105640,
+      "event": "native-load",
+      "id": "2670863319",
+      "phase": "native",
+      "current": "2670863152",
+      "epoch": 3
+    },
+    {
+      "at": 106189,
+      "event": "decoded",
+      "id": "2670863152",
+      "level": "lossless",
+      "sourceRate": 44100,
+      "decodedRate": 44100,
+      "channels": 2,
+      "size": 82881144
+    },
+    {
+      "at": 108709,
+      "event": "decoded",
+      "id": "2670863319",
+      "level": "lossless",
+      "sourceRate": 44100,
+      "decodedRate": 44100,
+      "channels": 2,
+      "size": 81911840
+    },
+    {
+      "at": 108736,
+      "event": "output-ready",
+      "waitMs": 24.299999713897705,
+      "contextTime": 0.04353741496598639,
+      "outputContextTime": 0.000128
+    },
+    {
+      "at": 108739,
+      "event": "scheduled",
+      "from": "2670863319",
+      "to": "2670863152",
+      "leadSeconds": 229.1524172335601,
+      "sourceRate": 44100,
+      "decodedRate": 44100,
+      "contextRate": 44100,
+      "scheduledGapFrames": 0
+    },
+    {
+      "at": 108744,
+      "event": "takeover",
+      "id": "2670863319",
+      "position": 3.0239999999999996,
+      "pauseAcknowledged": true
+    },
+    {
+      "at": 108750,
+      "event": "system-media-action",
+      "action": "seekto"
+    },
+    {
+      "at": 108750,
+      "event": "seek-replaced",
+      "id": "2670863319",
+      "switchLeadMs": 2.9024943310657636
+    },
+    {
+      "at": 108750,
+      "event": "seek",
+      "id": "2670863319",
+      "position": 128.382693
+    },
+    {
+      "at": 108750,
+      "event": "scheduled",
+      "from": "2670863319",
+      "to": "2670863152",
+      "leadSeconds": 103.79662672789118,
+      "sourceRate": 44100,
+      "decodedRate": 44100,
+      "contextRate": 44100,
+      "scheduledGapFrames": 0
+    },
+    {
+      "at": 108751,
+      "event": "system-media-seek",
+      "id": "2670863319",
+      "position": 128.382693
+    },
+    {
+      "at": 110199,
+      "event": "system-media-action",
+      "action": "seekto"
+    },
+    {
+      "at": 110199,
+      "event": "seek-replaced",
+      "id": "2670863319",
+      "switchLeadMs": 2.902494331065819
+    },
+    {
+      "at": 110199,
+      "event": "seek",
+      "id": "2670863319",
+      "position": 187.892538
+    },
+    {
+      "at": 110199,
+      "event": "scheduled",
+      "from": "2670863319",
+      "to": "2670863152",
+      "leadSeconds": 44.286781727891174,
+      "sourceRate": 44100,
+      "decodedRate": 44100,
+      "contextRate": 44100,
+      "scheduledGapFrames": 0
+    },
+    {
+      "at": 110200,
+      "event": "system-media-seek",
+      "id": "2670863319",
+      "position": 187.892538
+    },
+    {
+      "at": 110201,
+      "event": "system-media-action",
+      "action": "seekto"
+    },
+    {
+      "at": 112063,
+      "event": "system-media-action",
+      "action": "seekto"
+    },
+    {
+      "at": 112064,
+      "event": "seek-replaced",
+      "id": "2670863319",
+      "switchLeadMs": 2.902494331066041
+    },
+    {
+      "at": 112064,
+      "event": "seek",
+      "id": "2670863319",
+      "position": 214.431746
+    },
+    {
+      "at": 112064,
+      "event": "scheduled",
+      "from": "2670863319",
+      "to": "2670863152",
+      "leadSeconds": 17.747573727891165,
+      "sourceRate": 44100,
+      "decodedRate": 44100,
+      "contextRate": 44100,
+      "scheduledGapFrames": 0
+    },
+    {
+      "at": 112065,
+      "event": "system-media-seek",
+      "id": "2670863319",
+      "position": 214.431746
+    },
+    {
+      "at": 112066,
+      "event": "system-media-action",
+      "action": "seekto"
+    },
+    {
+      "at": 129807,
+      "event": "transition",
+      "from": "2670863319",
+      "to": "2670863152",
+      "scheduledGapFrames": 0
+    },
+    {
+      "at": 129965,
+      "event": "native-load",
+      "id": "2670863152",
+      "phase": "claiming",
+      "current": "2670863152",
+      "epoch": 4
+    },
+    {
+      "at": 129965,
+      "event": "claimed",
+      "id": "2670863152",
+      "position": 0.1521088117913756,
+      "claimDelayMs": 158.19999980926514
+    },
+    {
+      "at": 129968,
+      "event": "play",
+      "id": "2670863152"
+    },
+    {
+      "at": 130080,
+      "event": "prefetch-fallback",
+      "id": "1938192798",
+      "reason": "native-only-file-size"
+    },
+    {
+      "at": 153396,
+      "event": "system-media-action",
+      "action": "seekto"
+    },
+    {
+      "at": 153396,
+      "event": "seek-replaced",
+      "id": "2670863152",
+      "switchLeadMs": 5.804988662127641
+    },
+    {
+      "at": 153396,
+      "event": "seek",
+      "id": "2670863152",
+      "position": 112.00397
+    },
+    {
+      "at": 153398,
+      "event": "system-media-seek",
+      "id": "2670863152",
+      "position": 112.00397
+    },
+    {
+      "at": 153398,
+      "event": "system-media-action",
+      "action": "seekto"
+    },
+    {
+      "at": 156848,
+      "event": "system-media-action",
+      "action": "seekto"
+    },
+    {
+      "at": 156848,
+      "event": "seek-replaced",
+      "id": "2670863152",
+      "switchLeadMs": 2.9024943310673734
+    },
+    {
+      "at": 156848,
+      "event": "seek",
+      "id": "2670863152",
+      "position": 199.339402
+    },
+    {
+      "at": 156849,
+      "event": "system-media-seek",
+      "id": "2670863152",
+      "position": 199.339402
+    },
+    {
+      "at": 156850,
+      "event": "system-media-action",
+      "action": "seekto"
+    },
+    {
+      "at": 156850,
+      "event": "seek-replaced",
+      "id": "2670863152",
+      "switchLeadMs": 2.9024943310673734
+    },
+    {
+      "at": 156850,
+      "event": "seek",
+      "id": "2670863152",
+      "position": 199.313382
+    },
+    {
+      "at": 156850,
+      "event": "system-media-seek",
+      "id": "2670863152",
+      "position": 199.313382
+    },
+    {
+      "at": 158823,
+      "event": "system-media-control",
+      "id": "2670863152",
+      "action": "nexttrack"
+    },
+    {
+      "at": 158871,
+      "event": "system-media-action",
+      "action": "nexttrack"
+    },
+    {
+      "at": 158875,
+      "event": "native-load",
+      "id": "1938192798",
+      "phase": "native",
+      "current": "2670863152",
+      "epoch": 5
+    },
+    {
+      "at": 158959,
+      "event": "native-fallback",
+      "id": "1938192798",
+      "reason": "download-403"
+    },
+    {
+      "at": 159764,
+      "event": "system-media-action",
+      "action": "seekto"
+    },
+    {
+      "at": 159764,
+      "event": "system-media-seek",
+      "id": "1938192798",
+      "position": 117.212836
+    },
+    {
+      "at": 159765,
+      "event": "system-media-action",
+      "action": "seekto"
+    },
+    {
+      "at": 160672,
+      "event": "system-media-action",
+      "action": "seekto"
+    },
+    {
+      "at": 160672,
+      "event": "system-media-seek",
+      "id": "1938192798",
+      "position": 198.345196
+    },
+    {
+      "at": 160673,
+      "event": "system-media-action",
+      "action": "seekto"
+    },
+    {
+      "at": 161751,
+      "event": "system-media-action",
+      "action": "seekto"
+    },
+    {
+      "at": 161751,
+      "event": "system-media-seek",
+      "id": "1938192798",
+      "position": 45.305054
+    },
+    {
+      "at": 161751,
+      "event": "system-media-action",
+      "action": "seekto"
+    },
+    {
+      "at": 163506,
+      "event": "system-media-action",
+      "action": "seekto"
+    },
+    {
+      "at": 163506,
+      "event": "system-media-seek",
+      "id": "1938192798",
+      "position": 185.391366
+    },
+    {
+      "at": 163507,
+      "event": "system-media-action",
+      "action": "seekto"
+    },
+    {
+      "at": 163507,
+      "event": "system-media-seek",
+      "id": "1938192798",
+      "position": 185.332791
+    },
+    {
+      "at": 164372,
+      "event": "system-media-action",
+      "action": "seekto"
+    },
+    {
+      "at": 164372,
+      "event": "system-media-seek",
+      "id": "1938192798",
+      "position": 185.358353
+    },
+    {
+      "at": 164372,
+      "event": "system-media-action",
+      "action": "seekto"
+    },
+    {
+      "at": 169064,
+      "event": "native-fallback",
+      "id": "1938192798",
+      "reason": "download-403"
+    },
+    {
+      "at": 170624,
+      "event": "system-media-control",
+      "id": "1938192798",
+      "action": "previoustrack"
+    },
+    {
+      "at": 170669,
+      "event": "system-media-action",
+      "action": "previoustrack"
+    },
+    {
+      "at": 170732,
+      "event": "native-load",
+      "id": "2670863152",
+      "phase": "native",
+      "current": "1938192798",
+      "epoch": 6
+    },
+    {
+      "at": 172688,
+      "event": "system-media-control",
+      "id": "2670863152",
+      "action": "previoustrack"
+    },
+    {
+      "at": 172734,
+      "event": "system-media-action",
+      "action": "previoustrack"
+    },
+    {
+      "at": 172948,
+      "event": "native-load",
+      "id": "2670863319",
+      "phase": "native",
+      "current": "2670863152",
+      "epoch": 7
+    },
+    {
+      "at": 173390,
+      "event": "decoded",
+      "id": "2670863152",
+      "level": "lossless",
+      "sourceRate": 44100,
+      "decodedRate": 44100,
+      "channels": 2,
+      "size": 82881144
+    },
+    {
+      "at": 174206,
+      "event": "system-media-action",
+      "action": "seekto"
+    },
+    {
+      "at": 174206,
+      "event": "system-media-seek",
+      "id": "2670863319",
+      "position": 94.614532
+    },
+    {
+      "at": 174207,
+      "event": "system-media-action",
+      "action": "seekto"
+    },
+    {
+      "at": 175915,
+      "event": "decoded",
+      "id": "2670863319",
+      "level": "lossless",
+      "sourceRate": 44100,
+      "decodedRate": 44100,
+      "channels": 2,
+      "size": 81911840
+    },
+    {
+      "at": 175939,
+      "event": "output-ready",
+      "waitMs": 24.59999990463257,
+      "contextTime": 67.24498866213152,
+      "outputContextTime": 67.16229233333333
+    },
+    {
+      "at": 175942,
+      "event": "scheduled",
+      "from": "2670863319",
+      "to": "2670863152",
+      "leadSeconds": 136.1011172333694,
+      "sourceRate": 44100,
+      "decodedRate": 44100,
+      "contextRate": 44100,
+      "scheduledGapFrames": 0
+    },
+    {
+      "at": 175954,
+      "event": "takeover",
+      "id": "2670863319",
+      "position": 96.07530000019074,
+      "pauseAcknowledged": true
+    },
+    {
+      "at": 178248,
+      "event": "system-media-action",
+      "action": "seekto"
+    },
+    {
+      "at": 178248,
+      "event": "seek-replaced",
+      "id": "2670863319",
+      "switchLeadMs": 2.9024943310673734
+    },
+    {
+      "at": 178248,
+      "event": "seek",
+      "id": "2670863319",
+      "position": 98.183194
+    },
+    {
+      "at": 178248,
+      "event": "scheduled",
+      "from": "2670863319",
+      "to": "2670863152",
+      "leadSeconds": 133.99612572789113,
+      "sourceRate": 44100,
+      "decodedRate": 44100,
+      "contextRate": 44100,
+      "scheduledGapFrames": 0
+    },
+    {
+      "at": 178248,
+      "event": "system-media-seek",
+      "id": "2670863319",
+      "position": 98.183194
+    },
+    {
+      "at": 178249,
+      "event": "system-media-action",
+      "action": "seekto"
+    },
+    {
+      "at": 179780,
+      "event": "system-media-action",
+      "action": "seekto"
+    },
+    {
+      "at": 179781,
+      "event": "seek-replaced",
+      "id": "2670863319",
+      "switchLeadMs": 2.9024943310673734
+    },
+    {
+      "at": 179781,
+      "event": "seek",
+      "id": "2670863319",
+      "position": 182.581208
+    },
+    {
+      "at": 179781,
+      "event": "scheduled",
+      "from": "2670863319",
+      "to": "2670863152",
+      "leadSeconds": 49.59811172789115,
+      "sourceRate": 44100,
+      "decodedRate": 44100,
+      "contextRate": 44100,
+      "scheduledGapFrames": 0
+    },
+    {
+      "at": 179782,
+      "event": "system-media-seek",
+      "id": "2670863319",
+      "position": 182.581208
+    },
+    {
+      "at": 179782,
+      "event": "system-media-action",
+      "action": "seekto"
+    }
+  ],
+  "nativeFallbackBefore": {
+    "id": "2670863152",
+    "active": true,
+    "position": 41.64480725623583
+  },
+  "uiChecks": {
+    "gaplessNextTitle": "Open Hearts",
+    "gaplessNextPauseButton": true,
+    "systemSeekObservedPositions": [
+      27.10719,
+      59.950256
+    ],
+    "systemPauseResumeObserved": true,
+    "systemPreviousSelected": "2670863319",
+    "systemNextSelected": "2670863152",
+    "releaseRegressionNativeControlsDisabledObserved": true,
+    "finalNativeFallbackControlsAX": "not_observed_panel_closed",
+    "handoffIconFlicker": "user_reports_still_present",
+    "mainWindowStyleChanged": false,
+    "finalCurrentControlsAX": "Open Hearts: previous/next/seek enabled; pause and play states observed",
+    "postActionFrameSampling": {
+      "pausedSamples": 10,
+      "playingSamples": 35,
+      "playingElapsedMs": 1774,
+      "playingObservedButtons": [
+        "pause"
+      ],
+      "limitation": "Sampling begins after the UI operation returns; does not cover its initial instant."
+    }
+  },
+  "scope": "Current source runtime and real Control Center actions; no device audio capture.",
+  "userVerification": {
+    "previousNextWork": true,
+    "iconStillBrieflyToggles": true,
+    "seekPanelStillRollsBack": true
+  },
+  "writerReview": {
+    "entries": [
+      {
+        "at": 453706.2000002861,
+        "event": "audioplayer.onPlayProgress",
+        "nativeId": "2670863319",
+        "nativePosition": 172.78,
+        "actualId": "2670863152",
+        "actualPlaying": false,
+        "actualPosition": 172.78055,
+        "webOwns": true,
+        "mediaState": "paused"
+      },
+      {
+        "at": 488972.90000009537,
+        "event": "audioplayer.onPlayProgress",
+        "nativeId": "2670863319",
+        "nativePosition": 157.83,
+        "actualId": "2670863152",
+        "actualPlaying": true,
+        "actualPosition": 158.42296633786847,
+        "webOwns": true,
+        "mediaState": "playing"
+      }
+    ],
+    "status": {
+      "enabled": true,
+      "compatible": true,
+      "id": "2670863152",
+      "phase": "owned",
+      "ownsPlayback": true,
+      "playing": false,
+      "seekPending": false,
+      "seekSettling": false,
+      "position": 183.59629967120176,
+      "duration": 234.9238775510204,
+      "requestedLevel": "hires",
+      "actualLevel": "lossless",
+      "sourceRate": 44100,
+      "decodedRate": 44100,
+      "sampleRate": 44100,
+      "contextState": "running",
+      "contextGeneration": 3,
+      "activeNodes": 0,
+      "deviceFormat": "unknown",
+      "next": "1938192798",
+      "claiming": false,
+      "memory": {
+        "held": 82881144,
+        "reserved": 0,
+        "limit": 536870912,
+        "pending": 0
+      },
+      "mode": "playCycle",
+      "nativeAllowed": true,
+      "queueVersion": 2,
+      "loadEpoch": 10,
+      "controlRevision": 56,
+      "systemMedia": {
+        "supported": true,
+        "active": true,
+        "failed": false,
+        "seekPending": false
+      }
+    },
+    "trace": [
+      {
+        "at": 293259,
+        "event": "native-load",
+        "id": "2670863152",
+        "phase": "claiming",
+        "current": "2670863152",
+        "epoch": 10
+      },
+      {
+        "at": 293259,
+        "event": "claimed",
+        "id": "2670863152",
+        "position": 0.1330145125670299,
+        "claimDelayMs": 146
+      },
+      {
+        "at": 293262,
+        "event": "play",
+        "id": "2670863152"
+      },
+      {
+        "at": 293355,
+        "event": "prefetch-fallback",
+        "id": "1938192798",
+        "reason": "native-only-file-size"
+      },
+      {
+        "at": 296419,
+        "event": "pause",
+        "id": "2670863152",
+        "position": 3.2880258504355027
+      },
+      {
+        "at": 296419,
+        "event": "system-media-control",
+        "id": "2670863152",
+        "action": "pause"
+      },
+      {
+        "at": 296419,
+        "event": "system-media-action",
+        "action": "pause"
+      },
+      {
+        "at": 301784,
+        "event": "system-media-action",
+        "action": "seekto"
+      },
+      {
+        "at": 301784,
+        "event": "seek",
+        "id": "2670863152",
+        "position": 95.450934
+      },
+      {
+        "at": 301785,
+        "event": "system-media-seek",
+        "id": "2670863152",
+        "position": 95.450934
+      },
+      {
+        "at": 303376,
+        "event": "system-media-action",
+        "action": "seekto"
+      },
+      {
+        "at": 303376,
+        "event": "seek",
+        "id": "2670863152",
+        "position": 189.479478
+      },
+      {
+        "at": 303404,
+        "event": "system-media-seek",
+        "id": "2670863152",
+        "position": 189.479478
+      },
+      {
+        "at": 304255,
+        "event": "system-media-action",
+        "action": "seekto"
+      },
+      {
+        "at": 304255,
+        "event": "seek",
+        "id": "2670863152",
+        "position": 56.220482
+      },
+      {
+        "at": 304256,
+        "event": "system-media-seek",
+        "id": "2670863152",
+        "position": 56.220482
+      },
+      {
+        "at": 305062,
+        "event": "play",
+        "id": "2670863152"
+      },
+      {
+        "at": 305062,
+        "event": "system-media-control",
+        "id": "2670863152",
+        "action": "play"
+      },
+      {
+        "at": 305063,
+        "event": "system-media-action",
+        "action": "play"
+      },
+      {
+        "at": 306164,
+        "event": "system-media-action",
+        "action": "seekto"
+      },
+      {
+        "at": 306164,
+        "event": "seek-replaced",
+        "id": "2670863152",
+        "switchLeadMs": 2.9024943310673734
+      },
+      {
+        "at": 306164,
+        "event": "seek",
+        "id": "2670863152",
+        "position": 163.65566
+      },
+      {
+        "at": 306164,
+        "event": "system-media-seek",
+        "id": "2670863152",
+        "position": 163.65566
+      },
+      {
+        "at": 306167,
+        "event": "system-media-action",
+        "action": "seekto"
+      },
+      {
+        "at": 308206,
+        "event": "system-media-action",
+        "action": "seekto"
+      },
+      {
+        "at": 308206,
+        "event": "seek-replaced",
+        "id": "2670863152",
+        "switchLeadMs": 2.9024943310673734
+      },
+      {
+        "at": 308206,
+        "event": "seek",
+        "id": "2670863152",
+        "position": 40.827487
+      },
+      {
+        "at": 308208,
+        "event": "system-media-seek",
+        "id": "2670863152",
+        "position": 40.827487
+      },
+      {
+        "at": 308208,
+        "event": "system-media-action",
+        "action": "seekto"
+      },
+      {
+        "at": 309574,
+        "event": "system-media-action",
+        "action": "seekto"
+      },
+      {
+        "at": 309575,
+        "event": "seek-replaced",
+        "id": "2670863152",
+        "switchLeadMs": 2.9024943310673734
+      },
+      {
+        "at": 309575,
+        "event": "seek",
+        "id": "2670863152",
+        "position": 195.080013
+      },
+      {
+        "at": 309576,
+        "event": "system-media-seek",
+        "id": "2670863152",
+        "position": 195.080013
+      },
+      {
+        "at": 309577,
+        "event": "system-media-action",
+        "action": "seekto"
+      },
+      {
+        "at": 310789,
+        "event": "pause",
+        "id": "2670863152",
+        "position": 196.27293817006804
+      },
+      {
+        "at": 310789,
+        "event": "system-media-control",
+        "id": "2670863152",
+        "action": "pause"
+      },
+      {
+        "at": 310795,
+        "event": "system-media-action",
+        "action": "pause"
+      },
+      {
+        "at": 453104,
+        "event": "system-media-action",
+        "action": "seekto"
+      },
+      {
+        "at": 453104,
+        "event": "seek",
+        "id": "2670863152",
+        "position": 172.78055
+      },
+      {
+        "at": 453113,
+        "event": "system-media-seek",
+        "id": "2670863152",
+        "position": 172.78055
+      },
+      {
+        "at": 479704,
+        "event": "play",
+        "id": "2670863152"
+      },
+      {
+        "at": 479704,
+        "event": "system-media-control",
+        "id": "2670863152",
+        "action": "play"
+      },
+      {
+        "at": 479711,
+        "event": "system-media-action",
+        "action": "play"
+      },
+      {
+        "at": 488371,
+        "event": "system-media-action",
+        "action": "seekto"
+      },
+      {
+        "at": 488372,
+        "event": "seek-replaced",
+        "id": "2670863152",
+        "switchLeadMs": 2.9024943310673734
+      },
+      {
+        "at": 488372,
+        "event": "seek",
+        "id": "2670863152",
+        "position": 157.827955
+      },
+      {
+        "at": 488373,
+        "event": "system-media-seek",
+        "id": "2670863152",
+        "position": 157.827955
+      },
+      {
+        "at": 514165,
+        "event": "pause",
+        "id": "2670863152",
+        "position": 183.59629967120176
+      },
+      {
+        "at": 514165,
+        "event": "system-media-control",
+        "id": "2670863152",
+        "action": "pause"
+      },
+      {
+        "at": 514171,
+        "event": "system-media-action",
+        "action": "pause"
+      }
+    ],
+    "restoredPosition": true
+  }
+}

@@ -92,20 +92,44 @@ plugin.onLoad(() => {
     onEnded: c => { if (S.current === c && c.owns) boundary(c); } });
   const position = () => S.current?.owns ? clock.position(S.current) : nativePosition();
   const media = globalThis.GaplessMacMediaSession && new globalThis.GaplessMacMediaSession({ trace,
-    seek: async (id, value) => {
-      const result = await nativePlayer().seek({ playId: id, seekId: `${id}|seek|system-${S.revision + 1}`, value });
-      if (Number(result?.code) !== 0) throw new Error('system-seek-incomplete');
-      return result;
+    seek: (id, value) => {
+      reconcile(); const c = S.current;
+      if (!c?.owns || c.id !== id) return;
+      seekOwned(c, value, `${id}|seek|system-${S.revision + 1}`);
+      progress(c, true);
+    },
+    transport: (id, action) => {
+      reconcile(); const c = S.current;
+      if (!c || c.id !== id || S.phase === 'restoring') return;
+      if (action === 'nexttrack' || action === 'previoustrack') {
+        // Reuse NetEase's queue policy, including manual previous/next in
+        // single-track repeat. Do not address the parked native track.
+        S.store.dispatch({ type: 'playingList/jump2Track', payload: {
+          flag: action === 'nexttrack' ? 1 : -1, type: 'call', triggerScene: 'miniPlayer', assignedResourceId: c.id } });
+      } else if ((action === 'play') !== (c.owns ? !!c.playing : S.nativePlaying)) {
+        if (c.owns) {
+          const command = action === 'play' ? 'audioplayer.play' : 'audioplayer.pause';
+          bridge.handle({ command, params: [c.id, `${c.id}|system-${action}|${S.revision + 1}`] });
+        } else S.store.dispatch({ type: `playing/${action === 'play' ? 'resume' : 'pause'}`, payload: { triggerScene: 'miniPlayer' } });
+      }
+      trace('system-media-control', { id, action });
     },
     snapshot: () => {
     const c = S.current;
-    if (!c?.owns || !S.enabled || S.phase === 'restoring') return { owns: false };
+    const preparing = S.phase === 'pausing' && c?.takeoverPlaying && S.nativePlaying;
+    // Once acquired, retain the system session across native fallback and
+    // disabling gapless. Chromium teardown disables shared macOS commands;
+    // the carrier now mirrors native playback without carrying music.
+    if (!c || (!S.enabled && !media?.active)) return { owns: false };
     if (!c.mediaMetadata) {
       const row = c.row || rows().find(r => rowId(r) === c.id);
       if (row) c.mediaMetadata = webpackRequire()(22).e(row);
     }
-    return { owns: true, id: c.id, playing: !!c.playing, duration: c.duration,
-      position: clock.position(c), revision: S.revision, metadata: c.mediaMetadata };
+    return { owns: true, controlsReady: S.phase !== 'pausing' && S.phase !== 'restoring',
+      canAcquire: S.enabled && ((c.owns && S.phase !== 'restoring') || preparing),
+      id: c.id, playing: S.phase === 'restoring' ? !!c.recoveryPlaying : S.phase === 'pausing' ? !!c.takeoverPlaying
+        : c.owns ? !!c.playing : S.nativePlaying, duration: c.duration,
+      position: c.owns ? clock.position(c) : nativePosition(), revision: S.revision, metadata: c.mediaMetadata };
   } });
   function nextTrack() {
     const c = S.current, s = state(); if (!c || !allowed(c.info)) return null;
@@ -284,6 +308,8 @@ plugin.onLoad(() => {
       if (!valid() || !S.nativePlaying) return;
       S.phase = 'pausing';
       c.takeoverPlaying = true;
+      await media?.prepare();
+      if (!valid() || !S.nativePlaying || !c.takeoverPlaying) return;
       const token = `${c.id}|pause|gapless-${epoch}`;
       await eventCall('audioplayer.pause', [c.id, token], 'audioplayer.onPlayState', a => String(a[0]) === c.id && a[1] === token && Number(a[2]) === 2);
       if (S.current !== c || S.epoch !== epoch) return;
@@ -327,6 +353,7 @@ plugin.onLoad(() => {
         }
       }
       S.starting = false;
+      if (!S.current?.owns) media?.sync(true);
       if (S.current === c && !c.owns && c.blocked) {
         c.entry = null; resources.retain([]); await clock.close();
       }
@@ -340,7 +367,7 @@ plugin.onLoad(() => {
     const epoch = S.epoch, target = clock.position(c); let desired = c.playing;
     c.recoveryPosition = target; c.recoveryPlaying = desired; c.recoveryHeard = clock.heard(c);
     c.recoverySucceeded = false; c.blocked = true; S.claim = false;
-    S.phase = 'restoring'; media?.release(); stopCurrent(); trace('restore-start', { id: c.id, reason, position: target });
+    S.phase = 'restoring'; stopCurrent(); trace('restore-start', { id: c.id, reason, position: target });
     const run = async () => {
       try {
         // Native onLoad can auto-play for both direct load and queue selection.
@@ -407,6 +434,10 @@ plugin.onLoad(() => {
   }
   bridge.shouldSuppressNative = (command, args) => {
     const c = S.current;
+    if (command === 'winhelper.onHotkey') {
+      const action = { play_pause: 'toggle', play: 'play', pause: 'pause', next: 'nexttrack', prev: 'previoustrack' }[args[0]];
+      if (action && media?.requestTransport(action)) return true;
+    }
     // Parked-backend events, including old track IDs, cannot replace owned
     // state/progress or complete an owned Seek. Raw waiters observe them first.
     if (c?.owns && /^audioplayer\.(onPlayState|onPlayProgress|onEnd|onSeek|onBuffering)$/.test(command)) return true;
@@ -433,6 +464,13 @@ plugin.onLoad(() => {
   };
   bridge.onError = error => { trace('bridge-error', { reason: error.message }); void restoreNative('bridge-error'); };
   function ack(msg, args = []) { queueMicrotask(() => bridge.dispatch(msg.seq, args)); }
+  function seekOwned(c, value, token) {
+    S.revision++;
+    const offset = Math.max(0, Math.min(c.duration - 0.001, Number(value)));
+    cancelScheduled(); clock.seek(c, offset); c.endSent = false; c.missed = false; S.token = token;
+    trace('seek', { id: c.id, position: offset }); scheduleNext();
+    return offset;
+  }
   function completeSeek(msg, c, token, offset, code = 0) {
     seekReplies.push({ msg, c, token, offset, code, epoch: S.epoch });
     if (seekReplies.length === 1) replyNextSeek();
@@ -479,7 +517,6 @@ plugin.onLoad(() => {
       S.nativePlaying = false; S.nativePosition = 0; S.nativeAt = performance.now();
       S.current = c = { id, info, requestedLevel: level, account: S.account, duration: Number(info?.songDuration) / 1000,
         serial: ++S.serial, offset: 0, heard: 0, owns: false, playing: false };
-      media?.release();
       // Adopt a matching cached source synchronously. Waiting for native play
       // before the async preparation would let a store update evict both warm
       // buffers between Load and play, especially when selecting the same track.
@@ -599,14 +636,13 @@ plugin.onLoad(() => {
     }
     if (msg.command === 'audioplayer.seek') {
       if (!Number.isFinite(Number(p[2]))) return false;
-      const token = p[1] || c.id; S.revision++;
-      const offset = Math.max(0, Math.min(c.duration - 0.001, Number(p[2])));
-      cancelScheduled(); clock.seek(c, offset); c.endSent = false; c.missed = false; S.token = token;
+      const token = p[1] || c.id;
+      const offset = seekOwned(c, p[2], token);
       completeSeek(msg, c, token, offset);
-      trace('seek', { id: c.id, position: offset }); scheduleNext(); return true;
+      return true;
     }
     if (/^audioplayer\.(stop|unload)$/.test(msg.command)) {
-      S.epoch++; S.revision++; stopCurrent(); c.owns = false; S.phase = 'native'; media?.release(); return false;
+      S.epoch++; S.revision++; stopCurrent(); c.owns = false; S.phase = 'native'; return false;
     }
     if (msg.command === 'audioplayer.getPlayedTime') {
       const requested = String(p[0]?.playId || p[0] || '').split('_')[0];
@@ -736,7 +772,7 @@ plugin.onLoad(() => {
     } catch (error) { trace('reload-recovery-error', { reason: error.message }); }
   }
   window.gaplessMac = {
-    version: '0.1.7', status: () => {
+    version: '0.1.8', status: () => {
       reconcile(); const c = S.current;
       return { enabled: S.enabled, compatible: S.compatible, id: c?.id, phase: S.phase,
         ownsPlayback: !!c?.owns, playing: c?.owns ? !!c.playing : S.nativePlaying,
