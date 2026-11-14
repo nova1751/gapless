@@ -1,0 +1,153 @@
+{
+  "candidate": "0.2.0",
+  "scenario": "Successful Web resume, paused Seek, raw Native recovery, second Web resume and return to initial paused position",
+  "initial": {
+    "phase": "native",
+    "ownsPlayback": false,
+    "playing": false,
+    "position": 240.98,
+    "duration": 318.0933333333333,
+    "contextGeneration": 3,
+    "activeNodes": 0,
+    "memory": {
+      "held": 0,
+      "reserved": 0,
+      "limit": 536870912,
+      "pending": 0
+    },
+    "nativeOutputGated": false
+  },
+  "first": {
+    "phase": "owned",
+    "ownsPlayback": true,
+    "playing": true,
+    "position": 242.2732199546485,
+    "duration": 318.0933333333333,
+    "contextGeneration": 4,
+    "activeNodes": 2,
+    "scheduled": "22676181",
+    "memory": {
+      "held": 198485280,
+      "reserved": 0,
+      "limit": 536870912,
+      "pending": 0
+    },
+    "nativeOutputGated": true
+  },
+  "restored": {
+    "phase": "native",
+    "ownsPlayback": false,
+    "playing": false,
+    "position": 240.98,
+    "duration": 318.0933333333333,
+    "contextGeneration": 5,
+    "activeNodes": 0,
+    "memory": {
+      "held": 0,
+      "reserved": 0,
+      "limit": 536870912,
+      "pending": 0
+    },
+    "nativeOutputGated": false
+  },
+  "resumed": {
+    "phase": "owned",
+    "ownsPlayback": true,
+    "playing": true,
+    "position": 242.29353741496598,
+    "duration": 318.0933333333333,
+    "contextGeneration": 6,
+    "activeNodes": 2,
+    "scheduled": "22676181",
+    "memory": {
+      "held": 198485280,
+      "reserved": 0,
+      "limit": 536870912,
+      "pending": 0
+    },
+    "nativeOutputGated": true
+  },
+  "final": {
+    "phase": "owned",
+    "ownsPlayback": true,
+    "playing": false,
+    "position": 240.98,
+    "duration": 318.0933333333333,
+    "contextGeneration": 6,
+    "activeNodes": 0,
+    "memory": {
+      "held": 198485280,
+      "reserved": 0,
+      "limit": 536870912,
+      "pending": 0
+    },
+    "nativeOutputGated": true
+  },
+  "events": [
+    {
+      "event": "pause",
+      "position": 240.98
+    },
+    {
+      "event": "web-loaded",
+      "origin": "native-cache",
+      "rate": 44100
+    },
+    {
+      "event": "scheduled",
+      "leadSeconds": 76.0755328798186,
+      "sourceRate": 44100,
+      "decodedRate": 44100,
+      "contextRate": 44100,
+      "scheduledGapFrames": 0
+    },
+    {
+      "event": "pause",
+      "position": 242.29353741496598
+    },
+    {
+      "event": "seek",
+      "position": 240.98
+    },
+    {
+      "event": "restore-start",
+      "reason": "successful-web-paused-recovery-validation",
+      "position": 240.98
+    },
+    {
+      "event": "restored-native",
+      "reason": "successful-web-paused-recovery-validation",
+      "position": 240.98,
+      "playing": false,
+      "confirmed": true
+    },
+    {
+      "event": "web-loaded",
+      "origin": "native-cache",
+      "rate": 44100
+    },
+    {
+      "event": "scheduled",
+      "leadSeconds": 76.03489795918367,
+      "sourceRate": 44100,
+      "decodedRate": 44100,
+      "contextRate": 44100,
+      "scheduledGapFrames": 0
+    },
+    {
+      "event": "pause",
+      "position": 242.29353741496598
+    },
+    {
+      "event": "seek",
+      "position": 240.98
+    }
+  ],
+  "observerRemoved": true,
+  "date": "2026-11-15",
+  "playerSha256": "0bbc53448358ef385376f355cb3a5bd9a34fa5809e8a9155d8fa32972347fb6c",
+  "accepted": true,
+  "limits": [
+    "One actual client and current/next track; not full feature, device, random or system-control acceptance."
+  ]
+}

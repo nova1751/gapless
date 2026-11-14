@@ -12,9 +12,10 @@
     "Cache/recovery fixes: actual paused Native restoration preserved 240.9816067 s; subsequent Web resume held 198485280 bytes and scheduled next track.",
     "Original window play/pause buttons observed consistent with Web state after candidate reload.",
     "Latest internal raw Load event isolation: rapid Play then Pause during autoplay-unavailable Web loading returned to Native paused at 240.98 s, no auto-resume.",
-    "Latest internal Load event isolation has not yet been checked in a successful Web playback followed by normal restoration.",
-    "Real Control Center seek sampling shows wrong Native paused/duration state for about 546 ms; unresolved."
+    "Real Control Center seek sampling shows wrong Native paused/duration state for about 546 ms; unresolved.",
+    "Latest internal raw Load isolation passed actual successful Web -> paused Seek -> Native recovery -> second Web resume; no auto-play, same paused position, accounted cache and next appointment."
   ],
-  "currentPlaybackAfterFinalReload": "Native paused; Web activation requires real user interaction. UI tool reported cgWindowNotFound.",
-  "evidence": "mac-system-seek-0.2.0.json"
+  "currentPlaybackAfterFinalReload": "Real click enabled audio; current owner is Web, paused at initial 240.98 s, zero music nodes.",
+  "evidence": "mac-system-seek-0.2.0.json",
+  "recoveryEvidence": "mac-web-recovery-0.2.0.json"
 }

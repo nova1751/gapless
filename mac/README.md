@@ -2,7 +2,7 @@
 
 当前源码与实机安装候选为0.2.0。持续由Web Audio播放、取消十秒交还；原有音源选择、窗口、歌词和播放入口保留。全部效果一致仍在验收，系统进度回跳未解决。见[实现与待验收项](../docs/CONTINUOUS_WEB_AUDIO.md)。最新增量已安装；缓存预算、恢复后预约和暂停意图已做相关实机核对，随机模式仍未验证。此前0.1.12安装包已备份，可恢复。
 
-0.2.0源码候选包：[gapless-player-mac-0.2.0.plugin](../releases/gapless-player-mac-0.2.0.plugin)。包与运行源码已核对；验证范围见[SHA记录](../docs/verification/PACKAGE_CONTINUOUS_WEB_0.2.0_SHA256.json)。最后重载后保持原生暂停；Web再次继续需真实点击，不能把文件一致等同于所有场景通过。
+0.2.0源码候选包：[gapless-player-mac-0.2.0.plugin](../releases/gapless-player-mac-0.2.0.plugin)。包与运行源码已核对；验证范围见[SHA记录](../docs/verification/PACKAGE_CONTINUOUS_WEB_0.2.0_SHA256.json)。最后重载后已真实点击放行并通过普通恢复复验，当前Web暂停；不能把文件一致等同于所有场景通过。
 
 以下保留0.1.12历史说明，不代表当前代码仍采用临时桥接。
 

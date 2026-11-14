@@ -6,7 +6,7 @@
 
 网易云决定授权音源、音质、音量、队列和界面。后台源选择复用原有客户端流程，优先同源内存/完整磁盘缓存；不增加 CSS、歌词布局、EQ、混音或静音裁剪。Web 解码、float32 PCM 和系统重采样不能承诺与原生比特相同。不兼容设置和错误仍保留原生恢复路径。
 
-开发候选包：[gapless-player-mac-0.2.0.plugin](releases/gapless-player-mac-0.2.0.plugin)。系统Seek未通过；最后一次重载后原生保持暂停，Web仍需真实点击放行。不能当作已验收稳定版。
+开发候选包：[gapless-player-mac-0.2.0.plugin](releases/gapless-player-mac-0.2.0.plugin)。系统Seek未通过；最新重载后已真实点击放行，并通过普通恢复复验，当前为Web接管、暂停。不能当作已验收稳定版。
 
 ## 入口
 
