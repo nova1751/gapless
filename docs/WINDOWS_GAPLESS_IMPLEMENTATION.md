@@ -1,5 +1,9 @@
 # Windows 无缝播放实施方案：与 macOS 功能一致
 
+当前功能边界以 Mac 0.1.10 的 [临时 Web 桥接并交还原生](TEMPORARY_WEB_BRIDGE.md) 为准：约 10 秒曲尾/曲头窗口只决定何时准备和退出，必须双向校准输出位置，不能整首持续由 Web 播放。Windows 的原生预准备、输出选择与计时接口需独立验证；下文旧持续接管流程不能直接视为最新目标。
+
+资源准备还应优先复用平台原生完整缓存，但必须验证当前授权、实际音质、MD5 与完整性；Mac 的 UC 缓存格式及文件路径不能直接套到 Windows，见 [缓存读取说明](CACHE_PRIORITY.md)。
+
 版本：方案 v7，2026-11-14。配套：[原生可行性与 Windows 实现对照](NATIVE_GAPLESS_FEASIBILITY.md)、[0.1.0 历史源码审查](MAC_GAPLESS_AUDIT.md)、[Mac 安装与确认范围](../mac/README.md)、[0.1.2 副作用审查](SIDE_EFFECTS_REVIEW.md)、[0.1.3 间隔排查](AUDIBLE_GAP_REVIEW.md)、[0.1.4 卡顿排查](HANDOFF_HITCH_REVIEW.md)。
 
 本方案可交给开发者逐项实施。当前 Mac 已修正并安装 0.1.4，进度竞态与接管范围见副作用审查，临近结尾接管、暂停缓存和实际渲染边界见间隔排查，输出冷启动及卡顿确认范围见卡顿排查，历史证据见 [0.1.1 记录](REMEDIATION.md)。Windows 精简版尚未编码、打包或实机验收；不能宣布两个平台现已功能一致。

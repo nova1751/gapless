@@ -6,6 +6,7 @@
       this.resources = resources; this.onState = onState; this.onEnded = onEnded; this.trace = trace;
       this.ctx = null; this.gain = null; this.generation = 0; this.volume = 1;
       this.active = new Set(); this.retiring = new Map();
+      this.outputSwitch = { before: true, enabled: true, at: 0 };
     }
     async open(entry) {
       if (this.ctx?.state === 'closed') this.ctx = null;
@@ -16,7 +17,7 @@
       if (!this.ctx) {
         const ctx = this.ctx = new AudioContext({ sampleRate: entry.spec.rate, latencyHint: 'playback' });
         this.generation++;
-        this.gain = ctx.createGain(); this.gain.gain.value = this.volume; this.gain.connect(ctx.destination);
+        this.gain = ctx.createGain(); this.applyOutputVolume(); this.gain.connect(ctx.destination);
         ctx.onstatechange = () => { if (this.ctx === ctx) this.onState(ctx.state); };
       }
       if (this.ctx.state === 'suspended') {
@@ -52,6 +53,35 @@
       if (!track) return 0;
       const advance = track.node && track.playing ? Math.max(0, this.ctx.currentTime - track.start) : 0;
       return Math.max(0, Math.min(track.duration || Infinity, track.offset + advance));
+    }
+    // currentTime is the rendering clock, ahead of the sound leaving the
+    // device. Handoffs use the output timestamp instead of that future PCM.
+    outputTime() {
+      const stamp = this.ctx?.getOutputTimestamp();
+      if (!stamp || !(stamp.performanceTime > 0)) throw new Error('native-only-output-clock');
+      return Math.min(this.ctx.currentTime, stamp.contextTime + Math.max(0, performance.now() - stamp.performanceTime) / 1000);
+    }
+    outputPosition(track) {
+      if (!track?.playing || !track.node) return this.position(track);
+      return Math.max(0, Math.min(track.duration, track.offset + Math.max(0, this.outputTime() - track.start)));
+    }
+    outputWallTime(contextTime) {
+      const stamp = this.ctx.getOutputTimestamp();
+      if (!(stamp.performanceTime > 0)) throw new Error('native-only-output-clock');
+      return stamp.performanceTime + (contextTime - stamp.contextTime) * 1000;
+    }
+    setOutput(enabled, at = this.ctx?.currentTime || 0) {
+      const now = this.ctx?.currentTime || 0, old = this.outputSwitch;
+      const before = now < old.at ? old.before : old.enabled;
+      this.outputSwitch = { before, enabled, at: Math.max(now, at) };
+      this.applyOutputVolume();
+    }
+    applyOutputVolume() {
+      if (!this.gain) return;
+      const now = this.ctx.currentTime, s = this.outputSwitch;
+      this.gain.gain.cancelScheduledValues(now);
+      this.gain.gain.setValueAtTime((now < s.at ? s.before : s.enabled) ? this.volume : 0, now);
+      if (s.at > now) this.gain.gain.setValueAtTime(s.enabled ? this.volume : 0, s.at);
     }
     heard(track) {
       return (track?.heard || 0) + (track?.node && track.playing
@@ -126,7 +156,7 @@
     setVolume(value) {
       if (!Number.isFinite(value)) return;
       this.volume = Math.max(0, Math.min(1, value));
-      if (this.gain) this.gain.gain.value = this.volume;
+      this.applyOutputVolume();
     }
     async close() {
       for (const track of [...this.active]) this.stop(track);
@@ -135,6 +165,7 @@
         retired.finish();
       }
       const ctx = this.ctx; this.ctx = null; this.gain = null; this.generation++;
+      this.outputSwitch = { before: true, enabled: true, at: 0 };
       if (ctx?.state !== 'closed') await ctx?.close();
     }
     status() { return { sampleRate: this.ctx?.sampleRate, contextState: this.ctx?.state,

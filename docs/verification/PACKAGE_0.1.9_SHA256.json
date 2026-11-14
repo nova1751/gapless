@@ -1,0 +1,11 @@
+{
+  "version": "0.1.9",
+  "recordType": "Historical release ZIP contents only; current worktree and installed runtime differ",
+  "releaseSha256": "47d29b89c5c97721351ab967b28e79598d4233a0a36cb2dd020fef464fcc475a",
+  "membersSha256": {
+    "manifest.json": "f3e01b92485af5c84036975cedc79811200b962f0a5762faa231035e16cedd2f",
+    "startup_script.js": "d31a4769909df23fce58a9460150789e57c0e0a669eb7ff758f916c6abd06566",
+    "player.js": "128f5603161a43898a57cfc85e744a8d82dcb8eaed5c15770baac56e6c0eef0e",
+    "LICENSE": "6238f6a51a6bc87420e66834d9e53aac07de39be30e5b7886db4d121d56b548b"
+  }
+}

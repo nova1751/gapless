@@ -1,0 +1,268 @@
+{
+  "client": "NetEase macOS 3.1.12 (3444)",
+  "recordType": "Historical observed 0.1.9 protocol scenarios; not an exact-source validation of 0.1.10",
+  "physicalAudioLoopback": false,
+  "normalBridge": {
+    "version": "0.1.9",
+    "status": {
+      "enabled": true,
+      "compatible": true,
+      "id": "2670863152",
+      "phase": "native",
+      "ownsPlayback": false,
+      "playing": true,
+      "bridgeSide": null,
+      "bridgeLeadSeconds": 10,
+      "bridgeHeadSeconds": 10,
+      "nativePrepared": true,
+      "nativeOutputGated": false,
+      "seekPending": false,
+      "seekSettling": false,
+      "position": 12.83060000038147,
+      "duration": 234.9238775510204,
+      "requestedLevel": "hires",
+      "actualLevel": "lossless",
+      "sourceRate": 44100,
+      "decodedRate": 44100,
+      "contextGeneration": 2,
+      "activeNodes": 0,
+      "deviceFormat": "unknown",
+      "next": "1938192798",
+      "claiming": false,
+      "memory": {
+        "held": 82881144,
+        "reserved": 0,
+        "limit": 536870912,
+        "pending": 0
+      },
+      "mode": "playCycle",
+      "nativeAllowed": true,
+      "queueVersion": 2,
+      "loadEpoch": 3,
+      "controlRevision": 7,
+      "systemMedia": {
+        "supported": true,
+        "active": true,
+        "failed": false,
+        "seekPending": false
+      }
+    },
+    "trace": [
+      {
+        "at": 63991,
+        "event": "scheduled",
+        "from": "2670863319",
+        "to": "2670863152",
+        "leadSeconds": 9.68532223809524,
+        "sourceRate": 44100,
+        "decodedRate": 44100,
+        "contextRate": 44100,
+        "scheduledGapFrames": 0
+      },
+      {
+        "at": 64004,
+        "event": "takeover",
+        "id": "2670863319",
+        "position": 222.4245346662852,
+        "bridgeLeadSeconds": 9.75188256727489,
+        "alignmentErrorMs": 11.965333237981213,
+        "outputDelayMs": 29.010415252088688,
+        "pauseAcknowledged": true,
+        "switchTimingErrorMs": 3.849421673337929
+      },
+      {
+        "at": 73673,
+        "event": "transition",
+        "from": "2670863319",
+        "to": "2670863152",
+        "scheduledGapFrames": 0
+      },
+      {
+        "at": 73827,
+        "event": "claimed",
+        "id": "2670863152",
+        "position": 0.1483285555555529,
+        "claimDelayMs": 154.30000019073486
+      },
+      {
+        "at": 73857,
+        "event": "native-prepared",
+        "id": "2670863152",
+        "elapsedMs": 26
+      },
+      {
+        "at": 84057,
+        "event": "handoff-alignment",
+        "id": "2670863152",
+        "attempt": 0,
+        "errorMs": 3.7094853084482793,
+        "seekMs": 0.5,
+        "progressErrorMs": -26.872766726006247
+      },
+      {
+        "at": 84171,
+        "event": "returned-native",
+        "id": "2670863152",
+        "reason": "bridge-head-complete",
+        "position": 10.419182251939088,
+        "playing": true,
+        "alignmentErrorMs": 3.7094853084482793
+      },
+      {
+        "at": 84172,
+        "event": "handoff-output-switched",
+        "id": "2670863152",
+        "switchTimingErrorMs": 0.8616714879171923
+      }
+    ],
+    "volume": 0.48,
+    "journal": null,
+    "physicalAudioLoopback": false
+  },
+  "bridgeSeek": {
+    "head": {
+      "id": "2670863152",
+      "side": "head",
+      "owns": true,
+      "position": 1.2133805555555393
+    },
+    "seek": {
+      "playId": "2670863152",
+      "seekId": "2670863152|seek|final-head-seek",
+      "code": 0,
+      "position": 45
+    },
+    "after": {
+      "enabled": true,
+      "compatible": true,
+      "id": "2670863152",
+      "phase": "native",
+      "ownsPlayback": false,
+      "playing": true,
+      "bridgeSide": null,
+      "bridgeLeadSeconds": 10,
+      "bridgeHeadSeconds": 10,
+      "nativePrepared": true,
+      "nativeOutputGated": false,
+      "seekPending": false,
+      "seekSettling": false,
+      "position": 46.712,
+      "duration": 234.9238775510204,
+      "requestedLevel": "hires",
+      "actualLevel": "lossless",
+      "sourceRate": 44100,
+      "decodedRate": 44100,
+      "contextGeneration": 4,
+      "activeNodes": 0,
+      "deviceFormat": "unknown",
+      "next": "1938192798",
+      "claiming": false,
+      "memory": {
+        "held": 82881144,
+        "reserved": 0,
+        "limit": 536870912,
+        "pending": 0
+      },
+      "mode": "playCycle",
+      "nativeAllowed": true,
+      "queueVersion": 2,
+      "loadEpoch": 4,
+      "controlRevision": 13,
+      "systemMedia": {
+        "supported": true,
+        "active": true,
+        "failed": false,
+        "seekPending": false
+      }
+    },
+    "trace": [
+      {
+        "at": 132092,
+        "event": "takeover",
+        "id": "2670863319",
+        "position": 229.88175666666666,
+        "bridgeLeadSeconds": 2.294660566893441,
+        "alignmentErrorMs": -8.497666762053768,
+        "outputDelayMs": 37.46241487061896,
+        "pauseAcknowledged": true,
+        "switchTimingErrorMs": 2.5604218640655745
+      },
+      {
+        "at": 134324,
+        "event": "transition",
+        "from": "2670863319",
+        "to": "2670863152",
+        "scheduledGapFrames": 0
+      },
+      {
+        "at": 134483,
+        "event": "native-load",
+        "id": "2670863152",
+        "phase": "claiming",
+        "current": "2670863152",
+        "epoch": 4
+      },
+      {
+        "at": 134483,
+        "event": "claimed",
+        "id": "2670863152",
+        "position": 0.1684825963718657,
+        "claimDelayMs": 159.5
+      },
+      {
+        "at": 134486,
+        "event": "play",
+        "id": "2670863152"
+      },
+      {
+        "at": 134510,
+        "event": "native-prepared",
+        "id": "2670863152",
+        "elapsedMs": 23.700000286102295
+      },
+      {
+        "at": 135527,
+        "event": "seek-replaced",
+        "id": "2670863152",
+        "switchLeadMs": 2.902494331065597
+      },
+      {
+        "at": 135527,
+        "event": "seek",
+        "id": "2670863152",
+        "position": 45
+      },
+      {
+        "at": 135826,
+        "event": "handoff-alignment",
+        "id": "2670863152",
+        "attempt": 0,
+        "errorMs": 1.5820905837387045,
+        "seekMs": 0.9000000953674316,
+        "progressErrorMs": -26.026716553289475
+      },
+      {
+        "at": 135948,
+        "event": "returned-native",
+        "id": "2670863152",
+        "reason": "user-seek",
+        "position": 45.34630880742313,
+        "playing": true,
+        "alignmentErrorMs": 1.5820905837387045
+      },
+      {
+        "at": 135948,
+        "event": "handoff-output-switched",
+        "id": "2670863152",
+        "switchTimingErrorMs": 2.7722949753224384
+      },
+      {
+        "at": 136120,
+        "event": "prefetch-fallback",
+        "id": "1938192798",
+        "reason": "native-only-file-size"
+      }
+    ],
+    "volume": 0.48
+  }
+}

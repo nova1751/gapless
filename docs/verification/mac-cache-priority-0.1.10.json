@@ -1,0 +1,53 @@
+{
+  "version": "0.1.10",
+  "client": "NetEase macOS 3.1.12 (3444)",
+  "date": "2026-11-14",
+  "cacheReadPolicy": [
+    "decoded-memory",
+    "native-complete-cache",
+    "current-authorized-source"
+  ],
+  "nativeCacheMetadataObserved": [
+    {
+      "id": "2670863319",
+      "name": "Baptized In Fear",
+      "cached": 100,
+      "et": "1",
+      "actualLevel": "lossless",
+      "size": 27081483
+    },
+    {
+      "id": "2670863152",
+      "name": "Open Hearts",
+      "cached": 100,
+      "et": "1",
+      "actualLevel": "lossless",
+      "size": 27865486
+    }
+  ],
+  "priorFileInspection": "XOR A3 restored FLAC; full restored-file MD5 matched native authorized source before final integration verification",
+  "currentPageResourcesPatchedWhileNativeAndIdle": true,
+  "latestBlockedRead": {
+    "outcome": "TypeError / fetch failure",
+    "elapsedMs": 5009.1,
+    "backgroundHeartbeatTicks": 4,
+    "maxTickGapMs": 1002.1,
+    "nativeReportsPlaying": true,
+    "activeWebMusicNodes": 0
+  },
+  "incrementalSyntaxChecksPassed": true,
+  "newTestsAdded": false,
+  "applicationBuildRun": false,
+  "finalIntegratedCacheHitVerified": false,
+  "absenceOfCdnAudioRequestVerified": false,
+  "crossTrackWithCurrentCacheImplementationVerified": false,
+  "hostReinjectionAndRefreshVerified": false,
+  "physicalAudioLoopback": false,
+  "blocker": "Mac locked; local file opens pending and host reads time out; exact OS access cause not confirmed",
+  "pending": [
+    "unlock and identify any file access prompt",
+    "complete current-version native-cache-hit and audio request count checks",
+    "repeat A to B to native handback on current cache implementation",
+    "host reinjection and refresh after file access recovers"
+  ]
+}

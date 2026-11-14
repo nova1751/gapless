@@ -39,8 +39,8 @@
     } catch { return null; }
   }
   class AudioResources {
-    constructor({ resolve, trace, acceptRate, limit = 512 * MiB, fileLimit = 128 * MiB }) {
-      this.resolve = resolve; this.trace = trace; this.acceptRate = acceptRate;
+    constructor({ resolve, trace, acceptRate, readCache = null, limit = 512 * MiB, fileLimit = 128 * MiB }) {
+      this.resolve = resolve; this.trace = trace; this.acceptRate = acceptRate; this.readCache = readCache;
       this.limit = limit; this.fileLimit = fileLimit;
       this.entries = new Map(); this.jobs = new Map(); this.failures = new Map();
       this.tail = Promise.resolve(); this.reserved = 0; this.enabled = true;
@@ -88,7 +88,6 @@
     async acquire(job, info) {
       this.check(job);
       const timeout = setTimeout(() => job.controller.abort('timeout'), 25000);
-      let reader;
       try {
         const source = info ? { ...info, url: info.musicurl, duration: Number(info.songDuration) / 1000,
           size: Number(info.fileSize) } : await this.resolve(job.ref, job.controller.signal);
@@ -97,37 +96,80 @@
         const url = new URL(source.url);
         if (!['https:', 'http:'].includes(url.protocol)) throw new Error('native-only-source');
         if (Number(source.size) > this.fileLimit) throw new Error('native-only-file-size');
+        if (this.readCache) {
+          const cacheController = new AbortController();
+          const cancelCache = () => cacheController.abort(job.controller.signal.reason);
+          job.controller.signal.addEventListener('abort', cancelCache, { once: true });
+          const cacheTimeout = setTimeout(() => cacheController.abort('cache-timeout'), 8000);
+          try {
+            const cache = await this.readCache(job.ref, source, cacheController.signal);
+            this.check(job);
+            if (cache) return await this.decodeInput(job, source, cache);
+          } catch (error) {
+            this.check(job);
+            // A format/rate/budget rejection also applies to the same original
+            // bytes from the network. Keep native playback without redownloading.
+            if (/^(native-only-|decode-)/.test(error.message)) throw error;
+            // No cache path, metadata or mounted-file token enters diagnostics.
+            this.trace('native-cache-fallback', { id: job.ref.id, reason: 'cache-unavailable-or-invalid' });
+          } finally {
+            clearTimeout(cacheTimeout);
+            job.controller.signal.removeEventListener('abort', cancelCache);
+            cacheController.abort('finished');
+          }
+        }
+        this.check(job);
         const response = await fetch(source.url, { signal: job.controller.signal });
+        return await this.decodeInput(job, source, { kind: 'network', response });
+      } catch (error) {
+        if (job.controller.signal.reason === 'timeout') throw new Error('download-timeout');
+        if (job.controller.signal.aborted) throw new Error('cancelled');
+        throw error;
+      } finally { clearTimeout(timeout); }
+    }
+    async decodeInput(job, source, input) {
+      let reader;
+      try {
+        const response = input.response;
         if (!response.ok) throw new Error(`download-${response.status}`);
         const declared = Number(response.headers.get('content-length')) || Number(source.size) || 0;
         if (declared > this.fileLimit) throw new Error('native-only-file-size');
         if (!response.body?.getReader) throw new Error('native-only-stream');
         reader = response.body.getReader();
-        const chunks = []; let total = 0, spec = null, prefix = new Uint8Array(0);
+        const chunks = []; let total = 0, spec = null, prefix = new Uint8Array(0), workAt = performance.now();
         while (true) {
           this.check(job);
-          const { value, done } = await reader.read();
-          if (done) break;
-          total += value.byteLength;
-          if (total > this.fileLimit) throw new Error('native-only-file-size');
-          if (!spec) {
-            const next = new Uint8Array(prefix.byteLength + Math.min(value.byteLength, MiB - prefix.byteLength));
-            next.set(prefix); next.set(value.subarray(0, next.length - prefix.length), prefix.length); prefix = next;
-            spec = header(prefix, Number(source.duration || job.ref.duration));
-            if (!spec && prefix.byteLength >= MiB) throw new Error('native-only-format');
-            if (spec && !this.acceptRate(job.ref, spec.rate)) throw new Error('native-only-sample-rate');
+          const nextChunk = await reader.read();
+          if (nextChunk.done) break;
+          // Bound XOR/hash work even if the host delivers a large file chunk.
+          const step = input.transform ? 64 * 1024 : nextChunk.value.byteLength;
+          for (let start = 0; start < nextChunk.value.byteLength; start += step) {
+            this.check(job);
+            const part = nextChunk.value.subarray(start, start + step);
+            const value = input.transform ? input.transform(part) : part;
+            total += value.byteLength;
+            if (total > this.fileLimit) throw new Error('native-only-file-size');
+            if (!spec) {
+              const next = new Uint8Array(prefix.byteLength + Math.min(value.byteLength, MiB - prefix.byteLength));
+              next.set(prefix); next.set(value.subarray(0, next.length - prefix.length), prefix.length); prefix = next;
+              spec = header(prefix, Number(source.duration || job.ref.duration));
+              if (!spec && prefix.byteLength >= MiB) throw new Error('native-only-format');
+              if (spec && !this.acceptRate(job.ref, spec.rate)) throw new Error('native-only-sample-rate');
+            }
+            // The same encoded/PCM budget applies to disk cache and download.
+            const pcm = spec ? Math.ceil(spec.frames * spec.channels * 4 * 1.05) : 0;
+            this.reserve(job, pcm * 2 + Math.max(total, declared) * 2);
+            chunks.push(value);
+            if (input.transform && performance.now() - workAt >= 6) {
+              await new Promise(resolve => setTimeout(resolve, 0)); workAt = performance.now();
+            }
           }
-          // PCM input+result and encoded chunks+contiguous copy are reserved before decoding.
-          const pcm = spec ? Math.ceil(spec.frames * spec.channels * 4 * 1.05) : 0;
-          this.reserve(job, pcm * 2 + Math.max(total, declared) * 2);
-          chunks.push(value);
         }
         if (!spec) throw new Error('native-only-format');
-        this.check(job);
+        this.check(job); input.validate?.(total);
         const bytes = new Uint8Array(total); let offset = 0;
         for (const chunk of chunks) { bytes.set(chunk, offset); offset += chunk.length; }
         chunks.length = 0; prefix = null;
-        // Decoder lifetime never changes the playback clock or the device output.
         const decoder = new OfflineAudioContext(spec.channels, 1, spec.rate);
         let buffer;
         try { buffer = await decoder.decodeAudioData(bytes.buffer); }
@@ -140,19 +182,17 @@
         const entry = { id: job.ref.id, requestKey: this.requestKey(job.ref),
           key: `${this.requestKey(job.ref)}:${source.level}:${hash || `unverified-${performance.now()}`}:${spec.rate}`,
           level: source.level, hash, source, spec, buffer, size, duration: buffer.duration,
-          requestedLevel: job.ref.level, pins: 0 };
+          requestedLevel: job.ref.level, origin: input.kind, pins: 0 };
         this.entries.set(entry.key, entry);
         this.failures.delete(entry.requestKey);
-        this.trace('decoded', { id: entry.id, level: entry.level, sourceRate: spec.rate,
+        this.trace('decoded', { id: entry.id, level: entry.level, origin: entry.origin, sourceRate: spec.rate,
           decodedRate: buffer.sampleRate, channels: spec.channels, size });
         return entry;
-      } catch (error) {
-        if (job.controller.signal.reason === 'timeout') throw new Error('download-timeout');
-        if (job.controller.signal.aborted) throw new Error('cancelled');
-        throw error;
       } finally {
-        clearTimeout(timeout);
         try { await reader?.cancel(); } catch { /* Reader already completed or aborted. */ }
+        // Release the failed input before trying another source. Do not hide
+        // two retained encoded/PCM reservations under the same job.
+        this.reserved -= job.reserve; job.reserve = 0;
       }
     }
     pin(entry) { if (entry) entry.pins++; }
