@@ -150,19 +150,51 @@ plugin.onLoad(() => {
   // Native visual effects consume stereo s16le at 48 kHz with millisecond
   // timestamps. This copy is for their existing renderer, never the music graph.
   const hexByte = Array.from({ length: 256 }, (_, value) => value.toString(16).padStart(2, '0'));
-  const visual = new globalThis.GaplessVisualPCM({ rate: 48000, channels: 2, trace,
-    snapshot: () => {
-      const c = S.current;
-      const active = S.enabled && c?.owns && !c.loading && !S.claim && S.phase === 'owned'
-        && bridge.audioDataEnabled && !!bridge.registrations['audioplayer.onAudioData'] && !document.hidden;
-      return { active, playing: !!c?.playing, id: c?.id, serial: c?.serial,
-        revision: S.revision, generation: clock.generation, buffer: active ? c.entry?.buffer : null,
-        position: active && c.playing ? clock.outputPosition(c) : 0 };
-    }, emit: (bytes, pts) => {
+  function visualSnapshot() {
+    const c = S.current;
+    const active = S.enabled && c?.owns && !c.loading && !S.claim && S.phase === 'owned'
+      && bridge.audioDataEnabled && !!bridge.registrations['audioplayer.onAudioData'] && !document.hidden;
+    // A replaced node may still be waiting in the output pipeline. Do not
+    // analyze its new Seek position before those samples reach the device.
+    const ready = active && c.playing && c.node && clock.outputTime() >= c.start;
+    return { active, playing: !!ready, id: c?.id, serial: c?.serial,
+      revision: S.revision, generation: clock.generation, buffer: active ? c.entry?.buffer : null,
+      position: active ? clock.outputPosition(c) : 0 };
+  }
+  const visual = new globalThis.GaplessVisualPCM({ rate: 48000, channels: 2, packetFrames: 400, trace,
+    snapshot: visualSnapshot, emit: (bytes, pts) => {
       const encoded = new Array(bytes.length);
       for (let i = 0; i < bytes.length; i++) encoded[i] = hexByte[bytes[i]];
       bridge.emit('audioplayer.onAudioData', [{ data: encoded.join(''), pts }]);
     } });
+  const visualRenderHooks = new Map();
+  let lastVisualRender = null;
+  function visualRenderPosition(fallback) {
+    try {
+      const s = visualSnapshot();
+      if (!s.active) { lastVisualRender = null; return fallback; }
+      const same = lastVisualRender?.id === s.id && lastVisualRender.serial === s.serial;
+      if (S.current.playing && !s.playing) return same ? lastVisualRender.position : fallback;
+      const position = s.position * 1000;
+      lastVisualRender = { id: s.id, serial: s.serial, position };
+      return position;
+    } catch { return fallback; } // A display clock must never interrupt audio.
+  }
+  function prepareVisualClock() {
+    // Keep the original 30 fps renderer and its animation parameters. Only its
+    // time argument changes: the 150 ms UI heartbeat is not an audio clock.
+    const sdk = webpackRequire().c[42]?.exports?.b;
+    if (!sdk) return;
+    for (const [name, index] of [['_AERenderMV', 1], ['_AEWebSetPlaybackPosition', 0]]) {
+      const original = sdk[name], previous = visualRenderHooks.get(name);
+      if (typeof original !== 'function' || original === previous?.wrapped) continue;
+      const wrapped = function (...args) {
+        args[index] = visualRenderPosition(args[index]);
+        return original.apply(this, args);
+      };
+      sdk[name] = wrapped; visualRenderHooks.set(name, { sdk, original, wrapped });
+    }
+  }
   function nextTrack() {
     const c = S.current, s = state(); if (!c || !allowed(c.info)) return null;
     const mode = s.playing.playingMode;
@@ -936,7 +968,9 @@ plugin.onLoad(() => {
       if (S.claim && performance.now() - S.current.claimAt > 3000) void restoreNative('unclaimed-next');
       if (S.current?.owns && !S.claim) progress(S.current);
       void takeover(); scheduleNext(); prefetch();
-      media?.sync(); visual.sync();
+      media?.sync();
+      try { prepareVisualClock(); visual.sync(); }
+      catch (error) { visual.stop(); trace('visual-clock-error', { reason: error.message }); }
     } catch (error) { bridge.onError(error); }
   }
   function initializeStore() {
@@ -1027,6 +1061,7 @@ plugin.onLoad(() => {
   window.addEventListener('beforeunload', () => {
     persistRecovery(); clearInterval(timer); S.unsubscribe?.(); resources.stop();
     media?.release(); visual.stop();
+    for (const [name, hook] of visualRenderHooks) if (hook.sdk[name] === hook.wrapped) hook.sdk[name] = hook.original;
     // The native gain is never left at the rehearsal value across navigation.
     if (S.nativeGate) bridge.callNative('audioplayer.setVolume', ['', '', clock.volume]);
     // Recovery is driven by the next page, rather than a multi-stage asynchronous unload callback.
@@ -1053,7 +1088,7 @@ plugin.onLoad(() => {
     } catch (error) { trace('reload-recovery-error', { reason: error.message }); }
   }
   window.gaplessMac = {
-    version: '0.2.2', status: () => {
+    version: '0.2.3', status: () => {
       reconcile(); const c = S.current;
       return { enabled: S.enabled, compatible: S.compatible, id: c?.id, phase: S.phase,
         ownsPlayback: !!c?.owns, playing: c?.owns ? !!c.playing : S.nativePlaying,
@@ -1065,7 +1100,8 @@ plugin.onLoad(() => {
         next: nextTrack()?.id, scheduled: S.scheduled?.id, claiming: S.claim,
         memory: resources.status(), mode: state()?.playing?.playingMode, nativeAllowed: allowed(c?.info),
         queueVersion: S.queueVersion, loadEpoch: S.epoch, controlRevision: S.revision,
-        systemMedia: media?.status(), visualization: visual.status() };
+        systemMedia: media?.status(), visualization: { ...visual.status(), renderClock: visualRenderHooks.size ? 'output' : 'pending',
+          renderClockHooks: [...visualRenderHooks.keys()] } };
     }, trace: () => [...log], disable, restoreNative,
   };
   trace('ready', { compatible: S.compatible, appVersion: window.APP_CONF?.appver });

@@ -1,0 +1,428 @@
+{
+  "date": "2026-11-15",
+  "version": "0.2.3",
+  "baseline": {
+    "before": {
+      "id": "2670863319",
+      "position": 115.97619954648522,
+      "playing": false
+    },
+    "native": {
+      "packetBytes": 1600,
+      "capturedPackets": 132,
+      "cadenceProbePackets": 223,
+      "cadenceSpanMs": 1912.5999999046326
+    },
+    "web022": {
+      "capturedPackets": 400,
+      "minPacketBytes": 2880,
+      "maxPacketBytes": 4724,
+      "consumerCapacity": 4736,
+      "renderSamples": 147,
+      "renderVsOutputMs": {
+        "min": -326.6408887934813,
+        "p05": -267.3835557462444,
+        "p95": 18.489111111164675,
+        "max": 63.01477777781838
+      }
+    },
+    "sourceMatch": [
+      {
+        "correlation": 0.9999482392783616,
+        "scale": 1.001138308286493
+      },
+      {
+        "correlation": 0.9995184766717794,
+        "scale": 1.0040057355425505
+      },
+      {
+        "correlation": 0.9963476602678746,
+        "scale": 1.0007141318949264
+      }
+    ],
+    "restored": 115.97619954648522
+  },
+  "runtime": {
+    "version": "0.2.3",
+    "client": {
+      "netease": "3.1.12 (3444)",
+      "platform": "macOS arm64"
+    },
+    "summary": {
+      "packets": 3600,
+      "packetLengths": [
+        1600
+      ],
+      "analysisLengths": [
+        1600
+      ],
+      "renderVsOutputMs": {
+        "samples": 1173,
+        "min": -1.2999997138686012,
+        "p05": -0.20000028610229492,
+        "p95": 0,
+        "max": 0
+      }
+    },
+    "scenarios": [
+      {
+        "name": "steady",
+        "enabled": true,
+        "compatible": true,
+        "id": "2670863319",
+        "phase": "owned",
+        "ownsPlayback": true,
+        "playing": true,
+        "playbackMode": "continuous-web",
+        "loading": false,
+        "nativeOutputGated": true,
+        "seekPending": false,
+        "seekSettling": false,
+        "position": 187.80092970521542,
+        "duration": 232.1764172335601,
+        "requestedLevel": "hires",
+        "actualLevel": "lossless",
+        "sourceRate": 44100,
+        "decodedRate": 44100,
+        "sampleRate": 44100,
+        "sampleRatePolicy": "source-matched",
+        "contextState": "running",
+        "contextGeneration": 2,
+        "activeNodes": 2,
+        "deviceFormat": "unknown",
+        "resourceOrigin": "native-cache",
+        "next": "2670863152",
+        "scheduled": "2670863152",
+        "claiming": false,
+        "memory": {
+          "held": 164792984,
+          "reserved": 0,
+          "limit": 536870912,
+          "pending": 0
+        },
+        "mode": "playCycle",
+        "nativeAllowed": true,
+        "queueVersion": 2,
+        "loadEpoch": 1,
+        "controlRevision": 1,
+        "systemMedia": {
+          "supported": true,
+          "active": true,
+          "failed": false,
+          "seekPending": false
+        },
+        "visualization": {
+          "active": true,
+          "failed": false,
+          "frames": 7596,
+          "lastPosition": 187.71666666666667,
+          "maxWorkMs": 3.4000000953674316,
+          "averageWorkMs": 0.40164560333812405,
+          "visualRate": 48000,
+          "visualChannels": 2,
+          "packetFrames": 400,
+          "packetBytes": 1600,
+          "maxPacketsPerTick": 6,
+          "resets": 1,
+          "skippedFrames": 0,
+          "affectsAudioOutput": false,
+          "renderClock": "output",
+          "renderClockHooks": [
+            "_AERenderMV",
+            "_AEWebSetPlaybackPosition"
+          ]
+        }
+      },
+      {
+        "name": "seek70",
+        "id": "2670863319",
+        "position": 70.72272108843538,
+        "visual": {
+          "active": true,
+          "failed": false,
+          "frames": 7666,
+          "lastPosition": 70.625,
+          "maxWorkMs": 3.4000000953674316,
+          "averageWorkMs": 0.4009000784169592,
+          "visualRate": 48000,
+          "visualChannels": 2,
+          "packetFrames": 400,
+          "packetBytes": 1600,
+          "maxPacketsPerTick": 6,
+          "resets": 2,
+          "skippedFrames": 0,
+          "affectsAudioOutput": false,
+          "renderClock": "output",
+          "renderClockHooks": [
+            "_AERenderMV",
+            "_AEWebSetPlaybackPosition"
+          ]
+        }
+      },
+      {
+        "name": "seek160",
+        "id": "2670863319",
+        "position": 160.69659863945577,
+        "visual": {
+          "active": true,
+          "failed": false,
+          "frames": 7732,
+          "lastPosition": 160.61666666666667,
+          "maxWorkMs": 3.4000000953674316,
+          "averageWorkMs": 0.4002715989955028,
+          "visualRate": 48000,
+          "visualChannels": 2,
+          "packetFrames": 400,
+          "packetBytes": 1600,
+          "maxPacketsPerTick": 6,
+          "resets": 3,
+          "skippedFrames": 0,
+          "affectsAudioOutput": false,
+          "renderClock": "output",
+          "renderClockHooks": [
+            "_AERenderMV",
+            "_AEWebSetPlaybackPosition"
+          ]
+        }
+      },
+      {
+        "name": "pause",
+        "counterBefore": 7732,
+        "counterAfter": 7732,
+        "active": false
+      },
+      {
+        "name": "resume",
+        "visual": {
+          "active": true,
+          "failed": false,
+          "frames": 7773,
+          "lastPosition": 161.13333333333333,
+          "maxWorkMs": 3.4000000953674316,
+          "averageWorkMs": 0.4002444362848955,
+          "visualRate": 48000,
+          "visualChannels": 2,
+          "packetFrames": 400,
+          "packetBytes": 1600,
+          "maxPacketsPerTick": 6,
+          "resets": 4,
+          "skippedFrames": 0,
+          "affectsAudioOutput": false,
+          "renderClock": "output",
+          "renderClockHooks": [
+            "_AERenderMV",
+            "_AEWebSetPlaybackPosition"
+          ]
+        }
+      },
+      {
+        "name": "cross",
+        "from": "2670863319",
+        "to": "2670863152",
+        "position": 0.01959183673469056,
+        "contextBefore": 2,
+        "contextAfter": 2,
+        "visual": {
+          "active": true,
+          "failed": false,
+          "frames": 12644,
+          "lastPosition": 232.10833333333332,
+          "maxWorkMs": 3.4000000953674316,
+          "averageWorkMs": 0.3963223659550981,
+          "visualRate": 48000,
+          "visualChannels": 2,
+          "packetFrames": 400,
+          "packetBytes": 1600,
+          "maxPacketsPerTick": 6,
+          "resets": 5,
+          "skippedFrames": 0,
+          "affectsAudioOutput": false,
+          "renderClock": "output",
+          "renderClockHooks": [
+            "_AERenderMV",
+            "_AEWebSetPlaybackPosition"
+          ]
+        },
+        "scheduled": [
+          {
+            "at": 103971,
+            "event": "scheduled",
+            "from": "2670863319",
+            "to": "2670863152",
+            "leadSeconds": 72.18222222222221,
+            "sourceRate": 44100,
+            "decodedRate": 44100,
+            "contextRate": 44100,
+            "scheduledGapFrames": 0
+          },
+          {
+            "at": 105309,
+            "event": "scheduled",
+            "from": "2670863319",
+            "to": "2670863152",
+            "leadSeconds": 71.48981859410435,
+            "sourceRate": 44100,
+            "decodedRate": 44100,
+            "contextRate": 44100,
+            "scheduledGapFrames": 0
+          },
+          {
+            "at": 145015,
+            "event": "scheduled",
+            "from": "2670863319",
+            "to": "2670863152",
+            "leadSeconds": 1.6029024943310617,
+            "sourceRate": 44100,
+            "decodedRate": 44100,
+            "contextRate": 44100,
+            "scheduledGapFrames": 0
+          }
+        ]
+      },
+      {
+        "name": "crossVisualConfirmed",
+        "id": "2670863152",
+        "position": 54.22657596371883,
+        "visual": {
+          "active": true,
+          "failed": false,
+          "frames": 19119,
+          "lastPosition": 54.13333333333333,
+          "maxWorkMs": 5.400000095367432,
+          "averageWorkMs": 0.37671949344796424,
+          "visualRate": 48000,
+          "visualChannels": 2,
+          "packetFrames": 400,
+          "packetBytes": 1600,
+          "maxPacketsPerTick": 6,
+          "resets": 6,
+          "skippedFrames": 0,
+          "affectsAudioOutput": false,
+          "renderClock": "output",
+          "renderClockHooks": [
+            "_AERenderMV",
+            "_AEWebSetPlaybackPosition"
+          ]
+        },
+        "consumerCapacity": 1600,
+        "packets": [
+          {
+            "id": "2670863152",
+            "pts": 54116.666666666664,
+            "length": 1600,
+            "output": 54.12866280073959
+          },
+          {
+            "id": "2670863152",
+            "pts": 54125,
+            "length": 1600,
+            "output": 54.13676280064422
+          }
+        ]
+      },
+      {
+        "name": "nativeRecovery",
+        "owns": false,
+        "playing": true,
+        "visualActive": false,
+        "nativePackets": 21,
+        "capacity": 1600
+      }
+    ],
+    "final": {
+      "enabled": true,
+      "compatible": true,
+      "id": "2670863319",
+      "phase": "owned",
+      "ownsPlayback": true,
+      "playing": false,
+      "playbackMode": "continuous-web",
+      "loading": false,
+      "nativeOutputGated": true,
+      "seekPending": false,
+      "seekSettling": false,
+      "position": 115.97619954648522,
+      "duration": 232.1764172335601,
+      "requestedLevel": "hires",
+      "actualLevel": "lossless",
+      "sourceRate": 44100,
+      "decodedRate": 44100,
+      "sampleRate": 44100,
+      "sampleRatePolicy": "source-matched",
+      "contextState": "running",
+      "contextGeneration": 4,
+      "activeNodes": 0,
+      "deviceFormat": "unknown",
+      "resourceOrigin": "native-cache",
+      "next": "2670863152",
+      "claiming": false,
+      "memory": {
+        "held": 164792984,
+        "reserved": 0,
+        "limit": 536870912,
+        "pending": 0
+      },
+      "mode": "playCycle",
+      "nativeAllowed": true,
+      "queueVersion": 2,
+      "loadEpoch": 2,
+      "controlRevision": 12,
+      "systemMedia": {
+        "supported": true,
+        "active": true,
+        "failed": false,
+        "seekPending": false
+      },
+      "visualization": {
+        "active": false,
+        "failed": false,
+        "frames": 19119,
+        "lastPosition": 54.13333333333333,
+        "maxWorkMs": 5.400000095367432,
+        "averageWorkMs": 0.37671949344796424,
+        "visualRate": 48000,
+        "visualChannels": 2,
+        "packetFrames": 400,
+        "packetBytes": 1600,
+        "maxPacketsPerTick": 6,
+        "resets": 6,
+        "skippedFrames": 0,
+        "affectsAudioOutput": false,
+        "renderClock": "output",
+        "renderClockHooks": [
+          "_AERenderMV",
+          "_AEWebSetPlaybackPosition"
+        ]
+      }
+    },
+    "renderFps": 30,
+    "checkedBy": {
+      "protocol": true,
+      "originalRingObserved": true,
+      "newTests": false,
+      "fullLint": false,
+      "applicationBuild": false
+    },
+    "limits": [
+      "No complete perceptual equivalence claim",
+      "System media seek rollback remains unresolved",
+      "No DAC or Bluetooth synchronization measurement"
+    ]
+  },
+  "userConfirmation": {
+    "answer": "已恢复正常",
+    "context": "User resumed original track after the candidate was installed"
+  },
+  "cleanup": {
+    "temporaryAudioDataRemoved": true,
+    "diagnosticCallbacksRemoved": true,
+    "preservedLatestUserPlaybackIntent": true
+  },
+  "package": {
+    "file": "gapless-player-mac-0.2.3.plugin",
+    "sha256": "4c8cf6b97077970b2b2588c24b415b140e63394712fa77089da242e5039d300a",
+    "crcChecked": true,
+    "installedAndExtractedMatch": true
+  },
+  "pcmComparisonLimit": "Local position-search correlation confirms the visual input format only; not native PTS correctness or bit-identical audio output."
+}

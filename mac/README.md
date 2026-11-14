@@ -1,8 +1,8 @@
-# macOS 持续Web Audio 0.2.2候选
+# macOS 持续Web Audio 0.2.3候选
 
-当前源码与安装候选为0.2.2。持续由Web Audio播放、取消十秒交还；原有音源选择、窗口、歌词和播放入口保留。同采样率继续预约，混合采样率边界重建输出。新增只读可视化PCM，补回原有频谱／随节拍效果，不进入音乐输出链路；见[动态修复](../docs/VISUAL_PCM_0.2.2.md)。全部效果一致仍未验收，系统进度回跳未解决。
+当前源码与安装候选为0.2.3。持续由Web Audio播放、取消十秒交还；原有音源选择、窗口、歌词和播放入口保留。同采样率继续预约，混合采样率边界重建输出。显示PCM改为原有固定小包，原动画绘制与它共同读取实际声音输出位置，保留30 fps和原有样式；见[节奏修复](../docs/VISUAL_TIMING_0.2.3.md)。音乐链路未修改，全部效果一致仍未验收，系统进度回跳未解决。
 
-候选包：[gapless-player-mac-0.2.2.plugin](../releases/gapless-player-mac-0.2.2.plugin)。旧0.2.1包备份在插件目录之外，相同slug只保留一个安装版本。完整包已安装、重载，实读运行版本0.2.2，原环形频谱、Seek、暂停/继续及同采样率跨曲已核对；原生恢复后Web采样停止、原生PCM回调恢复。最终恢复The Hills暂停于51.49秒。文件SHA和范围见[本轮验证](../docs/verification/mac-visual-pcm-0.2.2.json)。
+候选包：[gapless-player-mac-0.2.3.plugin](../releases/gapless-player-mac-0.2.3.plugin)。旧0.2.2包备份在插件目录之外，相同slug只保留一个安装版本。完整包已安装、重载，实读运行版本0.2.3；固定输入/分析长度、绘制时钟、Seek、暂停/继续及Baptized In Fear→Open Hearts实际跨曲已核对。原生恢复后Web采样停止、原生PCM回调恢复。验证后恢复原曲暂停位置，用户随后继续播放并确认效果恢复正常，保留最新播放意图。文件SHA和范围见[本轮验证](../docs/verification/mac-visual-timing-0.2.3.json)。
 
 以下保留0.1.12历史说明，不代表当前代码仍采用临时桥接。
 
