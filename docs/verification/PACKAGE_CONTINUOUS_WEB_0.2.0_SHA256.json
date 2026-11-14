@@ -1,11 +1,20 @@
 {
   "version": "0.2.0",
   "candidate": true,
-  "packageSha256": "28ab23941912baf6dea8aefab51136f4f09da7445e55206179742a3905d9e62c",
-  "playerSha256": "915d9e6d32bda20a7a29fb66302f7a13c0e7d998a21827a3d93fe62d0a26b93e",
-  "installedPackageMatches": false,
-  "runtimeFileMatches": false,
-  "newIncrementsInstalled": false,
+  "packageSha256": "a707c02ba9af03440bcc6c5f31b80b64fd869eb7da9e708c12e703c0279b17e9",
+  "playerSha256": "0bbc53448358ef385376f355cb3a5bd9a34fa5809e8a9155d8fa32972347fb6c",
+  "installedPackageMatches": true,
+  "runtimeFileMatches": true,
+  "newIncrementsInstalled": true,
   "systemSeekAccepted": false,
-  "validation": "incremental JS syntax, code review, ZIP CRC; runtime observations cover earlier candidate only"
+  "validation": [
+    "Incremental JS syntax, code review and ZIP CRC passed; no tests added, full lint/tsc or app build.",
+    "Cache/recovery fixes: actual paused Native restoration preserved 240.9816067 s; subsequent Web resume held 198485280 bytes and scheduled next track.",
+    "Original window play/pause buttons observed consistent with Web state after candidate reload.",
+    "Latest internal raw Load event isolation: rapid Play then Pause during autoplay-unavailable Web loading returned to Native paused at 240.98 s, no auto-resume.",
+    "Latest internal Load event isolation has not yet been checked in a successful Web playback followed by normal restoration.",
+    "Real Control Center seek sampling shows wrong Native paused/duration state for about 546 ms; unresolved."
+  ],
+  "currentPlaybackAfterFinalReload": "Native paused; Web activation requires real user interaction. UI tool reported cgWindowNotFound.",
+  "evidence": "mac-system-seek-0.2.0.json"
 }

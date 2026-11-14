@@ -1,0 +1,170 @@
+{
+  "candidate": "0.2.0",
+  "date": "2026-11-15",
+  "client": "NetEaseMusic 3.1.12 (3444), macOS 26.6.2 arm64",
+  "scenario": "Real user click enabled Web Audio, then actual macOS Control Center seeks; outgoing Web position and system MediaRemote info sampled read-only",
+  "systemSamples": 11999,
+  "samplingIntervalMedianMs": 24.99,
+  "segments": [
+    {
+      "target": 76.609302,
+      "webPublication": {
+        "position": 76.609302,
+        "duration": 234.9238775510204,
+        "rate": 1
+      },
+      "systemStateChanges": [
+        {
+          "offsetFromWebPublicationMs": -185.23,
+          "position": 4.354158,
+          "playbackRate": 1,
+          "duration": 234.923877
+        },
+        {
+          "offsetFromWebPublicationMs": 116.68,
+          "position": 76.60009861703142,
+          "playbackRate": 0,
+          "duration": 242.52
+        },
+        {
+          "offsetFromWebPublicationMs": 664.13,
+          "position": 76.609302,
+          "playbackRate": 1,
+          "duration": 234.923877
+        }
+      ],
+      "wrongNativeStateObserved": true,
+      "wrongStateDurationMs": 547.45
+    },
+    {
+      "target": 186.764685,
+      "webPublication": {
+        "position": 186.764685,
+        "duration": 234.9238775510204,
+        "rate": 1
+      },
+      "systemStateChanges": [
+        {
+          "offsetFromWebPublicationMs": -185.98,
+          "position": 76.609302,
+          "playbackRate": 1,
+          "duration": 234.923877
+        },
+        {
+          "offsetFromWebPublicationMs": 121.84,
+          "position": 186.76329778582763,
+          "playbackRate": 0,
+          "duration": 242.52
+        },
+        {
+          "offsetFromWebPublicationMs": 667.29,
+          "position": 186.764685,
+          "playbackRate": 1,
+          "duration": 234.923877
+        }
+      ],
+      "wrongNativeStateObserved": true,
+      "wrongStateDurationMs": 545.45
+    },
+    {
+      "target": 187.88816,
+      "webPublication": {
+        "position": 187.88816,
+        "duration": 234.9238775510204,
+        "rate": 1
+      },
+      "systemStateChanges": [
+        {
+          "offsetFromWebPublicationMs": -182.69,
+          "position": 186.764685,
+          "playbackRate": 1,
+          "duration": 234.923877
+        },
+        {
+          "offsetFromWebPublicationMs": -31.04,
+          "position": 187.867632,
+          "playbackRate": 1,
+          "duration": 234.923877
+        }
+      ],
+      "wrongNativeStateObserved": false,
+      "wrongStateDurationMs": null
+    }
+  ],
+  "webEvents": [
+    {
+      "event": "system-media-action",
+      "action": "seekto"
+    },
+    {
+      "event": "seek-replaced",
+      "switchLeadMs": 2.9024943310673734
+    },
+    {
+      "event": "seek",
+      "position": 76.609302
+    },
+    {
+      "event": "system-media-seek",
+      "position": 76.609302
+    },
+    {
+      "event": "system-media-action",
+      "action": "seekto"
+    },
+    {
+      "event": "system-media-action",
+      "action": "seekto"
+    },
+    {
+      "event": "seek-replaced",
+      "switchLeadMs": 5.804988662131194
+    },
+    {
+      "event": "seek",
+      "position": 186.764685
+    },
+    {
+      "event": "system-media-seek",
+      "position": 186.764685
+    },
+    {
+      "event": "system-media-action",
+      "action": "seekto"
+    },
+    {
+      "event": "system-media-action",
+      "action": "seekto"
+    },
+    {
+      "event": "seek-replaced",
+      "switchLeadMs": 5.804988662131194
+    },
+    {
+      "event": "seek",
+      "position": 187.88816
+    },
+    {
+      "event": "system-media-seek",
+      "position": 187.88816
+    },
+    {
+      "event": "system-media-action",
+      "action": "seekto"
+    }
+  ],
+  "findings": [
+    "Two seeks produced system playbackRate=0 with parked Native duration 242.52, then Web playbackRate=1 with actual duration 234.923877 after about 546 ms.",
+    "Web seeks replaced source nodes at a single render boundary, approximately 3-6 ms scheduling lead; no Web pause event during these seeks.",
+    "The third close target did not produce the same wrong system state in the sampled interval.",
+    "Chromium command disable removes only its own target; re-registering its actions cannot remove the Native command handler.",
+    "BetterNCM-mac host ignores native_plugin modules and has no registered native plugin APIs."
+  ],
+  "limits": [
+    "System sampling is not a screen recording or an output-audio capture. It proves a wrong paused/duration state, not every visual position rollback.",
+    "Wall and performance-derived timestamps differ by roughly 50 ms; sub-50-ms command-to-publication latency is not asserted. Wrong-state durations use only system sample timestamps.",
+    "Completely native playback also showed rollback in the earlier user baseline.",
+    "Other devices, versions and all playback features remain unverified."
+  ],
+  "cleanup": "Read-only sampler completed; temporary JS publication wrapper restored and removed; no correction timers added."
+}

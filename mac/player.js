@@ -289,7 +289,9 @@ plugin.onLoad(() => {
         if (!validRecovery(c, epoch)) throw new Error('cancelled');
         if (Number(count?.result) === 1) c.heard = Number(count.playedAudioTime) + (c.nativeHeardBase || 0);
       }
-      c.entry ||= await resources.obtain(ref(c), c.info);
+      // A native fallback may evict an unpinned entry while c still references
+      // it. Reacquire through the resource owner so budget/pins stay accounted.
+      c.entry = await resources.obtain(ref(c), c.info);
       if (!c.entry.hash || c.entry.hash !== Resources.fingerprint(c.info) || c.entry.level !== c.info.level)
         throw new Error('native-only-source-identity');
       if (!validRecovery(c, epoch) || !allowed(c.info)) throw new Error('cancelled');
@@ -304,7 +306,7 @@ plugin.onLoad(() => {
       else await S.nativeGate.ready;
       if (!validRecovery(c, epoch) || !allowed(c.info) || S.phase === 'restoring') throw new Error('cancelled');
       clearTimeout(S.nativeGate?.watchdog);
-      clock.setOutput(true); c.loading = false; c.transitioning = false; S.phase = 'owned';
+      clock.setOutput(true); c.loading = false; c.transitioning = false; c.blocked = false; S.phase = 'owned';
       if (c.playing) clock.start(c, clock.ctx.currentTime + 0.01, c.offset);
       if (msg.resumeExisting) {
         ack(msg); emitState(c, c.playing ? 1 : 2, S.token); progress(c, true);
@@ -553,10 +555,12 @@ plugin.onLoad(() => {
     const run = async () => {
       try {
         await releaseNativeGate();
-        // Native onLoad can auto-play for both direct load and queue selection.
-        // That workflow must not overwrite a paused user's recovery intent.
-        c.ignoreSelectionPlay = true;
-        if (!c.info || c.restoreSelection) {
+        // Only the SDK queue-selection workflow installs an onLoad auto-play
+        // callback. A raw load does not; its first Play may be real user intent.
+        const needsSelection = !c.info || c.restoreSelection;
+        c.recoverySelecting = !!needsSelection;
+        c.ignoreSelectionPlay = !!needsSelection;
+        if (needsSelection) {
           if (!c.row || (rows().length && rows().filter(r => rowId(r) === c.id).length !== 1)) throw new Error('native-recovery-selection-unavailable');
           const loaded = bridge.waitNative('audioplayer.onLoad', a => String(a[0]) === c.id && Number(a[1]?.code) === 0, 8000);
           const completed = loaded.promise;
@@ -571,6 +575,7 @@ plugin.onLoad(() => {
           await eventCall('audioplayer.load', [c.id, c.info], 'audioplayer.onLoad', a => String(a[0]) === c.id && Number(a[1]?.code) === 0);
         }
         if (!validRecovery(c, epoch)) return;
+        c.restoreSelection = false;
         // Stop the native load workflow first; then seek; only then restore the latest transport intent.
         let token = `${c.id}|pause|restore-${epoch}`;
         // NetEase acknowledges pause by RPC; a freshly loaded, already paused backend emits no new state event.
@@ -611,6 +616,8 @@ plugin.onLoad(() => {
         await bridge.raw(`audioplayer.${desired ? 'play' : 'pause'}`, [c.id, `${c.id}|${desired ? 'resume' : 'pause'}|recovery-fallback-${epoch}`]).catch(() => {});
         trace('recovery-error', { id: c.id, reason: error.message, nativeFallbackIssued: true });
       } finally {
+        c.recoverySelecting = false;
+        c.ignoreSelectionPlay = false;
         resources.retain([ref(S.current)]);
         if (!S.current?.owns) await clock.close();
       }
@@ -622,6 +629,10 @@ plugin.onLoad(() => {
     const c = S.current;
     if (command === 'audioplayer.onVolume' && (S.nativeGate || c?.owns)) return true;
     if (command === 'audioplayer.onLoad' && c?.owns && S.phase !== 'restoring') return true;
+    // Raw recovery loads only reconstruct the parked backend. Native waiters
+    // already observed this event; forwarding it re-enters the SDK auto-play
+    // workflow. Queue selection still needs its SDK Load callback to finish.
+    if (command === 'audioplayer.onLoad' && c?.owns && S.phase === 'restoring' && !c.recoverySelecting) return true;
     if (command === 'winhelper.onHotkey') {
       const action = { play_pause: 'toggle', play: 'play', pause: 'pause', next: 'nexttrack', prev: 'previoustrack' }[args[0]];
       if (action && media?.requestTransport(action)) return true;
