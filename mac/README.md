@@ -1,8 +1,8 @@
-# macOS 持续Web Audio 0.2.0候选
+# macOS 持续Web Audio 0.2.1候选
 
-当前源码与实机安装候选为0.2.0。持续由Web Audio播放、取消十秒交还；原有音源选择、窗口、歌词和播放入口保留。全部效果一致仍在验收，系统进度回跳未解决。见[实现与待验收项](../docs/CONTINUOUS_WEB_AUDIO.md)。最新增量已安装；缓存预算、恢复后预约和暂停意图已做相关实机核对，随机模式仍未验证。此前0.1.12安装包已备份，可恢复。
+当前源码与安装候选为0.2.1。持续由Web Audio播放、取消十秒交还；原有音源选择、窗口、歌词和播放入口保留。同采样率曲目继续预约，混合采样率边界重建输出，避免较高采样率音源进入较低采样率上下文。见[音质保护](../docs/AUDIO_QUALITY_0.2.1.md)。全部效果一致仍未验收，系统进度回跳未解决。
 
-0.2.0源码候选包：[gapless-player-mac-0.2.0.plugin](../releases/gapless-player-mac-0.2.0.plugin)。包与运行源码已核对；验证范围见[SHA记录](../docs/verification/PACKAGE_CONTINUOUS_WEB_0.2.0_SHA256.json)。最后重载后已真实点击放行并通过普通恢复复验，当前Web暂停；不能把文件一致等同于所有场景通过。
+候选包：[gapless-player-mac-0.2.1.plugin](../releases/gapless-player-mac-0.2.1.plugin)。旧0.2.0包备份在插件目录之外，相同slug只保留一个安装版本。当前播放时钟的open/matches/status已应用采样率保护，音乐和预约继续；完整包已安装并重新注册，但未刷新正在播放的页面，所以当前协调器仍为0.2.0，下次页面加载才完整运行0.2.1。文件与运行范围见[本轮验证](../docs/verification/mac-audio-quality-0.2.1.json)。
 
 以下保留0.1.12历史说明，不代表当前代码仍采用临时桥接。
 

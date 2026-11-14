@@ -250,7 +250,16 @@ plugin.onLoad(() => {
     if (S.scheduled && S.scheduled.selectionKey !== next?.key) cancelScheduled();
     if (!next || S.scheduled) return;
     const entry = resources.lookup(next);
-    if (!entry?.hash || !clock.matches(entry)) return;
+    if (!entry?.hash) return;
+    if (entry.spec.rate !== clock.ctx?.sampleRate) {
+      if (c.rateBoundary !== next.key) {
+        c.rateBoundary = next.key;
+        trace('sample-rate-boundary', { from: c.id, to: next.id,
+          currentRate: clock.ctx?.sampleRate, nextRate: entry.spec.rate });
+      }
+      return;
+    }
+    if (!clock.matches(entry)) return;
     const lead = c.end - clock.ctx.currentTime;
     if (lead < 0.08) { if (!c.missed) { c.missed = true; trace('missed-schedule', { id: c.id, lead }); } return; }
     const candidate = { id: next.id, requestedLevel: next.level, account: next.account, row: next.row,

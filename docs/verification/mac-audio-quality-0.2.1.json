@@ -1,0 +1,116 @@
+{
+  "recordedAtUTC": "2026-11-14T18:02:45.260636+00:00",
+  "candidate": "0.2.1",
+  "policy": "source-matched",
+  "deployment": {
+    "packageInstalledAndRegistered": true,
+    "pageReloaded": false,
+    "runningCoordinator": "0.2.0",
+    "hotAppliedClockMethods": [
+      "open",
+      "matches",
+      "status"
+    ],
+    "why": "Keep current music and scheduled nodes uninterrupted; full 0.2.1 coordinator runs on the next page load."
+  },
+  "package": {
+    "path": "releases/gapless-player-mac-0.2.1.plugin",
+    "sha256": "d50f15c8bda0c0fa5e247b77d4105cc764feaca6f4fa7915bed285c3b7e70b76",
+    "playerSHA256": "c04d4c7bd31e1d079fdae90db41dd95468164920fccdd4bcc274b043c298dcc5",
+    "checks": {
+      "zipCRC": true,
+      "playerEqualsSource": true,
+      "installedEqualsPackage": true,
+      "runtimePlayerEqualsPackage": true,
+      "runtimeManifestEqualsPackage": true,
+      "liveClockMethodsEqualSource": true
+    }
+  },
+  "silentProbe": {
+    "realHiResMusic": false,
+    "initialRate": 44100,
+    "wrongRateMatches": false,
+    "activeRateChangeError": "native-only-active-sample-rate",
+    "activeOutputPreserved": true,
+    "newRate": 96000,
+    "newRateMatches": true,
+    "oldRateMatches": false,
+    "contextsAndNodesCleaned": true
+  },
+  "hotApply": {
+    "before": {
+      "id": "2670863152",
+      "position": 182.24256118594099,
+      "playing": true,
+      "contextGeneration": 6,
+      "scheduled": "1938192798"
+    },
+    "after": {
+      "id": "2670863152",
+      "position": 182.24256118594099,
+      "playing": true,
+      "contextGeneration": 6,
+      "scheduled": "1938192798"
+    }
+  },
+  "liveAfterNaturalBoundary": {
+    "methodsMatch": {
+      "open": true,
+      "matches": true,
+      "status": true
+    },
+    "id": "1938192798",
+    "playing": true,
+    "position": 59.57265188888891,
+    "sampleRate": 44100,
+    "sourceRate": 44100,
+    "sampleRatePolicy": "source-matched",
+    "contextGeneration": 6,
+    "scheduled": "431811451",
+    "activeNodes": 2,
+    "events": [
+      {
+        "at": 1319009,
+        "event": "transition",
+        "from": "2670863152",
+        "to": "1938192798",
+        "scheduledGapFrames": 0
+      },
+      {
+        "at": 1319080,
+        "event": "claimed",
+        "id": "1938192798",
+        "position": 0.07442059637185139,
+        "claimDelayMs": 70.5
+      },
+      {
+        "at": 1320203,
+        "event": "scheduled",
+        "from": "1938192798",
+        "to": "431811451",
+        "leadSeconds": 232.81682656916087,
+        "sourceRate": 44100,
+        "decodedRate": 44100,
+        "contextRate": 44100,
+        "scheduledGapFrames": 0
+      }
+    ]
+  },
+  "verification": [
+    "incremental node --check on shared/playback-clock.js and mac/player.js",
+    "diff whitespace check",
+    "silent Web Audio output clock probe",
+    "same-rate natural boundary after live clock update; generation unchanged, zero scheduled gap frames; no new audio recording",
+    "ZIP CRC, package/source/install/runtime file hashes and live methods"
+  ],
+  "notVerified": [
+    "real mixed-rate Hi-Res music and output waveforms",
+    "device sample rate / bit-perfect output / audible quality equivalence",
+    "full 0.2.1 coordinator after page reload",
+    "rapid mixed-rate song changes, sleep, device changes"
+  ],
+  "knownUnresolved": [
+    "macOS Control Center seek rollback and play/pause icon flash"
+  ],
+  "newTestsOrApplicationBuilds": false
+}

@@ -9,9 +9,22 @@
       this.outputSwitch = { before: true, enabled: true, at: 0 };
     }
     async open(entry) {
+      const rate = entry?.spec?.rate;
+      if (!entry?.buffer || entry.buffer.sampleRate !== rate
+        || entry.buffer.numberOfChannels !== entry.spec.channels) throw new Error('native-only-source-spec');
       if (this.ctx?.state === 'closed') this.ctx = null;
+      if (this.ctx && this.ctx.sampleRate !== rate) {
+        // Mixed-rate tracks cannot share this clock without resampling. Finish
+        // the old output first; never close a sounding or scheduled source.
+        if (this.active.size || this.retiring.size) throw new Error('native-only-active-sample-rate');
+        const generation = this.generation, previousRate = this.ctx.sampleRate;
+        await this.close();
+        // A newer Load may have opened its own output while close was pending.
+        if (this.generation !== generation + 1) throw new Error('cancelled');
+        this.trace('output-rate-boundary', { fromRate: previousRate, toRate: rate });
+      }
       if (!this.ctx) {
-        const ctx = this.ctx = new AudioContext({ sampleRate: entry.spec.rate, latencyHint: 'playback' });
+        const ctx = this.ctx = new AudioContext({ sampleRate: rate, latencyHint: 'playback' });
         this.generation++;
         this.gain = ctx.createGain(); this.applyOutputVolume(); this.gain.connect(ctx.destination);
         ctx.onstatechange = () => { if (this.ctx === ctx) this.onState(ctx.state); };
@@ -44,7 +57,7 @@
       }
     }
     matches(entry) { return !!entry?.buffer && entry.spec.rate === entry.buffer.sampleRate
-      && entry.spec.channels === entry.buffer.numberOfChannels && !!this.ctx; }
+      && entry.spec.channels === entry.buffer.numberOfChannels && this.ctx?.sampleRate === entry.spec.rate; }
     position(track) {
       if (!track) return 0;
       const advance = track.node && track.playing ? Math.max(0, this.ctx.currentTime - track.start) : 0;
@@ -164,7 +177,7 @@
       this.outputSwitch = { before: true, enabled: true, at: 0 };
       if (ctx?.state !== 'closed') await ctx?.close();
     }
-    status() { return { sampleRate: this.ctx?.sampleRate, contextState: this.ctx?.state,
+    status() { return { sampleRate: this.ctx?.sampleRate, sampleRatePolicy: 'source-matched', contextState: this.ctx?.state,
       contextGeneration: this.generation, activeNodes: this.active.size + this.retiring.size, deviceFormat: 'unknown' }; }
   }
   globalThis.GaplessPlaybackClock = PlaybackClock;
