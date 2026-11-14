@@ -13,9 +13,13 @@
   "releaseSha256": "82f5d6a8a415aa6ac1ac109a9183cfa51a1e68817ad09dc1d6802bf33c569144",
   "zipValid": true,
   "packagedSourceMatches": true,
-  "latestPackageInstalled": false,
-  "observedRuntimeVersion": "0.1.10",
-  "installedPreviousPackageExists": true,
+  "latestPackageInstalled": true,
+  "observedRuntimeVersion": "0.1.11",
+  "installedPreviousPackageExists": false,
   "physicalAudioLoopback": false,
-  "activationAndRuntimeAcceptance": "pending"
+  "activationAndRuntimeAcceptance": "activated; observed cache-backed bridge, cancellation and injected prewarm-failure cleanup; audio loopback/system flash/Windows remain unverified",
+  "installedPackageMatchesRelease": true,
+  "runtimeMembersMatchRelease": true,
+  "sameSlugPackageCount": 1,
+  "runtimeEvidence": "mac-runtime-0.1.11.json"
 }

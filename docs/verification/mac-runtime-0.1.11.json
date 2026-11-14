@@ -1,0 +1,620 @@
+{
+  "version": "0.1.11",
+  "date": "2026-11-14",
+  "client": "NetEase macOS 3.1.12 (3444)",
+  "isolatedResourceProof": {
+    "scope": "isolated shared resource pipeline on the live NetEase page; separate from the main-player bridge below",
+    "versionAtResourceProof": "0.1.10",
+    "samples": [
+      {
+        "id": "2670863319",
+        "origin": "native-cache",
+        "actualLevel": "lossless",
+        "sourceRate": 44100,
+        "decodedRate": 44100,
+        "channels": 2,
+        "elapsedMs": 885.5,
+        "bytes": 27081483,
+        "md5Verified": true
+      },
+      {
+        "id": "2670863152",
+        "origin": "native-cache",
+        "actualLevel": "lossless",
+        "sourceRate": 44100,
+        "decodedRate": 44100,
+        "channels": 2,
+        "elapsedMs": 1060.9,
+        "bytes": 27865486,
+        "md5Verified": true
+      }
+    ],
+    "webAudioDownloadRequests": 0,
+    "nativeReportedPlaying": true,
+    "activeWebMusicNodes": 0
+  },
+  "mainPlayerBridge": {
+    "version": "0.1.11",
+    "seek": {
+      "playId": "2670863319",
+      "seekId": "2670863319|seek|cache-bridge-check",
+      "code": 0,
+      "position": 219.1764172335601
+    },
+    "status": {
+      "enabled": true,
+      "compatible": true,
+      "id": "2670863152",
+      "phase": "native",
+      "ownsPlayback": false,
+      "playing": true,
+      "bridgeSide": null,
+      "bridgeLeadSeconds": 10,
+      "bridgeHeadSeconds": 10,
+      "nativePrepared": true,
+      "nativeOutputGated": false,
+      "seekPending": false,
+      "seekSettling": false,
+      "position": 12.889700000286103,
+      "duration": 234.9238775510204,
+      "requestedLevel": "hires",
+      "actualLevel": "lossless",
+      "sourceRate": 44100,
+      "decodedRate": 44100,
+      "contextGeneration": 2,
+      "activeNodes": 0,
+      "deviceFormat": "unknown",
+      "resourceOrigin": "native-cache",
+      "next": "1938192798",
+      "claiming": false,
+      "memory": {
+        "held": 82881144,
+        "reserved": 0,
+        "limit": 536870912,
+        "pending": 0
+      },
+      "mode": "playCycle",
+      "nativeAllowed": true,
+      "queueVersion": 2,
+      "loadEpoch": 2,
+      "controlRevision": 5,
+      "systemMedia": {
+        "supported": true,
+        "active": true,
+        "failed": false,
+        "seekPending": false
+      }
+    },
+    "samples": [
+      {
+        "at": 0,
+        "id": "2670863319",
+        "phase": "native",
+        "owns": false,
+        "position": 219.1826172338462,
+        "nodes": 0,
+        "context": null,
+        "origin": "native-cache"
+      },
+      {
+        "at": 3240,
+        "id": "2670863319",
+        "phase": "warming",
+        "owns": false,
+        "position": 222.33880000019076,
+        "nodes": 1,
+        "context": "running",
+        "origin": "native-cache"
+      },
+      {
+        "at": 3460,
+        "id": "2670863319",
+        "phase": "owned",
+        "owns": true,
+        "position": 222.5977224558777,
+        "nodes": 2,
+        "context": "running",
+        "origin": "native-cache"
+      },
+      {
+        "at": 13159,
+        "id": "2670863152",
+        "phase": "claiming",
+        "owns": true,
+        "position": 0.10692880508404023,
+        "nodes": 1,
+        "context": "running",
+        "origin": "native-cache"
+      },
+      {
+        "at": 13252,
+        "id": "2670863152",
+        "phase": "owned",
+        "owns": true,
+        "position": 0.21432109533347443,
+        "nodes": 1,
+        "context": "running",
+        "origin": "native-cache"
+      },
+      {
+        "at": 23170,
+        "id": "2670863152",
+        "phase": "handoff",
+        "owns": true,
+        "position": 10.13504671891624,
+        "nodes": 1,
+        "context": "running",
+        "origin": "native-cache"
+      },
+      {
+        "at": 23483,
+        "id": "2670863152",
+        "phase": "native",
+        "owns": false,
+        "position": 10.338599999904632,
+        "nodes": 0,
+        "context": null,
+        "origin": "native-cache"
+      }
+    ],
+    "audioDownloads": 0,
+    "trace": [
+      {
+        "at": 50100,
+        "event": "native-load",
+        "id": "2670863319",
+        "phase": "native",
+        "current": "29027690",
+        "epoch": 1
+      },
+      {
+        "at": 50892,
+        "event": "native-cache-hit",
+        "id": "2670863319",
+        "level": "lossless",
+        "bytes": 27081483,
+        "md5Verified": true
+      },
+      {
+        "at": 51080,
+        "event": "decoded",
+        "id": "2670863319",
+        "level": "lossless",
+        "origin": "native-cache",
+        "sourceRate": 44100,
+        "decodedRate": 44100,
+        "channels": 2,
+        "size": 81911840
+      },
+      {
+        "at": 52032,
+        "event": "native-cache-hit",
+        "id": "2670863152",
+        "level": "lossless",
+        "bytes": 27865486,
+        "md5Verified": true
+      },
+      {
+        "at": 52208,
+        "event": "decoded",
+        "id": "2670863152",
+        "level": "lossless",
+        "origin": "native-cache",
+        "sourceRate": 44100,
+        "decodedRate": 44100,
+        "channels": 2,
+        "size": 82881144
+      },
+      {
+        "at": 91146,
+        "event": "native-user-seek",
+        "id": "2670863319",
+        "takeoverDeferred": true
+      },
+      {
+        "at": 94374,
+        "event": "output-ready",
+        "waitMs": 35.19999980926514,
+        "contextTime": 0.04353741496598639,
+        "outputContextTime": 0.000317
+      },
+      {
+        "at": 94590,
+        "event": "scheduled",
+        "from": "2670863319",
+        "to": "2670863152",
+        "leadSeconds": 9.59901223799986,
+        "sourceRate": 44100,
+        "decodedRate": 44100,
+        "contextRate": 44100,
+        "scheduledGapFrames": 0
+      },
+      {
+        "at": 94610,
+        "event": "takeover",
+        "id": "2670863319",
+        "position": 222.51864700019075,
+        "bridgeLeadSeconds": 9.657770233369348,
+        "alignmentErrorMs": 22.880333428673794,
+        "outputDelayMs": 31.92041477525153,
+        "pauseAcknowledged": true,
+        "switchTimingErrorMs": 0.4244215779763181
+      },
+      {
+        "at": 104207,
+        "event": "transition",
+        "from": "2670863319",
+        "to": "2670863152",
+        "scheduledGapFrames": 0
+      },
+      {
+        "at": 104373,
+        "event": "native-load",
+        "id": "2670863152",
+        "phase": "claiming",
+        "current": "2670863152",
+        "epoch": 2
+      },
+      {
+        "at": 104373,
+        "event": "claimed",
+        "id": "2670863152",
+        "position": 0.17078368036748692,
+        "claimDelayMs": 165.69999980926514
+      },
+      {
+        "at": 104377,
+        "event": "play",
+        "id": "2670863152"
+      },
+      {
+        "at": 104404,
+        "event": "native-prepared",
+        "id": "2670863152",
+        "elapsedMs": 27
+      },
+      {
+        "at": 114494,
+        "event": "handoff-alignment",
+        "id": "2670863152",
+        "attempt": 0,
+        "errorMs": 11.416485427659495,
+        "seekMs": 0.40000009536743164,
+        "progressErrorMs": -18.108433488057685
+      },
+      {
+        "at": 114626,
+        "event": "returned-native",
+        "id": "2670863152",
+        "reason": "bridge-head-complete",
+        "position": 10.369624918820348,
+        "playing": true,
+        "alignmentErrorMs": 11.416485427659495
+      },
+      {
+        "at": 114626,
+        "event": "handoff-output-switched",
+        "id": "2670863152",
+        "switchTimingErrorMs": -0.182956725358963
+      }
+    ],
+    "userVolume": 0.48,
+    "volumeJournalPresent": false,
+    "physicalAudioLoopback": false
+  },
+  "cancelledPrewarm": {
+    "version": "0.1.11",
+    "before": {
+      "id": "2670863319",
+      "phase": "warming",
+      "context": "running",
+      "nodes": 1
+    },
+    "seek": {
+      "playId": "2670863319",
+      "seekId": "2670863319|seek|cancel-prewarm-new-position",
+      "code": 0,
+      "position": 45
+    },
+    "after": {
+      "enabled": true,
+      "compatible": true,
+      "id": "2670863319",
+      "phase": "native",
+      "ownsPlayback": false,
+      "playing": true,
+      "bridgeSide": null,
+      "bridgeLeadSeconds": 10,
+      "bridgeHeadSeconds": 10,
+      "nativePrepared": true,
+      "nativeOutputGated": false,
+      "seekPending": false,
+      "seekSettling": false,
+      "position": 45.619,
+      "duration": 232.1764172335601,
+      "requestedLevel": "hires",
+      "actualLevel": "lossless",
+      "sourceRate": 44100,
+      "decodedRate": 44100,
+      "contextGeneration": 4,
+      "activeNodes": 0,
+      "deviceFormat": "unknown",
+      "resourceOrigin": "native-cache",
+      "next": "2670863152",
+      "claiming": false,
+      "memory": {
+        "held": 164792984,
+        "reserved": 0,
+        "limit": 536870912,
+        "pending": 0
+      },
+      "mode": "playCycle",
+      "nativeAllowed": true,
+      "queueVersion": 2,
+      "loadEpoch": 3,
+      "controlRevision": 10,
+      "systemMedia": {
+        "supported": true,
+        "active": true,
+        "failed": false,
+        "seekPending": false
+      }
+    },
+    "trace": [
+      {
+        "at": 94610,
+        "event": "takeover",
+        "id": "2670863319",
+        "position": 222.51864700019075,
+        "bridgeLeadSeconds": 9.657770233369348,
+        "alignmentErrorMs": 22.880333428673794,
+        "outputDelayMs": 31.92041477525153,
+        "pauseAcknowledged": true,
+        "switchTimingErrorMs": 0.4244215779763181
+      },
+      {
+        "at": 104207,
+        "event": "transition",
+        "from": "2670863319",
+        "to": "2670863152",
+        "scheduledGapFrames": 0
+      },
+      {
+        "at": 104373,
+        "event": "native-load",
+        "id": "2670863152",
+        "phase": "claiming",
+        "current": "2670863152",
+        "epoch": 2
+      },
+      {
+        "at": 104373,
+        "event": "claimed",
+        "id": "2670863152",
+        "position": 0.17078368036748692,
+        "claimDelayMs": 165.69999980926514
+      },
+      {
+        "at": 104377,
+        "event": "play",
+        "id": "2670863152"
+      },
+      {
+        "at": 104404,
+        "event": "native-prepared",
+        "id": "2670863152",
+        "elapsedMs": 27
+      },
+      {
+        "at": 114494,
+        "event": "handoff-alignment",
+        "id": "2670863152",
+        "attempt": 0,
+        "errorMs": 11.416485427659495,
+        "seekMs": 0.40000009536743164,
+        "progressErrorMs": -18.108433488057685
+      },
+      {
+        "at": 114626,
+        "event": "returned-native",
+        "id": "2670863152",
+        "reason": "bridge-head-complete",
+        "position": 10.369624918820348,
+        "playing": true,
+        "alignmentErrorMs": 11.416485427659495
+      },
+      {
+        "at": 114626,
+        "event": "handoff-output-switched",
+        "id": "2670863152",
+        "switchTimingErrorMs": -0.182956725358963
+      },
+      {
+        "at": 160281,
+        "event": "native-load",
+        "id": "2670863319",
+        "phase": "native",
+        "current": "2670863152",
+        "epoch": 2
+      },
+      {
+        "at": 161097,
+        "event": "native-cache-hit",
+        "id": "2670863319",
+        "level": "lossless",
+        "bytes": 27081483,
+        "md5Verified": true
+      },
+      {
+        "at": 161291,
+        "event": "decoded",
+        "id": "2670863319",
+        "level": "lossless",
+        "origin": "native-cache",
+        "sourceRate": 44100,
+        "decodedRate": 44100,
+        "channels": 2,
+        "size": 81911840
+      },
+      {
+        "at": 161890,
+        "event": "native-user-seek",
+        "id": "2670863319",
+        "takeoverDeferred": true
+      },
+      {
+        "at": 162472,
+        "event": "output-ready",
+        "waitMs": 33.30000019073486,
+        "contextTime": 0.04353741496598639,
+        "outputContextTime": 0.00022600000000000002
+      },
+      {
+        "at": 162475,
+        "event": "native-user-seek",
+        "id": "2670863319",
+        "takeoverDeferred": true
+      }
+    ],
+    "audioDownloads": 0
+  },
+  "failedPrewarm": {
+    "version": "0.1.11",
+    "injectedFailure": "one-shot getOutputTimestamp throw during real AudioContext prewarm",
+    "actualContextState": "closed",
+    "afterFailure": {
+      "phase": "native",
+      "playing": true,
+      "owns": false,
+      "nodes": 0,
+      "context": null
+    },
+    "after": {
+      "enabled": true,
+      "compatible": true,
+      "id": "2670863319",
+      "phase": "native",
+      "ownsPlayback": false,
+      "playing": true,
+      "bridgeSide": null,
+      "bridgeLeadSeconds": 10,
+      "bridgeHeadSeconds": 10,
+      "nativePrepared": true,
+      "nativeOutputGated": false,
+      "seekPending": false,
+      "seekSettling": false,
+      "position": 60.515,
+      "duration": 232.1764172335601,
+      "requestedLevel": "hires",
+      "actualLevel": "lossless",
+      "sourceRate": 44100,
+      "decodedRate": 44100,
+      "contextGeneration": 6,
+      "activeNodes": 0,
+      "deviceFormat": "unknown",
+      "resourceOrigin": "native-cache",
+      "next": "2670863152",
+      "claiming": false,
+      "memory": {
+        "held": 164792984,
+        "reserved": 0,
+        "limit": 536870912,
+        "pending": 0
+      },
+      "mode": "playCycle",
+      "nativeAllowed": true,
+      "queueVersion": 2,
+      "loadEpoch": 3,
+      "controlRevision": 12,
+      "systemMedia": {
+        "supported": true,
+        "active": true,
+        "failed": false,
+        "seekPending": false
+      }
+    },
+    "trace": [
+      {
+        "at": 161291,
+        "event": "decoded",
+        "id": "2670863319",
+        "level": "lossless",
+        "origin": "native-cache",
+        "sourceRate": 44100,
+        "decodedRate": 44100,
+        "channels": 2,
+        "size": 81911840
+      },
+      {
+        "at": 161890,
+        "event": "native-user-seek",
+        "id": "2670863319",
+        "takeoverDeferred": true
+      },
+      {
+        "at": 162472,
+        "event": "output-ready",
+        "waitMs": 33.30000019073486,
+        "contextTime": 0.04353741496598639,
+        "outputContextTime": 0.00022600000000000002
+      },
+      {
+        "at": 162475,
+        "event": "native-user-seek",
+        "id": "2670863319",
+        "takeoverDeferred": true
+      },
+      {
+        "at": 193692,
+        "event": "native-user-seek",
+        "id": "2670863319",
+        "takeoverDeferred": true
+      },
+      {
+        "at": 194244,
+        "event": "takeover-fallback",
+        "id": "2670863319",
+        "reason": "manual-prewarm-output-clock-failure"
+      },
+      {
+        "at": 194351,
+        "event": "native-user-seek",
+        "id": "2670863319",
+        "takeoverDeferred": true
+      }
+    ],
+    "audioDownloads": 0
+  },
+  "restoredOriginalSession": {
+    "songMatched": true,
+    "position": 47.1,
+    "positionMatched": true,
+    "playing": false,
+    "playIntentMatched": true,
+    "volume": 0.48,
+    "volumeMatched": true,
+    "nodes": 0,
+    "context": null,
+    "nativeOutputGated": false,
+    "seekCode": 0,
+    "fetchMonitorRestored": true
+  },
+  "ui": {
+    "nativeWindowObserved": true,
+    "noAddedCssOrLayoutChanges": true,
+    "systemControlCenterFlashResolutionVerified": false
+  },
+  "requestCountingScope": "window.fetch audio-file requests during Web preparation; does not count native backend network activity",
+  "newTestsAdded": false,
+  "applicationBuildRun": false,
+  "physicalAudioLoopback": false,
+  "windowsRuntimeVerified": false,
+  "pending": [
+    "physical/digital audio output capture",
+    "macOS system status flash and original native seek panel rollback",
+    "additional formats, devices and abnormal interruption coverage",
+    "Windows implementation and runtime acceptance"
+  ],
+  "temporaryVerificationGlobalsRemoved": true,
+  "temporaryOutputTimestampFaultRemoved": true
+}
