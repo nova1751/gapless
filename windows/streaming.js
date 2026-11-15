@@ -2,6 +2,13 @@
 (() => {
   'use strict';
   const { AudioResources, header, fingerprint } = globalThis.GaplessAudioResources;
+  // Yield to the UI without the nested/background setTimeout minimum delay.
+  // This is a main-thread task boundary, not a worker or CSP workaround.
+  const yieldWork = (() => {
+    const channel = new MessageChannel(), waiting = [];
+    channel.port1.onmessage = () => waiting.shift()?.();
+    return () => new Promise(resolve => { waiting.push(resolve); channel.port2.postMessage(0); });
+  })();
   class StreamingResources extends AudioResources {
     constructor(options) { super(options); this.streaming = true; }
     async decodeInput(job, source, input) {
@@ -77,7 +84,7 @@
             } else append(await decoder.decode(bytes));
             // Bound main-thread decode/hash work; no security-policy changes for workers.
             if (performance.now() - workAt >= 4) {
-              await new Promise(resolve => setTimeout(resolve, 0)); workAt = performance.now();
+              await yieldWork(); workAt = performance.now();
             }
           }
         }
@@ -111,6 +118,14 @@
   }
 
   class StreamingClock extends globalThis.GaplessPlaybackClock {
+    async open(entry) {
+      const stamp = this.ctx?.getOutputTimestamp?.();
+      if (this.readyContext === this.ctx && this.ctx?.state === 'running' && this.matches(entry)
+        && stamp?.contextTime > 0 && performance.now() - stamp.performanceTime < 250) {
+        this.trace('output-reused', { sourceRate: entry.spec.rate }); return this.ctx;
+      }
+      const ctx = await super.open(entry); this.readyContext = ctx; return ctx;
+    }
     start(track, at, offset = track.offset || 0) {
       const stream = track.entry?.stream;
       if (!stream || stream.done) return super.start(track, at, offset);

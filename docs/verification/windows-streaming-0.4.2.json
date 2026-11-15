@@ -1,0 +1,46 @@
+{
+  "version": "0.4.2",
+  "platform": "Windows",
+  "client": "3.1.43.205627",
+  "betterNCM": "1.3.4",
+  "mainSha256": "8ca2adc0f9d1be7da3595e16bed8a4a50bbdc8a809d9ee08807d3767853de0bb",
+  "coldSeek": {
+    "targetSeconds": 229.176,
+    "waitMsBeforeYieldChange": 7966,
+    "waitMsAfterYieldChange": 3642,
+    "nativeFallback": false,
+    "nextTrackClaimed": true
+  },
+  "warmManualPluginLoadMs": [
+    6,
+    8
+  ],
+  "manualHostTraceMs": {
+    "stop": 235,
+    "load": 524,
+    "play": 537
+  },
+  "supersededSeekThenPause": {
+    "requestedSeconds": [
+      229,
+      220
+    ],
+    "bothReplied": true,
+    "completedTargetSeconds": 220,
+    "waitMs": 3775,
+    "webOwned": true,
+    "activeNodesAfterWait": 0
+  },
+  "validation": [
+    "modified JS syntax",
+    "ZIP package",
+    "installed and runtime main hash match before final acknowledgement-order adjustment",
+    "live final candidate seek supersession and pause"
+  ],
+  "limits": [
+    "No new audio loopback recording",
+    "Manual Stop-to-Load gap remains",
+    "Cold seek may wait seconds",
+    "No Mac runtime validation"
+  ]
+}

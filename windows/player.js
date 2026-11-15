@@ -23,15 +23,15 @@ plugin.onLoad(async () => {
   function trace(event, detail = {}) {
     events.push({ at: Math.round(performance.now()), wallMs: Date.now(), event, ...detail });
     if (events.length > 180) events.shift();
-    const health = /^(loaded|native-settings|web-load-fallback|stream-output-fallback|restore|restored|prepare-fallback|claim-timeout|boundary|claimed|scheduled|stream-fully-scheduled)$/.test(event);
+    const health = /^(loaded|native-settings|web-load-fallback|stream-output-fallback|restore|restored|prepare-fallback|claim-timeout|boundary|claimed|scheduled|stream-fully-scheduled|stream-seek-wait|stream-seek-ready|stream-seek-cancel)$/.test(event);
     if (!gaplessWindowsBuild.diagnostics && !gaplessWindowsBuild.probe && !health) return;
     if (flush) return;
     flush = setTimeout(() => {
       flush = null;
       const safe = events.slice(-80).map(({ at, wallMs, event, id, from, to, reason, mode, enabled,
-        rate, sourceRate, loadMs, leadSeconds, scheduledGapFrames, delayMs, blockers }) => ({
+        rate, sourceRate, loadMs, leadSeconds, scheduledGapFrames, delayMs, blockers, memoryHit, waitMs, target, position, decodedSeconds }) => ({
         at, wallMs, event, id, from, to, mode, enabled, rate, sourceRate, loadMs, leadSeconds,
-        scheduledGapFrames, delayMs, blockers,
+        scheduledGapFrames, delayMs, blockers, memoryHit, waitMs, target, position, decodedSeconds,
         reason: reason ? (/^[a-z0-9:-]+$/.test(reason) ? reason : 'unavailable') : undefined,
       }));
       void betterncm.fs.writeFile('C:\\betterncm\\gapless-windows.log',
@@ -86,7 +86,7 @@ plugin.onLoad(async () => {
         clearClaim();
         if (current?.owns && !current.loading) void recover(current, 'output-' + state);
       },
-      onEnded: track => { if (track === current && current.owns) boundary(current); },
+      onEnded: track => { if (track === current && current.owns && !current.pendingStreamSeek) boundary(current); },
     });
 
     function visualSnapshot() {
@@ -197,6 +197,45 @@ plugin.onLoad(async () => {
       seekReplies.push({ c, callback, mark, target, revision, failed });
       if (seekReplies.length === 1) deliverSeek();
     }
+    function cancelPendingSeek(c) {
+      const request = c?.pendingStreamSeek;
+      if (!request || request.finished) return;
+      request.finished = true; c.pendingStreamSeek = null;
+      completeSeek(c, request.callback, request.mark, request.target, true);
+    }
+    async function seekWhenReady(c, callback, mark, target) {
+      cancelPendingSeek(c);
+      const request = c.pendingStreamSeek = { callback, mark, target, finished: false };
+      const began = performance.now(), entry = c.entry;
+      const valid = () => current === c && c.owns && enabled() && c.pendingStreamSeek === request;
+      const required = Math.min(entry.buffer.length, Math.ceil((target + 0.5) * entry.spec.rate));
+      trace('stream-seek-wait', { id: source.trackId(c.info), target });
+      try {
+        while (!entry.stream.done && entry.stream.decodedFrames < required) {
+          if (!valid()) throw new Error('cancelled');
+          if (entry.stream.error) throw new Error('stream-seek-source-failed');
+          if (performance.now() - began > 10000) throw new Error('stream-seek-timeout');
+          await new Promise(resolve => setTimeout(resolve, 30));
+        }
+        if (!valid() || entry.stream.error) throw new Error('cancelled');
+        c.pendingStreamSeek = null;
+        if (c.playing) clock.seek(c, target);
+        else {
+          clock.stop(c); c.offset = target;
+          if (c.intent === true) clock.start(c, clock.ctx.currentTime + 0.01, target);
+        }
+        request.finished = true;
+        completeSeek(c, callback, mark, target);
+        trace('stream-seek-ready', { id: source.trackId(c.info), target, waitMs: Math.round(performance.now() - began) });
+      } catch (error) {
+        if (!request.finished) {
+          request.finished = true;
+          if (c.pendingStreamSeek === request) c.pendingStreamSeek = null;
+          completeSeek(c, callback, mark, target, true);
+          trace('stream-seek-cancel', { reason: error.message });
+        }
+      }
+    }
     function deliverSeek() {
       const item = seekReplies[0];
       const { c } = item;
@@ -235,16 +274,17 @@ plugin.onLoad(async () => {
       // One recently heard buffer makes back/forward navigation responsive.
       // It remains inside the shared memory budget and is evicted before a
       // prefetch is allowed to fail for memory pressure.
-      if (keepWarm && current?.entry && current.entry.size <= 128 * 1024 * 1024) {
+      if (keepWarm && current?.entry && !current.entry.stream?.error && (!current.entry.stream || current.entry.stream.done) && current.entry.size <= 128 * 1024 * 1024) {
         clearRecent(); recentEntry = current.entry; resources.pin(recentEntry);
       } else if (!keepWarm) clearRecent();
       revision++;
+      cancelPendingSeek(current);
       cancelCandidate();
       clearClaim();
       visual.stop();
       clock.stop(current);
       if (!keepWarm) void clock.close().catch(bridge.report);
-      if (nativeGate) void releaseNativeGate().catch(bridge.report);
+      if (nativeGate && !keepWarm) void releaseNativeGate().catch(bridge.report);
       current = null;
       restoring = null;
       if (!keepWarm) resources.retain([]);
@@ -253,12 +293,13 @@ plugin.onLoad(async () => {
         clearRecent();
         resources.retain([]);
         void clock.close().catch(bridge.report);
+        void releaseNativeGate().catch(bridge.report);
       }, 2500);
     }
 
     function schedule(c, candidate) {
       if (temporaryBridge && c.bridgeSide === 'head') return;
-      if (!c.owns || !c.playing || !candidate?.entry || candidate.track || clock.ctx?.state !== 'running') return;
+      if (c.pendingStreamSeek || !c.owns || !c.playing || !candidate?.entry || candidate.track || clock.ctx?.state !== 'running') return;
       if (!clock.matches(candidate.entry) || c.end - clock.ctx.currentTime < 0.08) return;
       const next = { ...makeTrack('', candidate.info), entry: candidate.entry, duration: candidate.entry.duration };
       clock.start(next, c.end, 0);
@@ -544,6 +585,7 @@ plugin.onLoad(async () => {
     }
 
     async function recover(c, reason) {
+      cancelPendingSeek(c);
       clearRecent();
       if (current === c && c.loading) { c.rejectLoadReason = reason; resources.retain([]); return; }
       if (handback?.c === c) {
@@ -738,15 +780,22 @@ plugin.onLoad(async () => {
         if (!source.same(entry.source, info)) throw new Error('native-only-source-identity');
         if (ref.duration > 0 && Math.abs(entry.duration - ref.duration) > 0.15) throw new Error('native-only-duration');
         c.entry = entry; c.duration = entry.duration;
+        const seekWait = performance.now();
+        while (entry.stream && !entry.stream.done
+          && entry.stream.decodedFrames < Math.min(entry.buffer.length, Math.ceil((c.offset + 0.5) * entry.spec.rate))) {
+          check();
+          if (entry.stream.error || performance.now() - seekWait > 10000) throw new Error('native-only-seek-buffer');
+          await new Promise(resolve => setTimeout(resolve, 30));
+        }
         await clock.open(entry);
         check();
         // A previous native instance must remain inaudible even if an external
         // native transport command revives it while Web owns playback.
         if (nativeGate?.releasing) await nativeGate.releasing;
         check();
-        if (nativeGate && nativeGate.c !== c) await releaseNativeGate();
+        if (nativeGate && nativeGate.c !== c) nativeGate.c = c;
         check();
-        await acquireNativeGate(c);
+        if (!nativeGate) await acquireNativeGate(c);
         check();
         c.loading = false; c.blocked = false; c.bridgeSide = null;
         prepareVisualClock(); visual.sync();
@@ -854,8 +903,10 @@ plugin.onLoad(async () => {
         if (!restoring) {
           // The host replays the current row with Stop -> Play and no new Load.
           // Keep its source identity and paused buffer until Play or another Load.
-          revision++; cancelCandidate(); visual.stop(); clock.stop(c);
-          resources.retain([makeRef(c.info, c.environment || getSnapshot())]);
+          const warmNext = selected?.info && sameEnvironment(selected.snapshot, getSnapshot())
+            ? makeRef(source.sourceInfo(selected.info, selected.row), selected.snapshot) : null;
+          revision++; cancelPendingSeek(c); cancelCandidate(); visual.stop(); clock.stop(c);
+          resources.retain([makeRef(c.info, c.environment || getSnapshot()), warmNext]);
           c.offset = 0; c.heard = 0; c.nativeHeard = 0; c.nativeAudioHeard = 0;
           c.stopped = true; c.endSent = false; c.intent = false;
           c.prepareAttempts = 0; c.prepareAfter = 0;
@@ -982,6 +1033,12 @@ plugin.onLoad(async () => {
           if (temporaryBridge) c.handbackRequested = true;
           const wasPlaying = c.playing;
           const target = Math.max(0, Math.min(Number(args[2]) || 0, c.duration - 0.001));
+          cancelPendingSeek(c);
+          if (c.entry?.stream && !c.entry.stream.done
+            && c.entry.stream.decodedFrames < Math.min(c.entry.buffer.length, Math.ceil((target + 0.5) * c.entry.spec.rate))) {
+            void seekWhenReady(c, callback, mark, target);
+            return true;
+          }
           if (wasPlaying) clock.seek(c, target);
           else { clock.stop(c); c.offset = target; }
           completeSeek(c, callback, mark, target);
@@ -1114,6 +1171,7 @@ plugin.onLoad(async () => {
     };
     function applyEnabled(value) {
         if (!value) {
+          cancelPendingSeek(current);
           preparedPairs.clear();
           clearRecent();
           if (current?.loading) { resources.retain([]); }
