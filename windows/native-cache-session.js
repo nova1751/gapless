@@ -83,6 +83,9 @@
         waiter = this.bridge.wait('audioplayer.onSeek', args => args[0] === job.id && args[1] === mark, 3000);
         // Attach rejection handling before the command can synchronously complete.
         const seek = waiter.promise;
+        // Disposal can reject even if the command throws before pending() attaches.
+        // Observe that rejection now; pending() still receives the original promise.
+        void seek.catch(() => {});
         this.bridge.call('audioplayer.seek', [job.id, mark, position]);
         const result = await this.pending(job, seek); this.check(job);
         if (Number(result[2]) !== 0) throw new Error('native-cache-seek-failed');

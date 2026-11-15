@@ -111,3 +111,10 @@ python windows/package.py --native-source-trial --diagnostics
 55 秒系统回录包含首个边界，48 kHz 双声道、零回调错误。十个独立 200 ms 匹配窗口的偏移跨度约 0.0625 ms，对齐边界前后 100 ms 无新增近零段；时间连续性证据通过，相关系数约 0.64–0.90 的波形差异仍未解释，不能宣称 bit-perfect。指标见 [验证 JSON](verification/windows-retired-cache-fill.json)。
 
 测试后恢复原日常插件与六个原缓存文件并验证 SHA-256，恢复关闭窗口最小化到托盘，保持暂停并释放屏幕采集。新候选仍未作为正式版本部署；弱网、后台补齐时清缓存及更广泛生命周期仍需回归，不以单曲通过代替全部验收。
+
+
+## 2026-11-16：取消阶段与同步桥异常回归
+
+一次性运行实际 NativeCacheSession 和 NativeCacheQueue 源码，模拟原生加载查询不返回、Seek 回调不返回、提交后缓存快照不返回三个阶段。每个阶段调用 queue.clear() 后：请求以 native-cache-cleared 结束、一次原生 Stop、session.active 和 queue.running 均释放，没有原生 Play。这是协议模拟检查，不冒充真实弱网或磁盘清理测试。
+
+另复现同步桥失败：原生 Seek 命令在 waiter 创建后同步抛出，finally.dispose 拒绝尚未被观察的 waiter.promise，产生 unhandledRejection。现在命令发送之前立即观察该 promise 的拒绝，pending() 仍等待同一个原始 promise，错误不会被误当成功。修改后同场景无未处理拒绝、保留原始 bridge-disconnected 错误、Stop 与队列释放正常，后续取数可成功完成。增量语法和 trial ZIP 打包通过；未新增常驻测试，也未更改音乐输出、样式或音源选择。
