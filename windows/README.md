@@ -1,6 +1,6 @@
-# Windows 无缝播放 0.4.4
+# Windows 无缝播放 0.4.5
 
-0.4.4 使用共享区块缓存和请求去重，对有索引的 FLAC 按需读取当前播放窗口及下一首开头。手动选曲的宿主 Stop→Load 间隔仍未消除。[本轮检查与限制](../docs/WINDOWS_SHARED_CACHE_0.4.4.md)。
+0.4.5 联动原生清缓存操作，保留当前播放所需缓冲，释放闲置数据；Web 接管期间拒绝重复的原生预加载音源请求。手动选曲的宿主 Stop→Load 间隔仍未消除。[本轮检查与限制](../docs/WINDOWS_CACHE_LIFECYCLE_0.4.5.md)。
 
 支持网易云 Windows x64 3.1.43.205627 + BetterNCM 1.3.4。只保留主界面右上角无缝开关，不修改关闭按钮或歌词页。
 
@@ -14,7 +14,7 @@
 python windows/package.py --client "C:\Program Files\NetEase\CloudMusic\package\orpheus.ntpk"
 ```
 
-这是 ZIP 打包，不是应用构建。产物 `dist/gapless-player-windows-0.4.4.plugin`。旧包移到插件目录之外，同 slug 仅保留一个启用版本，重启客户端。FLAC 解码库内置，不增加宿主插件、不使用运行时 CDN、不修改 CSP。
+这是 ZIP 打包，不是应用构建。产物 `dist/gapless-player-windows-0.4.5.plugin`。旧包移到插件目录之外，同 slug 仅保留一个启用版本，重启客户端。FLAC 解码库内置，不增加宿主插件、不使用运行时 CDN、不修改 CSP。
 
 完整缓存 MD5 在流结束时验证，不再等待整首才出声；已解码 PCM 仍受 512 MiB 管理预算约束，不是固定小内存环形缓冲。MP3 保留原有完整解码/原生回退，不宣称所有 MP3 或弱网首次无缝。
 

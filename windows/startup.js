@@ -7,6 +7,7 @@
   const bridge = window.gaplessWindowsBridge = { registrations, listeners, load: null };
   bridge.startup = { phase: 'native-immediate', held: 0, released: 0 };
   bridge.nativeTransport = { load: 0, play: 0, pause: 0, seek: 0, stop: 0, unload: 0 };
+  bridge.nativePreload = { requested: 0, suppressed: 0, lateResultsSuppressed: 0 };
   function install() {
     const host = window.channel;
     if (!host || bridge.hooked || typeof host.call !== 'function' || typeof host.registerCall !== 'function') return;
@@ -38,7 +39,7 @@
       return { promise, dispose };
     };
     host.registerCall = function (name, handler) {
-      if (typeof name !== 'string' || !name.startsWith('audioplayer.') || typeof handler !== 'function') return rawRegister.apply(this, arguments);
+      if (typeof name !== 'string' || (!name.startsWith('audioplayer.') && name !== 'storage.onclearcache') || typeof handler !== 'function') return rawRegister.apply(this, arguments);
       registrations.set(name, handler);
       return rawRegister.call(this, name, function (...args) {
         try {
@@ -49,6 +50,9 @@
       });
     };
     host.call = function (name, callback, args) {
+      if (name === 'storage.clearCache') {
+        try { bridge.cacheClearRequested?.(); } catch (error) { bridge.report?.(error); }
+      }
       if (name === 'audioplayer.load') bridge.load = args;
       if (name === 'audioplayer.init' && args?.[0] === 'device') bridge.customOutput = !!args[1];
       if (name === 'audioplayer.enableAudioData') bridge.audioDataEnabled = !!args?.[0];

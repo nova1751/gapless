@@ -23,15 +23,15 @@ plugin.onLoad(async () => {
   function trace(event, detail = {}) {
     events.push({ at: Math.round(performance.now()), wallMs: Date.now(), event, ...detail });
     if (events.length > 180) events.shift();
-    const health = /^(loaded|native-settings|web-load-fallback|stream-output-fallback|restore|restored|prepare-fallback|claim-timeout|boundary|claimed|scheduled|stream-fully-scheduled|stream-seek-wait|stream-seek-ready|stream-seek-cancel)$/.test(event);
+    const health = /^(loaded|native-settings|web-load-fallback|stream-output-fallback|restore|restored|prepare-fallback|claim-timeout|boundary|claimed|scheduled|stream-fully-scheduled|stream-seek-wait|stream-seek-ready|stream-seek-cancel|cache-cleared|native-preload-suppressed|native-cache-clear-result)$/.test(event);
     if (!gaplessWindowsBuild.diagnostics && !gaplessWindowsBuild.probe && !health) return;
     if (flush) return;
     flush = setTimeout(() => {
       flush = null;
       const safe = events.slice(-80).map(({ at, wallMs, event, id, from, to, reason, mode, enabled,
-        rate, sourceRate, loadMs, leadSeconds, scheduledGapFrames, delayMs, blockers, memoryHit, waitMs, target, position, decodedSeconds }) => ({
+        rate, sourceRate, loadMs, leadSeconds, scheduledGapFrames, delayMs, blockers, memoryHit, waitMs, target, position, decodedSeconds, retainedPlaybackBytes, success }) => ({
         at, wallMs, event, id, from, to, mode, enabled, rate, sourceRate, loadMs, leadSeconds,
-        scheduledGapFrames, delayMs, blockers, memoryHit, waitMs, target, position, decodedSeconds,
+        scheduledGapFrames, delayMs, blockers, memoryHit, waitMs, target, position, decodedSeconds, retainedPlaybackBytes, success,
         reason: reason ? (/^[a-z0-9:-]+$/.test(reason) ? reason : 'unavailable') : undefined,
       }));
       void betterncm.fs.writeFile('C:\\betterncm\\gapless-windows.log',
@@ -282,6 +282,23 @@ plugin.onLoad(async () => {
     function clearRecent() {
       resources.unpin(recentEntry); recentEntry = null;
     }
+    function clearMemoryCache() {
+      const c = current;
+      cancelPendingSeek(c); cancelCandidate(); clearRecent();
+      // Do not cancel an already audible boundary claim: its PCM is active.
+      const active = claim?.track?.entry || (c?.owns ? c.entry : null);
+      const ref = claim ? makeRef(claim.info, claim.snapshot) : c?.owns ? makeRef(c.info, c.environment || getSnapshot()) : null;
+      resources.retain(ref ? [ref] : []);
+      resources.clearCachedData(active);
+      nativeCache.mounts.clear(); preparedPairs.clear();
+      if (c) {
+        c.prepareAttempts = 0;
+        c.prepareAfter = performance.now() + Math.max(0, Math.min(5000, (c.duration - clock.position(c) - 4) * 1000));
+      }
+      trace('cache-cleared', { retainedPlaybackBytes: active?.size || 0 });
+      return { encodedBytes: resources.songCache.bytes, retainedPlaybackBytes: active?.size || 0 };
+    }
+    bridge.cacheClearRequested = clearMemoryCache;
     function abandon(keepWarm = false) {
       clearTimeout(switchIdleTimer);
       // One recently heard buffer makes back/forward navigation responsive.
@@ -700,6 +717,17 @@ plugin.onLoad(async () => {
 
     bridge.observe = (name, args) => {
       const c = current;
+      if (name === 'storage.onclearcache') {
+        nativeCache.mounts.clear(); trace('native-cache-clear-result', { success: !!args[0] }); return false;
+      }
+      if (name === 'audioplayer.onFetchPreloadInfo') {
+        bridge.nativePreload.requested++;
+        if (c?.owns && !restoring && !handback && args[0] && typeof args[0] === 'object') {
+          bridge.nativePreload.suppressed++;
+          bridge.call('audioplayer.setFetchPreloadInfoResult', [{ params: args[0], info: {}, code: 0, reason: 'gapless-web-owner' }]);
+          trace('native-preload-suppressed'); return true;
+        }
+      }
       if (name === 'audioplayer.onAudioData' && c?.owns) return true;
       if (name === 'audioplayer.onVolume' && nativeGate) return true;
       if (name === 'audioplayer.onAudioDeviceChanged') {
@@ -881,6 +909,12 @@ plugin.onLoad(async () => {
     }
 
     bridge.handle = (name, callback, args) => {
+      if (name === 'audioplayer.setFetchPreloadInfoResult' && current?.owns && !restoring && !handback
+        && args[0] && typeof args[0] === 'object') {
+        bridge.nativePreload.lateResultsSuppressed++;
+        bridge.call(name, [{ ...args[0], info: {}, code: 0, reason: 'gapless-web-owner' }], callback);
+        return true;
+      }
       if (name === 'audioplayer.enableAudioData') {
         bridge.audioDataEnabled = !!args[0];
         if (bridge.audioDataEnabled) visual.sync(); else visual.stop();
@@ -1047,6 +1081,7 @@ plugin.onLoad(async () => {
           if (temporaryBridge) c.handbackRequested = true;
           const wasPlaying = c.playing;
           const target = Math.max(0, Math.min(Number(args[2]) || 0, c.duration - 0.001));
+          c.prepareAfter = 0; c.prepareAttempts = 0;
           cancelPendingSeek(c);
           if (c.entry?.stream && !c.entry.stream.done
             && globalThis.GaplessSeekRange.until(c.entry, Math.floor(target * c.entry.spec.rate)) < Math.min(c.entry.buffer.length, Math.ceil((target + 0.5) * c.entry.spec.rate))) {
@@ -1168,8 +1203,9 @@ plugin.onLoad(async () => {
     bridge.flushStartup?.();
     // Supported FLAC starts from an initial PCM segment, not a whole-file decode.
     const publicStatus = {
-      status: () => ({ enabled: enabled(), savingConfig, owns: !!current?.owns, loading: !!current?.loading, directWebLoad: !temporaryBridge, startupPolicy: 'stream-flac-native-fallback', nativePrepared: !!current?.nativeReady, handingBack: !!handback || !!restoring, nativeMuted: !!nativeGate, mode: temporaryBridge ? 'temporary-trial' : 'streaming-gapless', bridgeSide: current?.bridgeSide || null, visual: visual.status(), visualHooks: [...visualRenderHooks.keys()], clock: clock.status(), resources: resources.status() }),
+      status: () => ({ enabled: enabled(), savingConfig, owns: !!current?.owns, loading: !!current?.loading, directWebLoad: !temporaryBridge, startupPolicy: 'stream-flac-native-fallback', nativePrepared: !!current?.nativeReady, handingBack: !!handback || !!restoring, nativeMuted: !!nativeGate, mode: temporaryBridge ? 'temporary-trial' : 'streaming-gapless', bridgeSide: current?.bridgeSide || null, visual: visual.status(), visualHooks: [...visualRenderHooks.keys()], clock: clock.status(), resources: resources.status(), nativeTransport: { ...bridge.nativeTransport }, nativePreload: { ...bridge.nativePreload } }),
       diagnostics: () => events.slice(),
+      clearMemoryCache,
       enable(value) {
         const next = Boolean(value);
         const apply = async () => {

@@ -15,7 +15,29 @@
       this.songCache = new globalThis.GaplessSongCache(() => this.limit - this.held() - this.reserved);
     }
     held() { return super.held() + (this.songCache?.bytes || 0); }
+    lookup(ref, source) { const entry = super.lookup(ref, source); return entry?.discardOnUnpin ? null : entry; }
+    unpin(entry) {
+      super.unpin(entry);
+      if (entry?.discardOnUnpin && !entry.pins && this.entries.get(entry.key) === entry) this.entries.delete(entry.key);
+    }
     status() { return { ...super.status(), encodedCache: this.songCache.status() }; }
+    clearCachedData(active) {
+      for (const entry of this.entries.values()) entry.stream?.ensureController?.abort();
+      this.songCache.clear(); this.failures.clear();
+      for (const [key, entry] of this.entries) if (entry !== active) {
+        entry.discardOnUnpin = true;
+        if (!entry.pins) this.entries.delete(key);
+      }
+      // An active decode buffer is working state, not reusable cache. Continue
+      // from the same authorized source if native disk files have been removed.
+      if (active?.stream?.indexed && !active.source.localKey && active.source.url) {
+        const source = active.source, key = active.stream.cacheKey;
+        active.stream.verifyAvailable = null;
+        active.stream.rangeOrigin = 'network';
+        active.stream.readRange = (start, end, signal) => this.songCache.read(key, start, end,
+          (a, b, s) => globalThis.GaplessSeekRange.read(source.url, a, b, Number(source.size), s), signal);
+      }
+    }
     retain(refs) {
       const keep = new Set(refs.filter(Boolean).map(r => this.requestKey(r)));
       for (const entry of this.entries.values()) if (!keep.has(entry.requestKey)) entry.stream?.ensureController?.abort();
@@ -113,6 +135,7 @@
               this.entries.set(entry.key, entry);
               this.reserved -= size; job.reserve -= size;
               const cacheKey = entry.requestKey + ':' + (job.identity || hash || source.localKey || source.url);
+              entry.stream.cacheKey = cacheKey;
               const rawRead = entry.stream.readRange;
               if (input.verifyParts) entry.stream.verifyAvailable = async signal => {
                 if (entry.stream.integrityVerified) return;

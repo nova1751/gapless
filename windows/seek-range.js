@@ -135,7 +135,7 @@
           if (entry.stream.decodedFrames === entry.buffer.length) entry.stream.done = true;
         }
         await entry.stream.verifyAvailable?.(signal); check();
-        resources.trace('seek-range-ready', { id: entry.id, target, origin: entry.origin,
+        resources.trace('seek-range-ready', { id: entry.id, target, origin: entry.stream.rangeOrigin || entry.origin,
           waitMs: Math.round(performance.now() - started), decodedSeconds: (next.sample - p.sample) / entry.spec.rate });
         await new Promise(resolve => setTimeout(resolve, 0));
       }

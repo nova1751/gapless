@@ -1,0 +1,54 @@
+{
+  "version": "0.4.5",
+  "client": "Windows 3.1.43.205627",
+  "hashes": {
+    "main.js": "b9a9c5c31d346cc230b08cf27714e43842407dba9ef059280ae6e114ba5def5e",
+    "startup_script.js": "7ac2366512bb42e6329eeae6f4923da31de73f830a99e214e43fc6cb9d09f2db"
+  },
+  "clearHookIsolatedProtocol": {
+    "purges": 1,
+    "nativeCommandForwarded": 1,
+    "completionObserved": 1,
+    "completionDelivered": 1,
+    "actualDiskDeletionTested": false
+  },
+  "runtimePurge": {
+    "heldBefore": 166080784,
+    "encodedBefore": 1287800,
+    "heldAfter": 81911840,
+    "encodedAfter": 0,
+    "reservedAfter": 0,
+    "currentPlaybackRetained": 81911840
+  },
+  "afterPurgeSeek": {
+    "targetSeconds": 229.176,
+    "readyMs": 155,
+    "nextScheduleLeadSeconds": 2.900780045351506,
+    "scheduledGapFrames": 0,
+    "claimed": true,
+    "nativeFallback": false
+  },
+  "nativeTransportObserved": {
+    "load": 0,
+    "play": 0,
+    "pause": 0,
+    "seek": 0,
+    "stop": 1,
+    "unload": 0
+  },
+  "realNativePreloadEventsObserved": 0,
+  "controlledPreloadProtocol": {
+    "eventSuppressed": true,
+    "lateResultSuppressed": true,
+    "replyCode": 0,
+    "replyInfoEmpty": true,
+    "simulatedRepliesSentToNative": false
+  },
+  "limits": [
+    "No process-wide network capture",
+    "No actual native disk-cache deletion for validation",
+    "Active current PCM intentionally retained during clear",
+    "No new audio loopback",
+    "Mac unchanged"
+  ]
+}
