@@ -15,7 +15,8 @@
       const roots = [...new Set([this.storage.cacheDir, settings.cacheDir, settings.storageCachePath, settings.oldCacheDir]
         .filter(p => typeof p === 'string' && /^[a-z]:[\\/]/i.test(p) && !p.split(/[\\/]/).includes('..'))
         .flatMap(p => { const root = p.replace(/[\\/]+$/, ''); return [root + '\\Cache', root]; }))];
-      const empty = { size, ranges: [], complete: false, path: null, generation };
+      const key = `${id}-${bitrate}-${hash}`;
+      const empty = { size, ranges: [], complete: false, path: null, generation, key };
       for (const root of roots) {
         const path = root + '\\' + `${id}-${bitrate}-${hash}.uc`, indexPath = path.slice(0, -3) + '.idx';
         if (!await this.wait(betterncm.fs.exists(path), signal)
@@ -24,13 +25,16 @@
         if (!blob || blob.size > 1024 * 1024) throw new Error('native-only-cache-index');
         const coverage = globalThis.GaplessCacheCoverage.parse(await this.wait(blob.text(), signal), size);
         if (generation !== this.generation) throw new Error('cancelled');
-        return { ...coverage, path, generation };
+        return { ...coverage, path, generation, key };
       }
       if (generation !== this.generation) throw new Error('cancelled');
       return empty;
     }
-    async readReadyRange(source, start, end, signal) {
-      const snapshot = await this.snapshotSource(source, signal);
+    async readReadyRange(source, start, end, signal, knownCoverage = null) {
+      const key = `${source.songId}-${BITRATE[source.level]}-${globalThis.GaplessAudioResources.fingerprint(source)}`;
+      const snapshot = knownCoverage?.key === key && knownCoverage.generation === this.generation
+        && knownCoverage.size === Number(source.size ?? source.fileSize)
+        ? knownCoverage : await this.snapshotSource(source, signal);
       if (!snapshot.path || globalThis.GaplessCacheCoverage.missing(snapshot, start, end).length)
         throw new Error('native-cache-range-missing');
       let mounted = this.mounts.get(snapshot.path);

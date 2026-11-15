@@ -1288,6 +1288,9 @@ plugin.onLoad(async () => {
     bridge.flushStartup?.();
     // Supported FLAC starts from an initial PCM segment, not a whole-file decode.
     const publicStatus = {
+      cacheStatus: () => ({ nativeSourceMode, clearing: cacheClearing, filling: !!fillJob,
+        currentComplete: !!current?.cacheComplete, queue: cacheQueue?.status() || null,
+        session: cacheSession ? { ...cacheSession.stats } : null }),
       status: () => ({ enabled: enabled(), savingConfig, owns: !!current?.owns, loading: !!current?.loading, directWebLoad: !temporaryBridge, startupPolicy: 'stream-flac-native-fallback', nativePrepared: !!current?.nativeReady, handingBack: !!handback || !!restoring, nativeMuted: !!nativeGate, mode: temporaryBridge ? 'temporary-trial' : 'streaming-gapless', bridgeSide: current?.bridgeSide || null, visual: visual.status(), visualHooks: [...visualRenderHooks.keys()], clock: clock.status(), resources: resources.status(), nativeTransport: { ...bridge.nativeTransport }, nativePreload: { ...bridge.nativePreload } }),
       diagnostics: () => events.slice(),
       clearMemoryCache,

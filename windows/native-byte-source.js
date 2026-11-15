@@ -9,19 +9,24 @@
       const size = Number(source.size ?? source.fileSize);
       if (source.audioFormat !== 'flac' || !Number.isSafeInteger(size) || size < 4)
         throw new Error('native-only-byte-source-format');
-      const state = { points: null, rate: null };
+      const state = { points: null, rate: null, coverage: null };
       const read = async (start, end, requestSignal) => {
         const deadline = performance.now() + 8000;
         for (;;) {
           await this.awaitReady(requestSignal);
           if (requestSignal.aborted || !this.valid(source)) throw new Error('cancelled');
-          const coverage = await this.cache.snapshotSource(source, requestSignal);
+          let coverage = state.coverage;
+          if (!coverage || coverage.generation !== this.cache.generation
+            || globalThis.GaplessCacheCoverage.missing(coverage, start, end).length) {
+            coverage = await this.cache.snapshotSource(source, requestSignal);
+            state.coverage = coverage;
+          }
           const gaps = globalThis.GaplessCacheCoverage.missing(coverage, start, end);
-          if (!gaps.length) return await this.cache.readReadyRange(source, start, end, requestSignal);
+          if (!gaps.length) return await this.cache.readReadyRange(source, start, end, requestSignal, coverage);
           if (performance.now() >= deadline) throw new Error('native-only-cache-range-timeout');
           const position = state.points
             ? globalThis.GaplessCacheCoverage.seekBefore(gaps[0][0], state.points, state.rate) : 0;
-          await this.queue.request({ source, position, signal: requestSignal, priority: priorityForRead(), budgetMs: 500 });
+          state.coverage = await this.queue.request({ source, position, signal: requestSignal, priority: priorityForRead(), budgetMs: 500 });
           // The next iteration re-reads the committed index. A completed batch
           // is not itself proof that the desired byte interval is available.
         }
