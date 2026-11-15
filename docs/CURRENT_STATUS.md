@@ -19,7 +19,7 @@ Windows 受支持的在线 FLAC：网易云提供授权音源、音质、队列�
 | 要求 | 当前证据 | 判定 |
 |---|---|---|
 | 切歌后补齐未听过的中间区块 | 原生缺口 6,231,523 字节在切歌后约 6.9 秒补齐，两首整曲 MD5 匹配：[记录](verification/windows-retired-cache-fill.json) | 此场景实机通过；不保证快速连续切歌、退出或弱网全补齐 |
-| 原生清缓存与恢复 | 实际 UI 清理成功，30 文件原数据清除、播放时重新按需生成，测试后全部哈希恢复：[记录](verification/windows-ui-cache-clear.json) | 当前播放时通过；旧曲补齐正执行的竞态未在新候选实机复现 |
+| 原生清缓存与恢复 | 实际 UI 清理成功，30 文件原数据清除、播放时重新按需生成，测试后全部哈希恢复：[记录](verification/windows-ui-cache-clear.json) | 普通播放清理通过；旧曲补齐竞态已复现，发现 765 字节旧曲元数据残留，未通过完整清除要求（见下文） |
 | 缓存重启复用、关闭交还、重新开启 | runtime 校验、重新选曲、原位置恢复约 191 ms：[记录](verification/windows-candidate-install.json) | 实机通过这些操作；不是全进程网络审计 |
 | 自然跨曲及曲尾跳转 | 原生缓存未命中时目标等待 1297 ms；系统回录多窗口时间对齐、无新增近零段：[记录](verification/windows-native-source-cold-pair.json) | 特定两曲的时间连续性有证据；已纠正参考声道误用，左声道相关性约 0.94–0.97；不能承诺 bit-perfect |
 | 内存受控、返回已淘汰位置 | 实机 PCM 平台期和回跳；同解码器区块数值对照：[说明](WINDOWS_BOUNDED_PCM_CANDIDATE.md) | 已覆盖选定 FLAC；其他路径仍使用原有预算/回退 |
@@ -29,6 +29,10 @@ Windows 受支持的在线 FLAC：网易云提供授权音源、音质、队列�
 | Windows 系统媒体控制 | SMTC 单一网易云会话、曲名及 Playing/Paused 正确；系统会话 API 暂停/继续同步到 Web UI；关闭插件后的原生对照：[记录](verification/windows-smtc-control.json) | 两种后端均未提供时间线/Seek；已恢复原 SMTC 关闭设置。物理媒体键、锁屏、跨曲更新仍未验收 |
 | Mac 同等缓存行为 | [平台方案](CROSS_PLATFORM_BEST_PRACTICES.md)、历史 Mac 证据 | 不能把 Windows 的原生协议或运行结果当成 Mac 验收 |
 | 本地文件同大小修改 | 实际宿主文件 API、资源缓存和解码器：版本变化后旧 PCM 未命中、新 PCM 重新生成；原文件未改：[记录](verification/windows-local-host-cache.json) | 隔离资源实例通过；流式子类/播放队列、保留修改时间的替换及有界磁盘读取仍未完成 |
+
+## 旧曲补齐清理的新发现
+
+`374da7e` 实机在已切到 Open Hearts、Baptized In Fear 后台补齐优先级 10 时调用原生 SDK 清理，约 593 ms 返回成功。旧曲任务取消、待补齐列表归零，Web 所有权保留，没有观察到播放回退。但旧曲 `.uc` 消失后仍有 70 字节 `.idx` 和 695 字节 `.info`；修改时间在清理请求后约 154 ms、完成通知之前。怀疑辅助原生 Stop 的延迟落盘与删除重叠，尚未追踪到具体写入者，不能宣布完整清理对齐。下一步需验证原生停止/提交完成的屏障，再重复此场景；不由插件直接删除原生缓存来掩盖竞态。30 个原缓存已按哈希全部恢复。[本轮记录](verification/windows-retired-fill-clear.json)。
 
 ## 剩余收尾
 

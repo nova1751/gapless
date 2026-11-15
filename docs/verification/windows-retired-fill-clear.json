@@ -1,0 +1,114 @@
+{
+  "implementation": "374da7e",
+  "nativeClient": "3.1.43.205627",
+  "scenario": "Baptized In Fear partial index fixture, seek near tail, Open Hearts natural boundary; call original SDK clearCache() 100 ms into retired-song helper seek at priority 10.",
+  "fixture": "Only trusted index coverage reduced to first 32768 bytes and final 1061160 bytes. Underlying audio unchanged. Real native acquisition and deletion, not a cold network or disk-hole test.",
+  "before": {
+    "filling": true,
+    "pendingPrevious": 1,
+    "activePriority": 10,
+    "queueGeneration": 1,
+    "sessionBatches": 7,
+    "sessionCancelled": 1
+  },
+  "afterDispatch": {
+    "clearing": true,
+    "pendingPrevious": 0,
+    "queueGeneration": 2,
+    "sessionCancelled": 2
+  },
+  "nativeClearSuccess": true,
+  "observedClearMs": 593,
+  "ownsAtEnd": true,
+  "fallbackObserved": false,
+  "oldSongAudioDeleted": true,
+  "oldSongMetadataRemained": [
+    {
+      "extension": ".idx",
+      "bytes": 70,
+      "mtimeUtc": "2026-11-15T18:00:51.3626586Z"
+    },
+    {
+      "extension": ".info",
+      "bytes": 695,
+      "mtimeUtc": "2026-11-15T18:00:51.3626586Z"
+    }
+  ],
+  "clearRequestedWallMs": 1794765651209,
+  "clearCompletedWallMs": 1794765651800,
+  "finding": "Old-song metadata mtime lies inside the clear interval, roughly 154 ms after dispatch. Native delayed Stop commit is a hypothesis; exact native writer not traced. No old .uc remained. Cancellation worked but full disk clear parity is not proven.",
+  "restoration": {
+    "files": 30,
+    "bytes": 216431501,
+    "allHashesMatch": true,
+    "finalFileCount": 30,
+    "player": "restarted, paused, close-to-tray restored, capture released"
+  },
+  "events": [
+    {
+      "at": 83697,
+      "wallMs": 1794765642207,
+      "event": "native-cache-cancel",
+      "reason": "request-aborted"
+    },
+    {
+      "at": 90905,
+      "wallMs": 1794765649415,
+      "event": "boundary",
+      "from": "2670863319",
+      "to": "2670863152",
+      "outputWallMs": 1794765649452
+    },
+    {
+      "at": 91106,
+      "wallMs": 1794765649616,
+      "event": "claimed",
+      "id": "2670863152",
+      "delayMs": 201.30000000447035
+    },
+    {
+      "at": 92698,
+      "wallMs": 1794765651208,
+      "event": "native-cache-cancel",
+      "reason": "request-aborted"
+    },
+    {
+      "at": 92699,
+      "wallMs": 1794765651209,
+      "event": "cache-cleared",
+      "retainedPlaybackBytes": 41943040
+    },
+    {
+      "at": 93291,
+      "wallMs": 1794765651800,
+      "event": "native-cache-clear-result",
+      "success": true
+    },
+    {
+      "at": 94896,
+      "wallMs": 1794765653406,
+      "event": "native-cache-cancel",
+      "reason": "request-aborted"
+    },
+    {
+      "at": 98015,
+      "wallMs": 1794765656525,
+      "event": "native-cache-cancel",
+      "reason": "request-aborted"
+    },
+    {
+      "at": 112897,
+      "wallMs": 1794765671407,
+      "event": "native-cache-cancel",
+      "reason": "request-aborted"
+    },
+    {
+      "at": 116897,
+      "wallMs": 1794765675406,
+      "event": "native-cache-cancel",
+      "reason": "request-aborted"
+    }
+  ],
+  "invalidFirstAttempt": "Probe called channel storage.clearCache with [] instead of SDK default path argument; no disk deletion/completion, output eventually recovered to native. Excluded from actual clear result; probe corrected to invoke original SDK.",
+  "limits": "One interleaving; no new loopback audio capture, no all-process network audit. Transient diagnostic wrappers removed before restart. No production code changes."
+}
