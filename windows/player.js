@@ -85,6 +85,14 @@ plugin.onLoad(async () => {
       valid: sourceLeaseValid, awaitReady: awaitCacheReady }) : null;
     let fillJob = null, fillAfter = 0;
     function cancelFill() { fillJob?.controller.abort(); }
+    function resetFillRetry(c) {
+      if (c) { c.cacheFillStalls = 0; c.cacheFillRetryAt = 0; }
+    }
+    function deferFill(c) {
+      c.cacheFillStalls = Math.min(6, (c.cacheFillStalls || 0) + 1);
+      c.cacheFillRetryAt = performance.now() + Math.min(30000, 1000 * 2 ** (c.cacheFillStalls - 1));
+      trace('native-cache-fill-wait', { attempts: c.cacheFillStalls, suspended: c.cacheFillStalls >= 6 });
+    }
     function maybeFill(c) {
       if (!cacheQueue) return;
       const position = clock.position(c), entry = c.entry;
@@ -94,7 +102,8 @@ plugin.onLoad(async () => {
           >= Math.min(entry.buffer.length, Math.ceil((position + 6) * entry.spec.rate))
         && (c.duration - position > 15 || !!selected?.entry);
       if (!safe) { cancelFill(); return; }
-      if (fillJob || c.cacheComplete || performance.now() < fillAfter || cacheQueue.running || cacheQueue.queue.length) return;
+      if (fillJob || c.cacheComplete || c.cacheFillStalls >= 6 || performance.now() < (c.cacheFillRetryAt || 0)
+        || performance.now() < fillAfter || cacheQueue.running || cacheQueue.queue.length) return;
       const job = fillJob = { controller: new AbortController(), c };
       const signal = job.controller.signal;
       const valid = () => !signal.aborted && current === c && sourceLeaseValid();
@@ -106,11 +115,17 @@ plugin.onLoad(async () => {
           const gap = globalThis.GaplessCacheCoverage.missing(coverage)[0];
           const target = globalThis.GaplessCacheCoverage.seekBefore(gap[0], entry.stream.seekPoints, entry.spec.rate);
           const result = await cacheQueue.request({ source: entry.source, position: target, signal,
-            priority: globalThis.WindowsNativeCachePriority.fill, budgetMs: 500 });
-          if (valid() && result?.complete) { c.cacheComplete = true; trace('native-cache-complete', { id: source.trackId(c.info) }); }
+            priority: globalThis.WindowsNativeCachePriority.fill,
+            budgetMs: Math.min(2000, 500 * 2 ** (c.cacheFillStalls || 0)) });
+          if (!valid()) return;
+          if (result?.complete) { resetFillRetry(c); c.cacheComplete = true; trace('native-cache-complete', { id: source.trackId(c.info) }); }
+          else {
+            const covered = snapshot => snapshot?.ranges.reduce((sum, [start, end]) => sum + end - start, 0) || 0;
+            if (covered(result) > covered(coverage)) resetFillRetry(c);
+            else deferFill(c);
+          }
         } catch (error) {
-          if (!signal.aborted && !/^native-cache-(preempted|cleared|cancelled)$/.test(error.message))
-            fillAfter = performance.now() + 5000;
+          if (valid() && !/^native-cache-(preempted|cleared|cancelled)$/.test(error.message)) deferFill(c);
         } finally { if (fillJob === job) fillJob = null; fillAfter = Math.max(fillAfter, performance.now() + 500); }
       })();
     }
@@ -347,6 +362,7 @@ plugin.onLoad(async () => {
     }
     function clearMemoryCache() {
       cancelFill(); if (current) current.cacheComplete = false;
+      resetFillRetry(current);
       cacheQueue?.clear();
       const c = current;
       cancelPendingSeek(c); cancelCandidate(); clearRecent();
@@ -1065,6 +1081,7 @@ plugin.onLoad(async () => {
       if (id !== c.id && !sourceControl && !loadingControl) return false;
       const play = name === 'audioplayer.play', pause = name === 'audioplayer.pause', seek = name === 'audioplayer.seek';
       if (play || pause || seek) {
+        if (play || seek) resetFillRetry(c);
         if (play) { c.replaying = !!c.stopped; c.stopped = false; }
         if (claim?.previous === c) clearClaim();
         revision++;
@@ -1294,6 +1311,7 @@ plugin.onLoad(async () => {
     // Supported FLAC starts from an initial PCM segment, not a whole-file decode.
     const publicStatus = {
       cacheStatus: () => ({ nativeSourceMode, clearing: cacheClearing, filling: !!fillJob,
+        fillStalls: current?.cacheFillStalls || 0, fillSuspended: (current?.cacheFillStalls || 0) >= 6,
         currentComplete: !!current?.cacheComplete, queue: cacheQueue?.status() || null,
         session: cacheSession ? { ...cacheSession.stats } : null }),
       status: () => ({ enabled: enabled(), savingConfig, owns: !!current?.owns, loading: !!current?.loading,
