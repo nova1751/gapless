@@ -1,0 +1,111 @@
+{
+  "captureSeconds": 180.0,
+  "callbackErrors": 0,
+  "boundary": {
+    "at": 356325,
+    "wallMs": 1794767720273,
+    "event": "boundary",
+    "from": "2670863319",
+    "to": "2670863152",
+    "outputWallMs": 1794767720322
+  },
+  "alignment": [
+    {
+      "captureCenterFrame": 7179530,
+      "sampleClockLagFrames": -7070921,
+      "relativeMs": -600.0,
+      "correlation": 0.9540476339408327,
+      "referenceCenterSeconds": 2.2626875,
+      "relativeLagMs": 2862.6875000000005
+    },
+    {
+      "captureCenterFrame": 7189131,
+      "sampleClockLagFrames": -7070922,
+      "relativeMs": -400.0,
+      "correlation": 0.9495498724764817,
+      "referenceCenterSeconds": 2.4626875,
+      "relativeLagMs": 2862.6875
+    },
+    {
+      "captureCenterFrame": 7198693,
+      "sampleClockLagFrames": -7070922,
+      "relativeMs": -200.0,
+      "correlation": 0.9485072207209688,
+      "referenceCenterSeconds": 2.6618958333333333,
+      "relativeLagMs": 2861.8958333333335
+    },
+    {
+      "captureCenterFrame": 7208293,
+      "sampleClockLagFrames": -7070922,
+      "relativeMs": 0,
+      "correlation": 0.9440266747332444,
+      "referenceCenterSeconds": 2.8618958333333335,
+      "relativeLagMs": 2861.8958333333335
+    },
+    {
+      "captureCenterFrame": 7217881,
+      "sampleClockLagFrames": -7070921,
+      "relativeMs": 200.0,
+      "correlation": 0.9614059368514006,
+      "referenceCenterSeconds": 3.0616666666666665,
+      "relativeLagMs": 2861.6666666666665
+    },
+    {
+      "captureCenterFrame": 7227516,
+      "sampleClockLagFrames": -7070921,
+      "relativeMs": 400.0,
+      "correlation": 0.9651152825885743,
+      "referenceCenterSeconds": 3.262395833333333,
+      "relativeLagMs": 2862.395833333333
+    },
+    {
+      "captureCenterFrame": 7237155,
+      "sampleClockLagFrames": -7070921,
+      "relativeMs": 600.0,
+      "correlation": 0.9777149816728836,
+      "referenceCenterSeconds": 3.463208333333333,
+      "relativeLagMs": 2863.208333333333
+    }
+  ],
+  "lagSpanMs": 1.541666666666515,
+  "sampleClockLagSpanFrames": 1,
+  "nearZeroRunsWithinOneSecondOfReportedBoundary": [],
+  "process": {
+    "samples": 130,
+    "durationSeconds": 259.75,
+    "privateBytesMin": 743477248.0,
+    "privateBytesMax": 915853312.0,
+    "privateBytesEnd": 836722688.0,
+    "cpuSecondsDelta": 293.15625
+  },
+  "eventCounts": {
+    "boundary": 1,
+    "claimed": 1,
+    "indexed-integrity-verified": 1,
+    "indexed-ready": 3,
+    "loaded": 1,
+    "native-settings": 1,
+    "output-ready": 1,
+    "pair-ready": 2,
+    "resource-start": 3,
+    "scheduled": 2,
+    "seek-range-ready": 141,
+    "selector-connected": 1,
+    "web-loaded": 1,
+    "web-start": 1
+  },
+  "implementation": "b3fc4dc",
+  "scope": "Installed candidate, favorite list, Baptized In Fear from start through natural transition to Open Hearts; no manual seek. Existing complete cache, not cold or offline.",
+  "method": "180-second 48 kHz stereo WASAPI loopback; left channel vs existing same-source left-channel 44.1 kHz reference, linearly resampled. Seven independent 200 ms normalized correlation windows searched across reference. Wall timestamps select windows; capture sample indices assess continuity. Wall-clock lag variation includes callback timestamp jitter.",
+  "loadMs": 1044,
+  "claimMs": 191.70000000298023,
+  "pcmMaximumBytes": 33226784,
+  "limitations": [
+    "One pair, existing complete cache; no local queue or offline acceptance.",
+    "Correlation evidence is not bit-perfect output proof or exhaustive sample-loss proof.",
+    "Approximately 260-second all-CloudMusic-process private memory/CPU sampling is not long-duration leak/stress acceptance.",
+    "CPU delta about 293 core-seconds over 260 wall-seconds includes native UI, helper and plugin; attribution remains open.",
+    "No microphone recording; audio artifacts remain local and are not committed."
+  ],
+  "finalState": "Paused on Open Hearts; screenshot capture released; no cache deletion or settings changes."
+}

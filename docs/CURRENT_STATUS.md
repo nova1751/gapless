@@ -38,13 +38,13 @@ Windows 受支持的在线 FLAC：网易云提供授权音源、音质、队列�
 
 `e74d4b1` 已安装且 runtime 匹配。两次重叠 SDK 清理返回两条原生通知：第一条后 pendingClears=1、clearing=true，第二条后归零并解除保护（306.1 / 306.6 ms）。两个 SDK Promise 都在第一条通知后返回，不能据此判断全部清理完成。本轮暂停、空缓存，无活跃辅助取数；合并/重复通知、并发写入及极端延迟仍未充分验证。[实机记录](verification/windows-concurrent-clear-host.json)。测试后正常退出，恢复 30 个原缓存共 216431501 字节，全部 SHA256 匹配；重启保持暂停，恢复关闭至托盘并释放截图会话。
 
-## 清理异常转发修正（源码候选）
+## 清理异常转发修正
 
-复现同步清理准备与诊断回调同时抛错时，原生清理请求没有转发。源码已隔离该诊断异常，并防止异步末端的诊断抛错产生未处理拒绝。实际 startup.js 的临时宿主检查覆盖同步失败、异步失败、成功三条路径，均只转发一次且保留原参数与回调；语法和 trial ZIP 检查通过。[证据](verification/windows-clear-error-forwarding.json)。尚未安装此源码候选，当前机器仍为 `e74d4b1`。
+复现同步清理准备与诊断回调同时抛错时，原生清理请求没有转发。源码已隔离该诊断异常，并防止异步末端的诊断抛错产生未处理拒绝。实际 startup.js 的临时宿主检查覆盖同步失败、异步失败、成功三条路径，均只转发一次且保留原参数与回调；语法和 trial ZIP 检查通过。[证据](verification/windows-clear-error-forwarding.json)。该修正已随 `b3fc4dc` 安装；异常注入是临时协议检查，不是实际故障验收。
 
 ## 本地按需读取候选
 
-Windows 流式本地输入已改为回环挂载的按需 Range 读取，顺序块上限 64 KiB，Seek 复用严格区间校验和读取前后版本检查。临时回环服务验证未预读、曲头取消后曲尾仍可读、版本变化拒绝；真实 BetterNCM 挂载读取合成文件也已通过曲头、曲尾及回跳中间的逐字节验证与取消检查：[记录](verification/windows-local-range-host.json)。尚未安装或进行本地歌曲解码/播放验收。当前安装仍是 `e74d4b1`。[范围与限制](LOCAL_SOURCE_IDENTITY.md)。
+Windows 流式本地输入已改为回环挂载的按需 Range 读取，顺序块上限 64 KiB，Seek 复用严格区间校验和读取前后版本检查。临时回环服务验证未预读、曲头取消后曲尾仍可读、版本变化拒绝；真实 BetterNCM 挂载读取合成文件也已通过曲头、曲尾及回跳中间的逐字节验证与取消检查：[记录](verification/windows-local-range-host.json)。已随 `b3fc4dc` 安装；本地歌曲隔离解码已验证，实际播放队列仍待验收。[范围与限制](LOCAL_SOURCE_IDENTITY.md)。
 
 ## 剩余收尾
 
@@ -60,4 +60,10 @@ python windows/package.py --native-source-trial --diagnostics
 
 ## 最新安装与本地解码对照
 
-b3fc4dc 已安装，main/startup runtime 与包匹配；包含前述清理异常兜底。真实宿主隔离流式资源读取 27 MB FLAC，首次约 247 KB 就绪，曲尾及回跳中间累计约 1.45 MB；三个一秒 PCM 片段与完整解码逐样本一致，缓存复用通过。[记录](verification/windows-local-range-decode-host.json)。测试副本删除，原缓存未修改，正常重启暂停并恢复托盘设置。前述未安装描述是该阶段历史状态；尚未完成实际本地播放队列、输出回录及安装后播放回归。
+b3fc4dc 已安装，main/startup runtime 与包匹配；包含前述清理异常兜底。真实宿主隔离流式资源读取 27 MB FLAC，首次约 247 KB 就绪，曲尾及回跳中间累计约 1.45 MB；三个一秒 PCM 片段与完整解码逐样本一致，缓存复用通过。[记录](verification/windows-local-range-decode-host.json)。测试副本删除，原缓存未修改，正常重启暂停并恢复托盘设置。本地实际播放队列仍待验收；安装后在线自然跨曲回归见下文。
+
+## 安装后自然跨曲回归
+
+`b3fc4dc` 在收藏列表从 Baptized In Fear 开头自然播放至 Open Hearts，未 Seek。起播 1044 ms，预约间隔 0 帧，跨曲/接认各一次，接认 191.7 ms；所采日志无欠载/回退。180 秒系统回录无回调错误，7 个 200 ms 窗口与同源左声道参考相关性 0.944–0.978，按采集样本时钟计算的对齐偏差范围 1 帧（48 kHz，约 0.021 ms）；报告边界附近正负一秒未检出持续至少 0.5 ms 的双声道近零段。墙钟窗口误差范围约 1.54 ms，包含回调时间戳抖动，不将其当作音频断点。
+
+130 次进程采样覆盖 259.75 秒，所有网易云进程 private bytes 约 709–873 MiB、结束约 798 MiB，插件单曲 PCM 保持 32 MiB 上限。CPU 累积约 293 核秒，尚未区分原生 UI、插件和辅助进程，不能宣布低 CPU 或长时间无泄漏。现有缓存、单个曲对结果不代替冷源、断网、本地队列及长时间压力验收。播放器已暂停、截图会话释放。[证据](verification/windows-natural-installed-b3fc4dc.json)。
