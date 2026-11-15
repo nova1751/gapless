@@ -44,7 +44,7 @@
     // Host metadata is a version hint, not proof that the path is unchanged.
     // Never merge a reported replacement into PCM for the previous file.
     return JSON.stringify(['local', source.localKey,
-      Number.isSafeInteger(size) && size > 0 ? size : null, fingerprint(source)]);
+      Number.isSafeInteger(size) && size > 0 ? size : null, fingerprint(source), source.localVersion ?? null]);
   }
   class AudioResources {
     constructor({ resolve, trace, acceptRate, readCache = null, exactSize = false, openLocal, limit = 512 * MiB, fileLimit = 128 * MiB }) {

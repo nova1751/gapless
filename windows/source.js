@@ -11,7 +11,21 @@ const WindowsSource = (() => {
       .replace(/^\\+(?=[a-z]:)/i, '');
     return /^[a-z]:\\.*\.(?:flac|mp3)$/i.test(path) && !path.split('\\').includes('..') ? path : null;
   }
-  const openLocal = info => betterncm.fs.readFile(localPath(info));
+  function localState(info) {
+    const path = localPath(info);
+    const stat = path && globalThis.betterncm_native?.fs?.getProperties?.(path);
+    if (!stat || stat.type !== 'file' || !Number.isSafeInteger(stat.size) || stat.size <= 0
+      || !Number.isSafeInteger(stat.lastModified)) throw new Error('native-only-local-version');
+    return { size: stat.size, version: JSON.stringify([stat.size, stat.lastModified]) };
+  }
+  const openLocal = async info => {
+    const before = localState(info);
+    if (info.localVersion !== before.version) throw new Error('native-only-local-changed');
+    const blob = await betterncm.fs.readFile(localPath(info));
+    if (localState(info).version !== before.version || blob.size !== before.size)
+      throw new Error('native-only-local-changed');
+    return blob;
+  };
   function valid(info) {
     if (localPath(info)) return !!trackId(info);
     if (!info || info.audioType !== 'track' || info.freeTrialInfo || info.path || info.isCue) return false;
@@ -21,8 +35,16 @@ const WindowsSource = (() => {
   function same(a, b) {
     if (!valid(a) || !valid(b) || trackId(a) !== trackId(b)) return false;
     const path = localPath(a);
-    if (path) return localIdentity({ ...a, localKey: path.toLowerCase() })
-      === localIdentity({ ...b, localKey: localPath(b)?.toLowerCase() });
+    if (path) {
+      if (path.toLowerCase() !== localPath(b)?.toLowerCase()) return false;
+      try {
+        const state = localState(a);
+        if ((a.localVersion && a.localVersion !== state.version)
+          || (b.localVersion && b.localVersion !== state.version)) return false;
+        const normalize = info => ({ ...info, localKey: path.toLowerCase(), fileSize: state.size, localVersion: state.version });
+        return localIdentity(normalize(a)) === localIdentity(normalize(b));
+      } catch { return false; }
+    }
     return !localPath(b) && a.level === b.level && Number(a.fileSize) === Number(b.fileSize)
       && fingerprint(a) === fingerprint(b);
   }
@@ -85,7 +107,9 @@ const WindowsSource = (() => {
     const local = row?.localTrack;
     const duration = Number(info.songDuration) || Number(local?.duration)
       || Number(local?.origin?.duration) || Number(row?.track?.duration);
-    return { ...info, songDuration: duration, localKey: path.toLowerCase() };
+    const state = localState(info);
+    return { ...info, songDuration: duration, fileSize: state.size,
+      localKey: path.toLowerCase(), localVersion: state.version };
   }
   return { valid, same, connect, snapshot, acceptsCandidate, trackId, sourceInfo, openLocal };
 })();
