@@ -11,7 +11,7 @@
   })();
   class StreamingResources extends AudioResources {
     constructor(options) {
-      super(options); this.streaming = true; this.overlapStreaming = true;
+      super(options); this.boundedIndexed = !!options.boundedIndexed; this.streaming = true; this.overlapStreaming = true;
       this.songCache = new globalThis.GaplessSongCache(() => this.limit - this.held() - this.reserved);
     }
     held() { return super.held() + (this.songCache?.bytes || 0); }
@@ -128,8 +128,8 @@
               if (!spec || spec.codec !== 'flac' || ![8, 16, 24].includes(spec.bits)) throw new Error('decode-stream-header');
               const seekPoints = globalThis.GaplessSeekRange.index(prefix, spec,
                 Number(source.localKey ? input.response.headers.get('content-length') : source.size));
-              const bounded = (input.kind === 'native-source' || (input.kind === 'local-file' && source.localKey))
-                && seekPoints && input.seekRange;
+              const bounded = (this.boundedIndexed || input.kind === 'native-source' || (input.kind === 'local-file' && source.localKey))
+                && seekPoints && (input.seekRange || input.kind === 'network');
               // Indexed native and versioned local inputs share bounded PCM.
               // Reserve capacity plus immutable scheduled output copies.
               const size = bounded ? Math.min(spec.frames * spec.channels * 4, 32 * 1024 * 1024) + 8 * 1024 * 1024
@@ -178,6 +178,7 @@
                 } catch (error) {
                   this.check(job);
                   this.trace('indexed-unavailable', { id: entry.id });
+                  if (entry.stream.bounded) throw new Error('decode-indexed-unavailable');
                   if (input.partial) throw new Error('range-header-unavailable');
                 }
               }

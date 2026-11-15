@@ -5,8 +5,9 @@
   class NativeCache {
     constructor({ storage, crypto, settings, trace }) {
       this.storage = storage; this.crypto = crypto; this.settings = settings; this.trace = trace;
-      this.home = null; this.mounts = new Map();
+      this.home = null; this.mounts = new Map(); this.generation = 0;
     }
+    clear() { this.generation++; this.mounts.clear(); }
     roots() {
       const settings = this.settings() || {}, roots = [];
       for (const p of [settings.storageCachePath, settings.cacheDir, settings.oldCacheDir]) {
@@ -41,7 +42,8 @@
       });
       const data = await result.json(); return data.ok ? data.value : null;
     }
-    async read(ref, source, signal) {
+    async read(ref, source, signal, full = false) {
+      const generation = this.generation;
       const hash = String(source.md5 || '').toLowerCase(), bitrate = BITRATE[source.level];
       const crypto = this.crypto(), storage = this.storage();
       if (!/^\d+$/.test(ref.id) || !/^[a-f0-9]{32}$/.test(hash) || !bitrate
@@ -72,7 +74,33 @@
       if (!path) return null;
       if (!this.mounts.has(path)) this.mounts.set(path, await this.wait(betterncm.fs.mountFile(path), signal));
       const url = this.mounts.get(path), parsed = new URL(url);
-      if (parsed.hostname !== '127.0.0.1') throw new Error('native-cache-mount');
+      if (parsed.protocol !== 'http:' || parsed.hostname !== '127.0.0.1') throw new Error('native-cache-mount');
+      if (generation !== this.generation) throw new Error('cancelled');
+      if (!full && source.audioFormat === 'flac' && globalThis.GaplessSeekRange) {
+        const readRange = async (start, end, rangeSignal) => {
+          if (generation !== this.generation) throw new Error('cancelled');
+          const bytes = await globalThis.GaplessSeekRange.read(url, start, end, size, rangeSignal, true);
+          if (generation !== this.generation) throw new Error('cancelled');
+          return bytes;
+        };
+        const end = Math.min(size, 32768), head = await readRange(0, end, signal);
+        return { kind: 'native-cache', partial: true, seekRange: readRange,
+          response: new Response(head, { status: 206, headers: {
+            'content-range': `bytes 0-${end - 1}/${size}`, 'content-length': String(end) } }),
+          verifyParts: async (parts, verifySignal) => {
+            const digest = crypto.algo.MD5.create(); let total = 0;
+            for (const part of parts) for (let at = 0; at < part.length; at += 65536) {
+              if (verifySignal.aborted || generation !== this.generation) throw new Error('cancelled');
+              const chunk = part.subarray(at, at + 65536), words = new Array(Math.ceil(chunk.length / 4)).fill(0);
+              for (let i = 0; i < chunk.length; i++) words[i >>> 2] |= chunk[i] << (24 - (i & 3) * 8);
+              total += chunk.length; digest.update(crypto.lib.WordArray.create(words, chunk.length));
+              await new Promise(resolve => setTimeout(resolve, 0));
+            }
+            if (verifySignal.aborted || generation !== this.generation) throw new Error('cancelled');
+            if (total !== size || digest.finalize().toString(crypto.enc.Hex).toLowerCase() !== hash)
+              throw new Error('cache-integrity');
+          } };
+      }
       const response = await fetch(url, { signal });
       const worker = globalThis.GaplessCacheWorker?.create(hash, size, signal);
       if (worker) return { kind: 'native-cache', response, worker: true,

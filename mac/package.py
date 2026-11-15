@@ -14,11 +14,17 @@ with zipfile.ZipFile(output, 'w', zipfile.ZIP_DEFLATED) as archive:
     sources = [root.parent / 'shared' / 'audio-resources.js',
                root.parent / 'shared' / 'cache-worker.js',
                root.parent / 'shared' / 'playback-clock.js', root.parent / 'shared' / 'visual-pcm.js',
-               root / 'native-cache.js', root / 'media-session.js', root / 'player.js']
+               root / 'native-cache.js', root / 'media-session.js',
+               root.parent / 'windows/pcm-cache.js', root.parent / 'windows/song-cache.js',
+               root.parent / 'windows/seek-range.js', root.parent / 'windows/streaming.js',
+               root / 'stream-control.js', root / 'player.js']
     vendor = root.parent / 'vendor/crypto-js-4.2.0'
     worker = '\n'.join(path.read_text(encoding='utf-8') for path in [vendor / 'core.js', vendor / 'md5.js', root.parent / 'shared/cache-worker-runtime.js'])
     archive.writestr('player.js', 'globalThis.gaplessCacheWorkerSource = ' + json.dumps(worker) + ';\n'
+                     + 'new Function("module", "exports", "define", ' + json.dumps((root.parent / 'vendor/flac-decoder-0.2.11/flac-decoder.min.js').read_text(encoding='utf-8')) + ').call(globalThis);\n'
                      + '\n'.join(path.read_text(encoding='utf-8') for path in sources))
     archive.write(root.parent / 'LICENSE', 'LICENSE')
+    for license_file in [root.parent / 'vendor/flac-decoder-0.2.11/LICENSE', root.parent / 'vendor/flac-decoder-0.2.11/libFLAC-COPYING']:
+        archive.write(license_file, 'vendor/flac-' + license_file.name)
     archive.write(vendor / 'LICENSE', 'vendor/crypto-js-LICENSE')
 print(output)

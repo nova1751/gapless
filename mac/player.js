@@ -89,8 +89,8 @@ plugin.onLoad(() => {
       const r = webpackRequire();
       return [139,257,671].map(id => r.c[id]?.exports).find(x => x?.algo?.MD5?.create);
     } });
-  const resources = new Resources.AudioResources({ trace,
-    readCache: nativeCache && ((r, source, signal) => nativeCache.read(r, source, signal)), resolve: async (r, signal) => {
+  const resources = new globalThis.GaplessStreamingResources({ trace, boundedIndexed: true,
+    readCache: nativeCache && ((r, source, signal, full) => nativeCache.read(r, source, signal, full)), resolve: async (r, signal) => {
     if (!Object.values(QUALITY).includes(r.level)) throw new Error('native-only-quality');
     if (!r.row || rowId(r.row) !== r.id) throw new Error('native-only-source-selection');
     const result = await nativeSourceResolver()({ track: r.row, requestSoundQuality: r.level, isNextTrack: true });
@@ -103,16 +103,25 @@ plugin.onLoad(() => {
     const c = S.current;
     return !!c && r.account === S.account && (rate >= 8000 && rate <= 192000);
   } });
-  const clock = new globalThis.GaplessPlaybackClock({ resources, trace,
+  const streamControl = new globalThis.GaplessMacStreamControl(resources);
+  const clock = new globalThis.GaplessStreamingClock({ resources, trace,
     onState: value => { if (S.current?.owns && S.current.entry && !S.current.loading && value !== 'running') void restoreNative(`context-${value}`); },
     onEnded: c => { if (S.current === c && c.owns) boundary(c); } });
+  bridge.cacheClearRequested = () => {
+    streamControl.cancel(S.current); cancelScheduled();
+    const active = S.current?.owns ? S.current.entry : null;
+    resources.retain(active ? [ref(S.current)] : []);
+    resources.clearCachedData(active); nativeCache?.clear();
+    trace('cache-cleared');
+  };
   const position = () => S.current?.owns ? clock.position(S.current) : nativePosition();
   const media = globalThis.GaplessMacMediaSession && new globalThis.GaplessMacMediaSession({ trace,
     seek: (id, value) => {
       reconcile(); const c = S.current;
       if (!c?.owns || c.id !== id) return;
-      seekOwned(c, value, `${id}|seek|system-${S.revision + 1}`);
-      progress(c, true);
+      void seekOwned(c, value, `${id}|seek|system-${S.revision + 1}`).then(() => {
+        if (S.current === c && c.owns) progress(c, true);
+      }).catch(error => trace('system-seek-cancelled', { reason: error.message }));
     },
     transport: (id, action) => {
       reconcile(); const c = S.current;
@@ -212,7 +221,7 @@ plugin.onLoad(() => {
       occurrence: `${row.id}:${row.displayOrder}`, key: `${S.account}:${id}:${c.requestedLevel}:${row.id}:${row.displayOrder}:${row.randomOrder}` };
   }
   function cancelScheduled() { clock.stop(S.scheduled); S.scheduled = null; }
-  function stopCurrent() { cancelScheduled(); clock.stop(S.current); }
+  function stopCurrent() { streamControl.cancel(S.current); cancelScheduled(); clock.stop(S.current); }
   function emitState(c, value, token = S.token || c.id) {
     if (value === 2) nativePlayer().isCallPaused = true;
     bridge.emit('audioplayer.onPlayState', [c.id, token, value]);
@@ -327,7 +336,9 @@ plugin.onLoad(() => {
     if (S.scheduled && S.scheduled.selectionKey !== next?.key) cancelScheduled();
     if (!next || S.scheduled) return;
     const entry = resources.lookup(next);
-    if (!entry?.hash) return;
+    if (!entry?.hash || entry.stream?.error) return;
+    resources.ensure?.(entry, 0);
+    if (!streamControl.ready(entry, 0)) return;
     if (entry.spec.rate !== clock.ctx?.sampleRate) {
       if (c.rateBoundary !== next.key) {
         c.rateBoundary = next.key;
@@ -382,6 +393,11 @@ plugin.onLoad(() => {
         throw new Error('native-only-source-identity');
       if (!validRecovery(c, epoch) || !allowed(c.info)) throw new Error('cancelled');
       c.duration = c.entry.duration; c.level = c.entry.level;
+      for (;;) {
+        const target = c.offset || 0;
+        await streamControl.prepare(c, target, () => validRecovery(c, epoch) && allowed(c.info));
+        if (target === (c.offset || 0)) break;
+      }
       await clock.open(c.entry);
       if (!validRecovery(c, epoch) || !allowed(c.info)) throw new Error('cancelled');
       // Direct Web Load/resume also parks the native output. Otherwise an
@@ -392,6 +408,14 @@ plugin.onLoad(() => {
       else await S.nativeGate.ready;
       if (!validRecovery(c, epoch) || !allowed(c.info) || S.phase === 'restoring') throw new Error('cancelled');
       clearTimeout(S.nativeGate?.watchdog);
+      // A Seek can arrive while the context/gain handshake is awaiting native.
+      // Recheck the latest requested offset before committing any Web output.
+      for (;;) {
+        const target = c.offset || 0;
+        await streamControl.prepare(c, target, () => validRecovery(c, epoch) && allowed(c.info)
+          && S.phase !== 'restoring');
+        if (target === (c.offset || 0)) break;
+      }
       clock.setOutput(true); c.loading = false; c.transitioning = false; c.blocked = false; S.phase = 'owned';
       if (c.playing) clock.start(c, clock.ctx.currentTime + 0.01, c.offset);
       if (msg.resumeExisting) {
@@ -504,6 +528,7 @@ plugin.onLoad(() => {
     S.starting = true; c.takeoverPlaying = true;
     let pauseIssued = false;
     try {
+      await streamControl.prepare(c, nativePosition(), valid, 3);
       await clock.open(c.entry);
       if (!valid() || !S.nativePlaying || c.duration - nativePosition() < 0.3) return;
       S.phase = 'warming';
@@ -643,11 +668,11 @@ plugin.onLoad(() => {
     gate.ready = bridge.raw('audioplayer.setVolume', ['', '', 0]);
     await gate.ready;
   }
-  async function restoreNative(reason) {
+  async function restoreNative(reason, playIntent) {
     reconcile(); const c = S.current;
     if (!c?.owns) return S.recovering;
     if (S.phase === 'restoring') return S.recovering;
-    const epoch = S.epoch, target = clock.position(c); let desired = c.playing;
+    const epoch = S.epoch, target = clock.position(c); let desired = playIntent ?? c.playing;
     c.recoveryPosition = target; c.recoveryPlaying = desired; c.recoveryHeard = clock.heard(c);
     c.recoverySucceeded = false; c.blocked = true; c.loading = false; S.claim = false;
     S.phase = 'restoring'; stopCurrent(); visual.stop(); trace('restore-start', { id: c.id, reason, position: target });
@@ -785,10 +810,18 @@ plugin.onLoad(() => {
   };
   bridge.onError = error => { trace('bridge-error', { reason: error.message }); void restoreNative('bridge-error'); };
   function ack(msg, args = []) { queueMicrotask(() => bridge.dispatch(msg.seq, args)); }
-  function seekOwned(c, value, token) {
-    S.revision++;
+  async function seekOwned(c, value, token) {
+    if (!Number.isFinite(Number(value))) throw new Error('invalid-seek');
+    const revision = ++S.revision, epoch = S.epoch;
     const offset = Math.max(0, Math.min(c.duration - 0.001, Number(value)));
-    cancelScheduled(); if (c.loading) c.offset = offset; else clock.seek(c, offset); c.endSent = false; c.missed = false; S.token = token;
+    cancelScheduled(); S.token = token;
+    if (c.loading) c.offset = offset;
+    else {
+      await streamControl.prepare(c, offset, () => S.current === c && c.owns && S.enabled
+        && S.epoch === epoch && S.revision === revision);
+      clock.seek(c, offset);
+    }
+    c.endSent = false; c.missed = false;
     trace('seek', { id: c.id, position: offset }); scheduleNext();
     return offset;
   }
@@ -992,6 +1025,18 @@ plugin.onLoad(() => {
       if (c.loading) { c.playing = true; c.loadIntent = true; ack(msg); return true; }
       c.transitioning = false;
       if (clock.ctx?.state !== 'running') { void restoreNative('play-context-unavailable'); return false; }
+      if (!c.playing && !streamControl.ready(c.entry, c.offset)) {
+        const revision = S.revision, epoch = S.epoch; c.loadIntent = true;
+        void streamControl.prepare(c, c.offset, () => S.current === c && c.owns && S.enabled
+          && S.revision === revision && S.epoch === epoch).then(() => {
+          cancelScheduled(); clock.start(c, clock.ctx.currentTime + 0.01, c.offset);
+          emitState(c, 1, token); prefetch(); scheduleNext();
+        }).catch(error => {
+          if (S.current === c && S.revision === revision && S.epoch === epoch)
+            void restoreNative('resume-buffer-unavailable', true);
+        });
+        ack(msg); return true;
+      }
       if (!c.playing) { cancelScheduled(); clock.start(c, clock.ctx.currentTime + 0.01, c.offset); }
       emitState(c, 1, token); ack(msg); trace('play', { id: c.id }); prefetch(); scheduleNext(); return true;
     }
@@ -1005,8 +1050,8 @@ plugin.onLoad(() => {
       if (!Number.isFinite(Number(p[2]))) return false;
       const token = p[1] || c.id;
       c.restoreSnapshot = false;
-      const offset = seekOwned(c, p[2], token);
-      completeSeek(msg, c, token, offset);
+      void seekOwned(c, p[2], token).then(offset => completeSeek(msg, c, token, offset))
+        .catch(() => completeSeek(msg, c, token, Number(p[2]), -1));
       return true;
     }
     if (/^audioplayer\.(stop|unload)$/.test(msg.command)) {
@@ -1035,6 +1080,8 @@ plugin.onLoad(() => {
       reconcile(); updateEnvironment();
       bridge.flushStartup(); consumeRecovery();
       if (S.claim && performance.now() - S.current.claimAt > 3000) void restoreNative('unclaimed-next');
+      if (S.current?.owns && S.current.entry?.stream?.error) { void restoreNative('stream-source-failed'); return; }
+      if (S.scheduled?.entry?.stream?.error) cancelScheduled();
       if (S.current?.owns && !S.claim) progress(S.current);
       void takeover(); scheduleNext(); prefetch();
       media?.sync();

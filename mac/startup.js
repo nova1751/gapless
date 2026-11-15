@@ -135,6 +135,10 @@
       if (msg?.method === 'registerCall' && (msg.command?.startsWith('audioplayer.') || msg.command === 'winhelper.onHotkey')) {
         bridge.registrations[msg.command] = msg.seq; bridge.protect();
       }
+      if (msg?.method === 'call' && msg.command === 'storage.clearCache') {
+        // Cleanup failure must never swallow the original native clear request.
+        try { bridge.cacheClearRequested?.(); } catch (error) { report(error); }
+      }
       if (msg?.method === 'call' && /^audioplayer\./.test(msg.command)) {
         if (msg.command === 'audioplayer.enableAudioData') bridge.audioDataEnabled = Number(msg.params?.[0]) === 1;
         if (msg.command === 'audioplayer.load') {

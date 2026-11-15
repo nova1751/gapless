@@ -1,0 +1,66 @@
+{
+  "version": "0.3.0",
+  "cachePath": {
+    "scope": "Mac adapter + shared resource classes in Node with actual FLAC and loopback HTTP; native metadata shim, no Mac runtime",
+    "initialBytes": 214631,
+    "fileBytes": 27081483,
+    "indexed": true,
+    "bounded": true,
+    "comparisons": [
+      {
+        "target": 0,
+        "maxDifference": 0
+      },
+      {
+        "target": 229.1764172335601,
+        "maxDifference": 0
+      },
+      {
+        "target": 116.08820861678005,
+        "maxDifference": 0
+      }
+    ],
+    "peakPCMBytes": 33226784,
+    "evictionAndRefill": true,
+    "clearInvalidatesRanges": true,
+    "onlineAudioRequests": 0
+  },
+  "networkPath": {
+    "scope": "Mac adapter + shared resource classes in Node with actual FLAC and loopback HTTP; native metadata shim, no Mac runtime",
+    "initialBytes": 214631,
+    "fileBytes": 27081483,
+    "indexed": true,
+    "bounded": true,
+    "comparisons": [
+      {
+        "target": 0,
+        "maxDifference": 0
+      },
+      {
+        "target": 229.1764172335601,
+        "maxDifference": 0
+      },
+      {
+        "target": 116.08820861678005,
+        "maxDifference": 0
+      }
+    ],
+    "peakPCMBytes": 33226784,
+    "evictionAndRefill": true,
+    "clearInvalidatesRanges": true,
+    "onlineAudioRequests": 120
+  },
+  "controlChecks": {
+    "latestSeekWins": true,
+    "cancelClearsPriority": true,
+    "staleIntentRejected": true,
+    "deadlineRejects": true,
+    "clearForwardedOnceOnCleanupFailure": true
+  },
+  "validation": "Actual source / real FLAC / loopback HTTP with simulated native metadata. No Mac runtime or audible output tested.",
+  "missing": [
+    "Mac native partial-cache acquisition and disk fill",
+    "Mac local/downloaded range adapter",
+    "Mac runtime playback, clear-cache UI, media integration"
+  ]
+}
