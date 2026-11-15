@@ -118,3 +118,12 @@ python windows/package.py --native-source-trial --diagnostics
 一次性运行实际 NativeCacheSession 和 NativeCacheQueue 源码，模拟原生加载查询不返回、Seek 回调不返回、提交后缓存快照不返回三个阶段。每个阶段调用 queue.clear() 后：请求以 native-cache-cleared 结束、一次原生 Stop、session.active 和 queue.running 均释放，没有原生 Play。这是协议模拟检查，不冒充真实弱网或磁盘清理测试。
 
 另复现同步桥失败：原生 Seek 命令在 waiter 创建后同步抛出，finally.dispose 拒绝尚未被观察的 waiter.promise，产生 unhandledRejection。现在命令发送之前立即观察该 promise 的拒绝，pending() 仍等待同一个原始 promise，错误不会被误当成功。修改后同场景无未处理拒绝、保留原始 bridge-disconnected 错误、Stop 与队列释放正常，后续取数可成功完成。增量语法和 trial ZIP 打包通过；未新增常驻测试，也未更改音乐输出、样式或音源选择。
+
+
+## 2026-11-16：当前机器保留候选安装与开关联动
+
+已安装并保留 `45acc05` native-source trial（仍非正式发布）。安装包 SHA-256 为 `E768358285BD479901A016B572011748CDFF260949492B98E7CE5B8D1FE20BAC`，读取 ZIP 内 main.js 与 BetterNCM runtime 文件校验一致。原日常包已备份在插件目录之外；同 slug 没有重复启用。没有删除或替换音乐缓存。
+
+正常启动后恢复 Moth To A Flame，Web 准备日志为 1329 ms；关闭顶部无缝开关，在 21.894805 秒位置开始原生恢复，约 191 ms 后确认完成，界面继续播放。重新开启时显示当前保持原生、下次选歌生效；重新选择 Baptized In Fear 后 Web 加载日志为 801 ms、源采样率 44100，未出现 fallback。完整缓存条件下本轮日志没有 native-cache-batch；此证据只覆盖插件辅助取数，不证明全进程音频网络流量为零。
+
+顶部入口及窗口关闭按钮位置正常，无新增歌词页入口。结束时暂停歌曲，恢复关闭主面板最小化到托盘并释放屏幕采集。本轮**没有再回滚到旧插件**，当前机器使用以上候选继续验收。仍需真实弱网、旧曲补齐期间默认清缓存和完整生命周期回归，不以本次开关通过代替发布门槛。

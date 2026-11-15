@@ -1,0 +1,11 @@
+{
+  "implementation": "45acc05",
+  "installedSha256": "E768358285BD479901A016B572011748CDFF260949492B98E7CE5B8D1FE20BAC",
+  "runtimeMatchesInstalled": true,
+  "restartLoadMs": 1329,
+  "reenableSelectLoadMs": 801,
+  "restorePositionSeconds": 21.894805401359058,
+  "restoreConfirmationMs": 191,
+  "nativeCacheBatchesObserved": 0,
+  "status": "candidate installed, enabled, paused; not production release"
+}
