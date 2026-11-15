@@ -1,0 +1,89 @@
+{
+  "implementation": "b3fc4dc",
+  "nominalWindowSeconds": 30,
+  "capture": "Screenshot sessions reset and no loopback recording during each interval.",
+  "windows": {
+    "paused": {
+      "totalCpuSeconds": 1.65625,
+      "processes": [
+        {
+          "role": "gpu",
+          "cpuSeconds": 0.078125,
+          "privateBytes": 180109312
+        },
+        {
+          "role": "renderer",
+          "cpuSeconds": 0.984375,
+          "privateBytes": 416804864
+        },
+        {
+          "role": "audio-utility",
+          "cpuSeconds": 0.0,
+          "privateBytes": 22499328
+        },
+        {
+          "role": "browser",
+          "cpuSeconds": 0.59375,
+          "privateBytes": 187559936
+        }
+      ]
+    },
+    "web": {
+      "totalCpuSeconds": 9.390625,
+      "processes": [
+        {
+          "role": "gpu",
+          "cpuSeconds": 2.609375,
+          "privateBytes": 168951808
+        },
+        {
+          "role": "renderer",
+          "cpuSeconds": 6.015625,
+          "privateBytes": 475521024
+        },
+        {
+          "role": "audio-utility",
+          "cpuSeconds": 0.03125,
+          "privateBytes": 22470656
+        },
+        {
+          "role": "browser",
+          "cpuSeconds": 0.734375,
+          "privateBytes": 187490304
+        }
+      ]
+    },
+    "native": {
+      "totalCpuSeconds": 9.28125,
+      "processes": [
+        {
+          "role": "gpu",
+          "cpuSeconds": 5.46875,
+          "privateBytes": 170135552
+        },
+        {
+          "role": "renderer",
+          "cpuSeconds": 2.078125,
+          "privateBytes": 471687168
+        },
+        {
+          "role": "audio-utility",
+          "cpuSeconds": 0.0,
+          "privateBytes": 22462464
+        },
+        {
+          "role": "browser",
+          "cpuSeconds": 1.734375,
+          "privateBytes": 193585152
+        }
+      ]
+    }
+  },
+  "limits": [
+    "Single sequential 30-second windows at different positions in Open Hearts. Not repeated same-position matched trials or profiler attribution.",
+    "Native window has plugin menu open, Web window playlist only; graphical workloads not identical.",
+    "Includes whole client process tree, not plugin-only CPU. No screen capture vs identical screen-captured playback A/B was performed.",
+    "These observations cannot establish that capture alone caused the previous higher total."
+  ],
+  "finalState": "Paused, gapless re-enabled; current native track stays native until next selection; screenshot released."
+}
