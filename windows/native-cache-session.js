@@ -8,9 +8,9 @@
   class NativeCacheSession {
     constructor({ bridge, valid, snapshot, trace = () => {} }) {
       this.bridge = bridge; this.valid = valid; this.snapshot = snapshot; this.trace = trace;
-      this.active = null; this.serial = 0; this.retired = new Set();
+      this.active = null; this.fault = null; this.serial = 0; this.retired = new Set();
       this.prefix = Date.now().toString(36) + '_' + (++instanceSerial);
-      this.stats = { batches: 0, cancelled: 0, failed: 0 };
+      this.stats = { batches: 0, cancelled: 0, failed: 0, stopFailed: 0 };
     }
     observe(name, args) {
       if (!name.startsWith('audioplayer.')) return false;
@@ -24,13 +24,22 @@
       // Remember IDs before Stop, including synchronous and delayed callbacks.
       this.retired.add(job.id);
       if (this.retired.size > 256) this.retired.delete(this.retired.values().next().value);
-      this.bridge.call('audioplayer.stop', [job.id]);
+      try { this.bridge.call('audioplayer.stop', [job.id]); }
+      catch {
+        // Stop dispatch is uncertain. Do not start another auxiliary native
+        // load in this session; reload is required to re-establish ownership.
+        this.fault = 'native-cache-stop-failed'; this.stats.stopFailed++;
+        this.trace('native-cache-stop-failed');
+        throw new Error(this.fault);
+      }
     }
     cancel(reason = 'cancelled') {
       const job = this.active;
       if (!job || job.cancelled) return;
       job.cancelled = true; this.stats.cancelled++;
-      this.stop(job); job.wake?.(); this.trace('native-cache-cancel', { reason });
+      // AbortSignal listeners must not throw or strand a pending bridge call.
+      try { this.stop(job); } catch { /* stop() latched a terminal session fault. */ }
+      finally { job.wake?.(); this.trace('native-cache-cancel', { reason }); }
     }
     check(job) {
       if (job !== this.active || job.cancelled || job.signal.aborted || !this.valid(job.source))
@@ -55,6 +64,7 @@
       });
     }
     async batch({ source, position, signal, budgetMs = 2000 }) {
+      if (this.fault) throw new Error(this.fault);
       if (this.active) throw new Error('native-cache-busy');
       if (!source || !/^\d+$/.test(String(source.songId)) || source.freeTrialInfo || source.path
         || !Number.isFinite(position) || position < 0 || position >= Number(source.songDuration) / 1000

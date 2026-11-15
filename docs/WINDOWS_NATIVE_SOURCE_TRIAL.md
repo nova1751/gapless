@@ -147,3 +147,12 @@ python windows/package.py --native-source-trial --diagnostics
 对同一 9c45d0b 回录用左声道重新执行七个独立 200 ms 窗口、±600 ms 搜索：相关系数 0.942794–0.974536，时间偏移跨度约 0.041667 ms。原先 0.64–0.90 的低相关性主要来自左右声道混合的测量错误，不应当作插件音质下降证据。原指标保留并追加纠正结果；没有为了匹配而修改播放代码。仍不声称系统/DAC bit-perfect。
 
 远端复核：已 fetch origin，当前分支包含 origin/main=f6a4b72 的全部提交，无遗漏 main 更新。用户已授权后续自行测试。真实断网环境尚未建立：当前进程不是管理员，不能直接控制物理网卡；未尝试提权、修改防火墙或安全设置，协议模拟不冒充真实弱网。
+
+
+## 2026-11-16：Stop 分发失败的取消修复
+
+在实际 NativeCacheSession 源码的一次性检查中，让原生 getPlayedTime 永不返回、Stop 同步抛错。修复前 cancel() 抛出 bridge-stop-failed，等待未结束且 session.active 保留；若由 AbortSignal 调用，还可能成为事件处理器异常。
+
+现在 Stop 分发异常会锁定 session.fault=native-cache-stop-failed 并记录 stopFailed；cancel() 保证唤醒等待而不向 AbortSignal 监听器抛出。后续辅助取数直接拒绝，不在旧原生 Stop 状态不明时发起另一次 Load；重新加载插件后才建立新会话。不宣称失败的 Stop 已被原生执行，也不把它当作网络下载已停止的证据。缓存已齐的只读路径仍可使用，缺失数据按既有失败路径回退。
+
+实际 session/queue 组合分别模拟 clear 取消、前台抢占以及正常收尾时的 Stop 分发异常：三者都释放 active/running；后续请求返回明确错误；整个场景原生 Load 只有一次。增量语法和 trial ZIP 打包通过。该修复不修改音频、UI、原生授权及缓存文件格式。
