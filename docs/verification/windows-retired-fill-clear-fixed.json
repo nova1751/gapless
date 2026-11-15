@@ -1,0 +1,220 @@
+{
+  "events": [
+    {
+      "event": "helper-stop",
+      "at": 86886.60000000149
+    },
+    {
+      "event": "helper-stop",
+      "at": 88219.29999999702
+    },
+    {
+      "event": "helper-stop",
+      "at": 89413.39999999851
+    },
+    {
+      "event": "helper-stop",
+      "at": 90555
+    },
+    {
+      "event": "helper-stop",
+      "at": 92981.29999999702
+    },
+    {
+      "event": "helper-stop",
+      "at": 94459.29999999702
+    },
+    {
+      "event": "helper-stop",
+      "at": 95906.20000000298
+    },
+    {
+      "event": "helper-stop",
+      "at": 97086.70000000298
+    },
+    {
+      "event": "clear-during-retired-fill",
+      "at": 97991.5,
+      "before": {
+        "nativeSourceMode": true,
+        "clearing": false,
+        "filling": true,
+        "fillStalls": 0,
+        "fillSuspended": false,
+        "currentComplete": false,
+        "pendingPrevious": 1,
+        "queue": {
+          "queued": 0,
+          "activePriority": 10,
+          "generation": 1,
+          "closed": false
+        },
+        "session": {
+          "batches": 7,
+          "cancelled": 1,
+          "failed": 0,
+          "stopFailed": 0
+        }
+      }
+    },
+    {
+      "event": "helper-stop",
+      "at": 97992.89999999851
+    },
+    {
+      "event": "after-clear-dispatch",
+      "at": 97995,
+      "status": {
+        "nativeSourceMode": true,
+        "clearing": true,
+        "filling": true,
+        "fillStalls": 0,
+        "fillSuspended": false,
+        "currentComplete": false,
+        "pendingPrevious": 0,
+        "queue": {
+          "queued": 0,
+          "activePriority": 10,
+          "generation": 2,
+          "closed": false
+        },
+        "session": {
+          "batches": 7,
+          "cancelled": 2,
+          "failed": 0,
+          "stopFailed": 0
+        }
+      }
+    },
+    {
+      "event": "native-clear-result",
+      "at": 98694.89999999851,
+      "success": true,
+      "status": {
+        "nativeSourceMode": true,
+        "clearing": false,
+        "filling": false,
+        "fillStalls": 0,
+        "fillSuspended": false,
+        "currentComplete": false,
+        "pendingPrevious": 0,
+        "queue": {
+          "queued": 0,
+          "activePriority": null,
+          "generation": 2,
+          "closed": false
+        },
+        "session": {
+          "batches": 7,
+          "cancelled": 2,
+          "failed": 0,
+          "stopFailed": 0
+        }
+      }
+    },
+    {
+      "event": "sdk-result",
+      "at": 98695,
+      "success": true
+    },
+    {
+      "event": "helper-stop",
+      "at": 99275.70000000298
+    },
+    {
+      "event": "helper-stop",
+      "at": 100749.5
+    },
+    {
+      "event": "helper-stop",
+      "at": 103844.29999999702
+    },
+    {
+      "event": "helper-stop",
+      "at": 103974
+    },
+    {
+      "event": "helper-stop",
+      "at": 104493.60000000149
+    },
+    {
+      "event": "helper-stop",
+      "at": 105164.79999999702
+    },
+    {
+      "event": "helper-stop",
+      "at": 106749.79999999702
+    }
+  ],
+  "status": {
+    "nativeSourceMode": true,
+    "clearing": false,
+    "filling": false,
+    "fillStalls": 0,
+    "fillSuspended": false,
+    "currentComplete": false,
+    "pendingPrevious": 0,
+    "queue": {
+      "queued": 0,
+      "activePriority": null,
+      "generation": 2,
+      "closed": false
+    },
+    "session": {
+      "batches": 11,
+      "cancelled": 5,
+      "failed": 0,
+      "stopFailed": 0
+    }
+  },
+  "owns": true,
+  "implementation": "71e82fc",
+  "installedSha256": "266329868FE056A58325646B01E1C56ADA45611B32175FD8C58148A78A972921",
+  "runtimeMatches": true,
+  "oldSongFilesRemaining": 0,
+  "filesAfterClear": 6,
+  "onlyCurrentAndNextFiles": true,
+  "settleWaitMs": 520,
+  "totalClearMs": 704,
+  "fallbackObserved": false,
+  "restoredFiles": 30,
+  "restoredBytes": 216431501,
+  "allRestoredHashesMatch": true,
+  "finalState": "Latest candidate retained; player restarted and paused, close-to-tray restored, capture released.",
+  "limits": "One real SDK clear while a retired-song helper seek was active at priority 10. Index-only partial fixture; not a cold network test. No audio recording or all-process network trace. Bounded metadata observation is not an atomic native flush guarantee.",
+  "diagnosticEvents": [
+    {
+      "at": 96749,
+      "wallMs": 1794766207274,
+      "event": "boundary",
+      "from": "2670863319",
+      "to": "2670863152",
+      "outputWallMs": 1794766207311
+    },
+    {
+      "at": 97087,
+      "wallMs": 1794766207613,
+      "event": "claimed",
+      "id": "2670863152",
+      "delayMs": 338.79999999701977
+    },
+    {
+      "at": 97993,
+      "wallMs": 1794766208519,
+      "event": "cache-cleared",
+      "retainedPlaybackBytes": 41943040
+    },
+    {
+      "at": 98513,
+      "wallMs": 1794766209039,
+      "event": "native-cache-writes-settled",
+      "waitMs": 520
+    },
+    {
+      "at": 98695,
+      "wallMs": 1794766209220,
+      "event": "native-cache-clear-result",
+      "success": true
+    }
+  ]
+}

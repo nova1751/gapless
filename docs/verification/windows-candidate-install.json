@@ -9,75 +9,16 @@
   "nativeCacheBatchesObserved": 0,
   "status": "candidate installed, enabled, paused; not production release",
   "latestInstallation": {
-    "implementation": "374da7e",
-    "installedSha256": "946A87D6D665C6506D61FD97A7451C947EED7684BD76432D7A953DAA8AB84803",
-    "runtimeMatchesInstalled": true,
-    "runtimeSha256": "08263805740763c3765567fd930f3b2e3d521d69437968fcae92fa774d22a25e",
-    "handoffSourceGuardPresent": true,
-    "webLoadMs": 1026,
-    "sourceRate": 44100,
+    "implementation": "71e82fc",
+    "installedSha256": "266329868FE056A58325646B01E1C56ADA45611B32175FD8C58148A78A972921",
+    "runtimeMatches": true,
+    "settleWaitMs": 520,
+    "totalClearMs": 704,
+    "oldSongFilesRemaining": 0,
     "fallbackObserved": false,
-    "seekToTailThenNaturalBoundary": true,
-    "scheduledGapFrames": 0,
-    "hostClaimDelayMs": 203.1,
-    "finalState": "enabled and paused, close-to-tray restored, screen capture released",
-    "limits": "Cached online pair UI/protocol regression only. No new acoustic recording, physical offline test or local playback-queue replacement test. Host claim delay is not an audio gap.",
-    "events": [
-      {
-        "at": 31251,
-        "wallMs": 1794765100295,
-        "event": "web-loaded",
-        "id": "2670863319",
-        "sourceRate": 44100,
-        "loadMs": 1026,
-        "memoryHit": false
-      },
-      {
-        "at": 31982,
-        "wallMs": 1794765101026,
-        "event": "scheduled",
-        "from": "2670863319",
-        "to": "2670863152",
-        "sourceRate": 44100,
-        "leadSeconds": 231.5165986394558,
-        "scheduledGapFrames": 0
-      },
-      {
-        "at": 42870,
-        "wallMs": 1794765111914,
-        "event": "scheduled",
-        "from": "2670863319",
-        "to": "2670863152",
-        "sourceRate": 44100,
-        "leadSeconds": 10.638684807256256,
-        "scheduledGapFrames": 0
-      },
-      {
-        "at": 53501,
-        "wallMs": 1794765122545,
-        "event": "boundary",
-        "from": "2670863319",
-        "to": "2670863152",
-        "outputWallMs": 1794765122595
-      },
-      {
-        "at": 53704,
-        "wallMs": 1794765122748,
-        "event": "claimed",
-        "id": "2670863152",
-        "delayMs": 203.10000000149012
-      },
-      {
-        "at": 54340,
-        "wallMs": 1794765123384,
-        "event": "scheduled",
-        "from": "2670863152",
-        "to": "1938192798",
-        "sourceRate": 44100,
-        "leadSeconds": 234.100612244898,
-        "scheduledGapFrames": 0
-      }
-    ]
+    "finalState": "Latest candidate retained; player restarted and paused, close-to-tray restored, capture released.",
+    "limits": "One real SDK clear while a retired-song helper seek was active at priority 10. Index-only partial fixture; not a cold network test. No audio recording or all-process network trace. Bounded metadata observation is not an atomic native flush guarantee.",
+    "verification": "windows-retired-fill-clear-fixed.json"
   },
   "previousInstallation": {
     "implementation": "687e1b0",
@@ -111,6 +52,77 @@
       "fallbackObserved": false,
       "finalState": "enabled and paused, close-to-tray restored, screen capture released",
       "limits": "Local and downloaded song lists empty; no real local replacement playback acceptance in this run."
+    },
+    {
+      "implementation": "374da7e",
+      "installedSha256": "946A87D6D665C6506D61FD97A7451C947EED7684BD76432D7A953DAA8AB84803",
+      "runtimeMatchesInstalled": true,
+      "runtimeSha256": "08263805740763c3765567fd930f3b2e3d521d69437968fcae92fa774d22a25e",
+      "handoffSourceGuardPresent": true,
+      "webLoadMs": 1026,
+      "sourceRate": 44100,
+      "fallbackObserved": false,
+      "seekToTailThenNaturalBoundary": true,
+      "scheduledGapFrames": 0,
+      "hostClaimDelayMs": 203.1,
+      "finalState": "enabled and paused, close-to-tray restored, screen capture released",
+      "limits": "Cached online pair UI/protocol regression only. No new acoustic recording, physical offline test or local playback-queue replacement test. Host claim delay is not an audio gap.",
+      "events": [
+        {
+          "at": 31251,
+          "wallMs": 1794765100295,
+          "event": "web-loaded",
+          "id": "2670863319",
+          "sourceRate": 44100,
+          "loadMs": 1026,
+          "memoryHit": false
+        },
+        {
+          "at": 31982,
+          "wallMs": 1794765101026,
+          "event": "scheduled",
+          "from": "2670863319",
+          "to": "2670863152",
+          "sourceRate": 44100,
+          "leadSeconds": 231.5165986394558,
+          "scheduledGapFrames": 0
+        },
+        {
+          "at": 42870,
+          "wallMs": 1794765111914,
+          "event": "scheduled",
+          "from": "2670863319",
+          "to": "2670863152",
+          "sourceRate": 44100,
+          "leadSeconds": 10.638684807256256,
+          "scheduledGapFrames": 0
+        },
+        {
+          "at": 53501,
+          "wallMs": 1794765122545,
+          "event": "boundary",
+          "from": "2670863319",
+          "to": "2670863152",
+          "outputWallMs": 1794765122595
+        },
+        {
+          "at": 53704,
+          "wallMs": 1794765122748,
+          "event": "claimed",
+          "id": "2670863152",
+          "delayMs": 203.10000000149012
+        },
+        {
+          "at": 54340,
+          "wallMs": 1794765123384,
+          "event": "scheduled",
+          "from": "2670863152",
+          "to": "1938192798",
+          "sourceRate": 44100,
+          "leadSeconds": 234.100612244898,
+          "scheduledGapFrames": 0
+        }
+      ]
     }
   ]
 }
