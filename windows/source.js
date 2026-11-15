@@ -135,7 +135,12 @@ const WindowsSource = (() => {
     const ordered = mode === 'playOrder' && matchingRows.length === 1 && Number.isFinite(order)
       && queue.every(row => Number.isFinite(row.displayOrder));
     const terminal = ordered && !queue.some(row => row.displayOrder > order);
-    const nextKnown = matchingRows.length === 1 && (mode === 'playCycle' || mode === 'playOneCycle'
+    // The exact client's original selector chooses the next randomized row.
+    // Require both its capability marker and a complete, unambiguous order.
+    const random = mode === 'playRandom' && native.supportsRandom === true && Array.isArray(queue) && queue.length > 1
+      && queue.every(row => Number.isFinite(row.randomOrder))
+      && new Set(queue.map(row => row.randomOrder)).size === queue.length;
+    const nextKnown = matchingRows.length === 1 && (mode === 'playCycle' || mode === 'playOneCycle' || random
       || (ordered && !terminal));
     return { mode, id, sourceId, queue, currentRow: playing.curPlaying, account, quality, volume, capable, nextKnown, terminal,
       blockers, playing: playing.playingState === 2, playFade: !!setting.playFade };

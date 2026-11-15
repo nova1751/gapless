@@ -11,14 +11,20 @@ parser = argparse.ArgumentParser(description=__doc__)
 parser.add_argument("--client", type=Path, default=Path(r"C:\Program Files\NetEase\CloudMusic\package\orpheus.ntpk"))
 parser.add_argument("--probe", action="store_true", help="Pass playback through and record native preloading.")
 parser.add_argument("--diagnostics", action="store_true")
-parser.add_argument("--native-source-trial", action="store_true", help="Evaluation only: native cache acquisition owns online FLAC bytes.")
+parser.add_argument("--native-source-trial", action="store_true", help="Compatibility alias: native cache acquisition is now the default online FLAC backend.")
+parser.add_argument("--web-source", action="store_true", help="Use the previous Web network acquisition backend instead of native cache acquisition.")
 parser.add_argument("--temporary-bridge", action="store_true", help="Evaluation only: tail/head window with sequential native handback; output alignment not certified.")
 args = parser.parse_args()
-if args.native_source_trial and (args.probe or args.temporary_bridge):
+if args.native_source_trial and (args.probe or args.temporary_bridge or args.web_source):
     parser.error('--native-source-trial cannot be combined with another trial backend')
+if args.web_source and (args.probe or args.temporary_bridge):
+    parser.error('--web-source cannot be combined with another trial backend')
+native_source = not (args.web_source or args.probe or args.temporary_bridge)
 manifest = json.loads((root / "manifest.json").read_text(encoding="utf-8-sig"))
-if args.native_source_trial:
-    manifest["description"] = "原生缓存数据源试验；尚未完成音频、清理和后台补齐验收"
+if native_source:
+    manifest["description"] = "网易云原生取数与缓存，Web Audio 连续无缝输出"
+if args.web_source:
+    manifest["description"] = "旧版 Web 网络取数；新歌不保证写入网易云持久缓存"
 if args.temporary_bridge:
     manifest["description"] = "短时桥接试验版；原生交还尚未完成声音对齐验收"
 
@@ -46,6 +52,7 @@ patched = patched.replace(loop_anchor, "!v)return;if(d===r.i.PlayOneCycle)p=v;el
 
 patched += """
 ;return {
+  supportsRandom: RANDOM_CAPABILITY,
   read: () => c.a.getStore(),
   resolveCurrent: () => new Promise((resolve, reject) => {
     const state = c.a.getStore(), row = state.playing.curPlaying;
@@ -65,9 +72,10 @@ patched += """
   })
 };
 """
+patched = patched.replace('RANDOM_CAPABILITY', json.dumps('PlayRandom' in original and 'randomOrder' in original))
 selector = "const selector = " + json.dumps({"original": original, "patched": patched}) + ";"
-mode = json.dumps({"probe": args.probe, "diagnostics": args.diagnostics, "temporaryBridge": args.temporary_bridge,
-                   "nativeSource": args.native_source_trial})
+mode = json.dumps({"version": manifest["version"], "probe": args.probe, "diagnostics": args.diagnostics, "temporaryBridge": args.temporary_bridge,
+                   "nativeSource": native_source})
 def read(path):
     return path.read_text(encoding="utf-8-sig")
 
@@ -81,7 +89,7 @@ main = "\n".join([f"const gaplessWindowsBuild = {mode};", selector,
                   'new Function("module", "exports", "define", ' + json.dumps(read(root.parent / "vendor/flac-decoder-0.2.11/flac-decoder.min.js")) + ').call(globalThis);',
                   read(root.parent / "shared/audio-resources.js"),
                   read(root.parent / "shared/playback-clock.js"), read(root.parent / "shared/visual-pcm.js"), read(root.parent / "shared/bridge-window.js"), read(root.parent / "shared/native-handback.js"), read(root / "source.js"), read(root / "native-cache.js"), read(root / "toggle.js"), read(root / "probe.js"), read(root / "song-cache.js"), read(root / "seek-range.js"), read(root / "streaming.js"), read(root / "player.js")])
-output = root.parent / "dist" / f'gapless-player-windows-{manifest["version"]}{"-native-source-trial" if args.native_source_trial else "-probe" if args.probe else "-bridge-trial" if args.temporary_bridge else ""}.plugin'
+output = root.parent / "dist" / f'gapless-player-windows-{manifest["version"]}{"-native-source-trial" if args.native_source_trial else "-probe" if args.probe else "-bridge-trial" if args.temporary_bridge else "-web-source" if args.web_source else ""}.plugin'
 output.parent.mkdir(exist_ok=True)
 subprocess.run(["node", "--check", "-"], input=main.encode(), check=True)
 with ZipFile(output, "w", ZIP_DEFLATED) as archive:

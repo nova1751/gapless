@@ -39,7 +39,8 @@ plugin.onLoad(async () => {
     }, 200);
   }
   bridge.report = error => trace('bridge-error', { kind: error.name });
-  trace('loaded', { client: window.APP_CONF.appver, probe: gaplessWindowsBuild.probe });
+  trace('loaded', { version: gaplessWindowsBuild.version, client: window.APP_CONF.appver,
+    probe: gaplessWindowsBuild.probe, nativeSource: gaplessWindowsBuild.nativeSource });
   if (gaplessWindowsBuild.probe) { probeNative(bridge, trace); return; }
 
   function installPlayer() {
@@ -310,8 +311,8 @@ plugin.onLoad(async () => {
         return result[1];
       } finally { waiter.dispose(); }
     }
-    function completeSeek(c, callback, mark, target, failed = false) {
-      seekReplies.push({ c, callback, mark, target, revision, failed });
+    function completeSeek(c, callback, mark, target, failed = false, requestRevision = revision) {
+      seekReplies.push({ c, callback, mark, target, revision: requestRevision, failed });
       if (seekReplies.length === 1) deliverSeek();
     }
     function startSeekRange(c, target) {
@@ -330,11 +331,11 @@ plugin.onLoad(async () => {
       const request = c?.pendingStreamSeek;
       if (!request || request.finished) return;
       request.finished = true; c.pendingStreamSeek = null;
-      completeSeek(c, request.callback, request.mark, request.target, true);
+      completeSeek(c, request.callback, request.mark, request.target, true, request.revision);
     }
     async function seekWhenReady(c, callback, mark, target) {
       cancelPendingSeek(c);
-      const request = c.pendingStreamSeek = { callback, mark, target, finished: false };
+      const request = c.pendingStreamSeek = { callback, mark, target, revision, finished: false };
       const began = performance.now(), entry = c.entry;
       startSeekRange(c, target);
       const valid = () => current === c && c.owns && enabled() && c.pendingStreamSeek === request;
@@ -355,13 +356,13 @@ plugin.onLoad(async () => {
           if (c.intent === true) clock.start(c, clock.ctx.currentTime + 0.01, target);
         }
         request.finished = true;
-        completeSeek(c, callback, mark, target);
+        completeSeek(c, callback, mark, target, false, request.revision);
         trace('stream-seek-ready', { id: source.trackId(c.info), target, waitMs: Math.round(performance.now() - began) });
       } catch (error) {
         if (!request.finished) {
           request.finished = true;
           if (c.pendingStreamSeek === request) c.pendingStreamSeek = null;
-          completeSeek(c, callback, mark, target, true);
+          completeSeek(c, callback, mark, target, true, request.revision);
           trace('stream-seek-cancel', { reason: error.message });
         }
       }
@@ -379,9 +380,10 @@ plugin.onLoad(async () => {
       // The Windows SDK attaches a temporary Seek listener after the RPC resolves.
       setTimeout(() => {
         try {
-          const valid = !item.failed && current === c && c.owns;
-          event('Seek', [c.id, item.mark, valid ? 0 : -1, item.target]);
-          if (valid && revision === item.revision) progress(c);
+          const same = current === c && c.owns;
+          const valid = !item.failed && same && revision === item.revision;
+          event('Seek', [c.id, item.mark, valid ? 0 : -1, same && !valid ? clock.position(c) : item.target]);
+          if (valid) progress(c);
         } finally {
           seekReplies.shift();
           if (seekReplies.length) setTimeout(deliverSeek, 0);
@@ -953,6 +955,19 @@ plugin.onLoad(async () => {
       return !temporaryBridge && enabled() && snap?.capable && !customOutput && source.valid(info)
         && !!snap.currentRow && source.trackId(info) === snap.sourceId;
     }
+    async function prepareLoadBuffer(c, entry, check) {
+      const began = performance.now(); let target;
+      for (;;) {
+        check();
+        if (!entry.stream || entry.stream.done) return;
+        if (entry.stream.error) throw new Error('native-only-seek-buffer');
+        if (target !== c.offset) { target = c.offset; startSeekRange(c, target); }
+        if (globalThis.GaplessSeekRange.until(entry, Math.floor(target * entry.spec.rate))
+          >= Math.min(entry.buffer.length, Math.ceil((target + seekBufferSeconds(entry)) * entry.spec.rate))) return;
+        if (performance.now() - began > 10000) throw new Error('native-only-seek-buffer');
+        await new Promise(resolve => setTimeout(resolve, 30));
+      }
+    }
     async function loadOwned(c, args, callback, resume = false) {
       const loadStarted = performance.now();
       const operation = c.loadingToken = {};
@@ -1002,14 +1017,7 @@ plugin.onLoad(async () => {
         if (!source.same(entry.source, info)) throw new Error('native-only-source-identity');
         if (ref.duration > 0 && Math.abs(entry.duration - ref.duration) > 0.15) throw new Error('native-only-duration');
         c.entry = entry; c.duration = entry.duration;
-        const seekWait = performance.now();
-        if (entry.stream && !entry.stream.done) startSeekRange(c, c.offset);
-        while (entry.stream && !entry.stream.done
-          && globalThis.GaplessSeekRange.until(entry, Math.floor(c.offset * entry.spec.rate)) < Math.min(entry.buffer.length, Math.ceil((c.offset + seekBufferSeconds(entry)) * entry.spec.rate))) {
-          check();
-          if (entry.stream.error || performance.now() - seekWait > 10000) throw new Error('native-only-seek-buffer');
-          await new Promise(resolve => setTimeout(resolve, 30));
-        }
+        await prepareLoadBuffer(c, entry, check);
         await clock.open(entry);
         check();
         // A previous native instance must remain inaudible even if an external
@@ -1020,6 +1028,10 @@ plugin.onLoad(async () => {
         check();
         if (!nativeGate) await acquireNativeGate(c);
         check();
+        // Seek/transport may change while output initialization awaits native.
+        // Commit only after the latest offset has playable PCM.
+        await prepareLoadBuffer(c, entry, check);
+        check();
         c.loading = false; c.blocked = false; c.bridgeSide = null;
         prepareVisualClock(); visual.sync();
         reply(callback);
@@ -1027,7 +1039,7 @@ plugin.onLoad(async () => {
           if (current !== c || !c.owns) return;
           if (resume) { stateEvent(c, args[1], c.playing ? 1 : 2); progress(c, true); }
           else event('Load', [c.id, loadInfo(c)]);
-          if (current === c && c.owns && c.playing && !c.node) {
+          if (current === c && c.owns && c.playing && !c.node && !c.pendingStreamSeek) {
             progress(c, true); clock.start(c, clock.ctx.currentTime + 0.01, c.offset);
             trace('web-start', { id: source.trackId(c.info), offset: c.offset });
           }
@@ -1250,7 +1262,7 @@ plugin.onLoad(async () => {
       if (play || pause || seek) {
         const mark = args[1];
         if (play) {
-          if (!c.playing) {
+          if (!c.playing && !c.pendingStreamSeek) {
             progress(c, true); clock.start(c, clock.ctx.currentTime);
             trace('web-start', { id: source.trackId(c.info), offset: c.offset });
           }
@@ -1400,7 +1412,7 @@ plugin.onLoad(async () => {
         fillStalls: current?.cacheFillStalls || 0, fillSuspended: (current?.cacheFillStalls || 0) >= 6,
         currentComplete: !!current?.cacheComplete, pendingPrevious: retiredFills.length, queue: cacheQueue?.status() || null,
         session: cacheSession ? { ...cacheSession.stats } : null }),
-      status: () => ({ enabled: enabled(), savingConfig, owns: !!current?.owns, loading: !!current?.loading,
+      status: () => ({ version: gaplessWindowsBuild.version, nativeSourceMode, enabled: enabled(), savingConfig, owns: !!current?.owns, loading: !!current?.loading,
         waitingForNextLoad: nativeSourceMode && enabled() && !!current && !current.owns && !current.loading,
         directWebLoad: !temporaryBridge, startupPolicy: 'stream-flac-native-fallback', nativePrepared: !!current?.nativeReady, handingBack: !!handback || !!restoring, nativeMuted: !!nativeGate, mode: temporaryBridge ? 'temporary-trial' : 'streaming-gapless', bridgeSide: current?.bridgeSide || null, visual: visual.status(), visualHooks: [...visualRenderHooks.keys()], clock: clock.status(), resources: resources.status(), nativeTransport: { ...bridge.nativeTransport }, nativePreload: { ...bridge.nativePreload } }),
       diagnostics: () => events.slice(),

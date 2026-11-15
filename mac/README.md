@@ -1,12 +1,12 @@
-# macOS 0.3.1 已安装候选
+# macOS 0.3.2 已安装候选
 
-基于最新 main，已在网易云 3.1.12（3444）完成日常场景验收并安装。Windows 实现不变。[实现、实测与限制](../docs/MAC_NATIVE_CACHE_0.3.1.md)，[统一状态](../docs/CURRENT_STATUS.md)。
+本轮在网易云 3.1.12（3444）安装 0.3.2，补曲目变速/嵌套音效保护及加载暂停后 Seek 的暂停意图保护。普通控制、关闭回退及 runtime 匹配已核对；直接 SDK 加载 Seek 后仍可能被原客户端恢复 Seek 覆盖，不能称为全部加载控制已通过。Windows 0.4.6 源码同步控制与打包入口，未在本轮实机复测。[本轮矩阵](../docs/PLATFORM_ALIGNMENT_0.4.6_0.3.2.md)。原生缓存能力沿用 0.3.1 日常验收。[实现、实测与限制](../docs/MAC_NATIVE_CACHE_0.3.1.md)，[统一状态](../docs/CURRENT_STATUS.md)。
 
 在线有索引 FLAC 优先复用同源编码/PCM 内存和原生有效磁盘区间；缺口由网易云授权解析器及辅助 Load → Seek → Stop 获取、提交。辅助实例不 Play、不输出音乐。插件按稳定 IDX 读取、内存解码，由 Web Audio 连续输出；不直接写 UC/IDX，不建立第二套永久缓存。编码区块共享 64 MiB，索引路径每首 PCM 32 MiB。
 
 已修复加载中暂停、旧 Seek 回复、Seek 后旧曲尾预约及缓存失败重新选曲缺队列行的问题。关闭恢复原生并释放工作缓冲；保留音质选择、歌词、频谱和原菜单。不同采样率重建输出；系统控制中心进度回跳未解决，不承诺 bit-perfect 或一播完就整首缓存。
 
-打包：`python3 mac/package.py`。包为 `dist/gapless-player-mac-0.3.1.plugin`，已核对的交付副本见 `releases/`。旧包备份放在宿主插件目录之外。没有新增测试、全量检查或应用构建。
+打包：`python3 mac/package.py`。包为 `dist/gapless-player-mac-0.3.2.plugin`，已核对的交付副本见 `releases/`。旧包备份放在宿主插件目录之外。没有新增测试、全量检查或应用构建。
 
 ---
 

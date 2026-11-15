@@ -1,0 +1,268 @@
+{
+  "date": "2026-11-16",
+  "baseCommit": "ba38c91bfadabb2c56ebdac3ea4099b765a47a1d",
+  "scope": "supported online playback, control guards, default packaging; not full platform parity",
+  "versions": {
+    "mac": "0.3.2",
+    "windowsSource": "0.4.6",
+    "windowsInstalledCommit": "aae1d55"
+  },
+  "checks": {
+    "changedJavaScriptSyntax": "passed",
+    "windowsPackagingPythonAst": "passed",
+    "windowsPackageConflictingArguments": "passed",
+    "macZipIntegrity": "passed",
+    "macRuntimeSevenFilesMatch": true,
+    "windowsCandidatePackaged": false,
+    "windowsCandidateInstalled": false,
+    "newAudioCapture": false,
+    "newTests": false,
+    "fullStaticChecks": false,
+    "applicationBuild": false
+  },
+  "macPackage": {
+    "file": "gapless-player-mac-0.3.2.plugin",
+    "sha256": "4c900958dbd9fcf401a66350c7795c31175f4de94c23a0a4eca10de6d4770b36",
+    "oldPackageKeptOutsidePlugins": true
+  },
+  "macPauseLoadSeekAndResume": {
+    "before": {
+      "version": "0.3.2",
+      "id": "22764863",
+      "playing": false,
+      "position": 1,
+      "enabled": true,
+      "owns": true,
+      "phase": "owned",
+      "loading": false,
+      "nativeAllowed": true,
+      "sourceRate": 44100,
+      "decodedRate": 44100,
+      "resourceOrigin": "native-source",
+      "nativeCache": {
+        "batches": 0,
+        "reads": 5,
+        "hits": 5,
+        "failures": 0,
+        "queued": 0,
+        "activePriority": null,
+        "generation": 2,
+        "closed": false,
+        "pendingClears": 0,
+        "fault": null
+      }
+    },
+    "settled": {
+      "version": "0.3.2",
+      "id": "22764863",
+      "playing": false,
+      "position": 1,
+      "enabled": true,
+      "owns": true,
+      "phase": "owned",
+      "loading": false,
+      "nativeAllowed": true,
+      "sourceRate": 44100,
+      "decodedRate": 44100,
+      "resourceOrigin": "native-source",
+      "nativeCache": {
+        "batches": 0,
+        "reads": 5,
+        "hits": 5,
+        "failures": 0,
+        "queued": 0,
+        "activePriority": null,
+        "generation": 2,
+        "closed": false,
+        "pendingClears": 0,
+        "fault": null
+      }
+    },
+    "manualResume": {
+      "version": "0.3.2",
+      "id": "22764863",
+      "playing": true,
+      "position": 1.6656235827664432,
+      "enabled": true,
+      "owns": true,
+      "phase": "owned",
+      "loading": false,
+      "nativeAllowed": true,
+      "sourceRate": 44100,
+      "decodedRate": 44100,
+      "resourceOrigin": "native-source",
+      "nativeCache": {
+        "batches": 0,
+        "reads": 11,
+        "hits": 11,
+        "failures": 0,
+        "queued": 0,
+        "activePriority": null,
+        "generation": 2,
+        "closed": false,
+        "pendingClears": 0,
+        "fault": null
+      }
+    },
+    "restored": {
+      "version": "0.3.2",
+      "id": "22764863",
+      "playing": false,
+      "position": 1.911451247165533,
+      "enabled": true,
+      "owns": true,
+      "phase": "owned",
+      "loading": false,
+      "nativeAllowed": true,
+      "sourceRate": 44100,
+      "decodedRate": 44100,
+      "resourceOrigin": "native-source",
+      "nativeCache": {
+        "batches": 0,
+        "reads": 11,
+        "hits": 11,
+        "failures": 0,
+        "queued": 0,
+        "activePriority": null,
+        "generation": 2,
+        "closed": false,
+        "pendingClears": 0,
+        "fault": null
+      }
+    },
+    "loadEvents": [
+      {
+        "at": 1397,
+        "event": "pause",
+        "id": "22764863",
+        "position": 1.911451247165533
+      },
+      {
+        "at": 16819,
+        "event": "pause",
+        "id": "22764863",
+        "position": 0
+      },
+      {
+        "at": 16820,
+        "event": "seek",
+        "id": "22764863",
+        "position": 1.911451247165533
+      },
+      {
+        "at": 34796,
+        "event": "web-loaded",
+        "id": "22764863",
+        "origin": "native-source",
+        "rate": 44100,
+        "loadMs": 187
+      },
+      {
+        "at": 34830,
+        "event": "seek",
+        "id": "22764863",
+        "position": 1
+      },
+      {
+        "at": 275996,
+        "event": "play",
+        "id": "22764863"
+      },
+      {
+        "at": 276718,
+        "event": "pause",
+        "id": "22764863",
+        "position": 1.6656235827664432
+      },
+      {
+        "at": 276720,
+        "event": "seek",
+        "id": "22764863",
+        "position": 1.911451247165533
+      }
+    ],
+    "scope": "0.3.2 before final manual-resume-during-load guard; native queue Load path"
+  },
+  "earlierMacPackageChecks": {
+    "rapidSeek": {
+      "targets": [
+        120,
+        180
+      ],
+      "oldReplyCode": -1,
+      "newReplyCode": 0,
+      "finalPosition": 180,
+      "paused": true
+    },
+    "disable": {
+      "durationMs": 24.3,
+      "position": 1.911451247165533,
+      "paused": true,
+      "nativeOutputGated": false,
+      "managedBytes": 0,
+      "scope": "0.3.2 before final loading-pause guard patch"
+    }
+  },
+  "limitations": [
+    "Windows 0.4.6 exact client archive and execution host unavailable; no package or runtime verification",
+    "Mac local range playback and background full/retired cache filling not ported",
+    "Mac system timeline rollback remains",
+    "Windows SMTC timeline unavailable in prior native/Web observations",
+    "Direct SDK Seek during pending Load can be followed by native client restoration Seek; observed 1.911451 -> 1 after Load",
+    "Existing audio/visual/cache evidence retained; no new audio capture this turn"
+  ],
+  "macFinalInstalledVerification": {
+    "runtimeFilesMatch": {
+      "manifest.json": true,
+      "startup_script.js": true,
+      "player.js": true,
+      "LICENSE": true,
+      "vendor/flac-LICENSE": true,
+      "vendor/flac-libFLAC-COPYING": true,
+      "vendor/crypto-js-LICENSE": true
+    },
+    "loadingCommands": {
+      "pauseThenSeek": {
+        "playing": false,
+        "loading": true,
+        "position": 1.911451247165533
+      },
+      "manualResume": {
+        "playing": true,
+        "loading": true,
+        "position": 1.911451247165533
+      },
+      "latestPause": {
+        "playing": false,
+        "loading": true,
+        "position": 1.911451247165533
+      }
+    },
+    "afterRealInput": {
+      "version": "0.3.2",
+      "id": "22764863",
+      "enabled": true,
+      "playing": false,
+      "position": 1.911451247165533,
+      "owns": true,
+      "loading": false,
+      "phase": "owned",
+      "nativeAllowed": true,
+      "resourceOrigin": "native-source",
+      "sourceRate": 44100,
+      "decodedRate": 44100,
+      "cache": {
+        "batches": 0,
+        "reads": 5,
+        "hits": 5,
+        "failures": 0,
+        "queued": 0,
+        "activePriority": null,
+        "generation": 0,
+        "closed": false,
+        "pendingClears": 0,
+        "fault": null
+      }
+    }
+  }
+}

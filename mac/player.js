@@ -75,8 +75,9 @@ plugin.onLoad(() => {
     const s = state();
     return !!(S.enabled && S.compatible && s && (!info || (!info.freeTrialInfo && info.audioType === 'track'))
       && !s.playing?.isPlayingVideo && !s.playing?.resourceIsTryType
-      && Number(s.playing?.playingSpeed || 1) === 1 && !s.audioEffect?.setting?.isOn
-      && !s.assignedAudioEffect?.isOn && !s.playing?.audioEffect?.isOpen
+      && Number(s.playing?.playingSpeed || 1) === 1 && Number(s.playing?.playingSpeedTrack || 1) === 1
+      && !s.audioEffect?.setting?.isOn && !s.assignedAudioEffect?.isOn
+      && !s.assignedAudioEffect?.setting?.isOn && !s.playing?.audioEffect?.isOpen
       && !s.setting?.loudnessBalance && !s.setting?.systemSpatialSound);
   };
   const rowId = row => String(row.resourceId || row.trackId || row.id);
@@ -874,7 +875,13 @@ plugin.onLoad(() => {
     const revision = ++S.revision, epoch = S.epoch;
     const offset = Math.max(0, Math.min(c.duration - 0.001, Number(value)));
     cancelScheduled(); S.token = token;
-    if (c.loading) c.offset = offset;
+    if (c.loading) {
+      c.offset = offset;
+      // Seeking changes position, not the pause intent of an unfinished Load.
+      // Keep its automatic SDK Play guard attached to the latest revision.
+      if (c.pauseAfterClaimRevision !== undefined && c.pauseAfterClaimRevision !== null && c.loadIntent === false)
+        c.pauseAfterClaimRevision = revision;
+    }
     else {
       const valid = () => S.current === c && c.owns && S.enabled && S.phase !== 'restoring'
         && S.epoch === epoch && S.revision === revision;
@@ -1080,7 +1087,7 @@ plugin.onLoad(() => {
       return true;
     }
     if (msg.command === 'audioplayer.play') {
-      if (c.pauseAfterClaimRevision === S.revision) {
+      if (!c.loading && c.pauseAfterClaimRevision === S.revision) {
         c.pauseAfterClaimRevision = null; ack(msg);
         const epoch = S.epoch, token = p[1] || c.id;
         setTimeout(() => { if (validRecovery(c, epoch) && !c.playing) emitState(c, 2, token); }, 0);
@@ -1302,7 +1309,7 @@ plugin.onLoad(() => {
     } catch (error) { trace('reload-recovery-error', { reason: error.message }); }
   }
   window.gaplessMac = {
-    version: '0.3.1', status: () => {
+    version: '0.3.2', status: () => {
       reconcile(); const c = S.current;
       return { enabled: S.enabled, compatible: S.compatible, id: c?.id, phase: S.phase,
         ownsPlayback: !!c?.owns, playing: c?.owns ? !!c.playing : S.nativePlaying,
