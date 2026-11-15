@@ -11,25 +11,35 @@
         throw new Error('native-only-byte-source-format');
       const state = { points: null, rate: null, coverage: null };
       const read = async (start, end, requestSignal) => {
-        const deadline = performance.now() + 8000;
-        for (;;) {
-          await this.awaitReady(requestSignal);
-          if (requestSignal.aborted || !this.valid(source)) throw new Error('cancelled');
-          let coverage = state.coverage;
-          if (!coverage || coverage.generation !== this.cache.generation
-            || globalThis.GaplessCacheCoverage.missing(coverage, start, end).length) {
-            coverage = await this.cache.snapshotSource(source, requestSignal);
-            state.coverage = coverage;
+        const controller = new AbortController(), readSignal = controller.signal;
+        let timedOut = false;
+        const abort = () => controller.abort();
+        if (requestSignal.aborted) abort();
+        requestSignal.addEventListener('abort', abort, { once: true });
+        const timer = setTimeout(() => { timedOut = true; abort(); }, 8000);
+        try {
+          for (;;) {
+            await this.awaitReady(readSignal);
+            if (readSignal.aborted || !this.valid(source)) throw new Error('cancelled');
+            let coverage = state.coverage;
+            if (!coverage || coverage.generation !== this.cache.generation
+              || globalThis.GaplessCacheCoverage.missing(coverage, start, end).length) {
+              coverage = await this.cache.snapshotSource(source, readSignal);
+              state.coverage = coverage;
+            }
+            const gaps = globalThis.GaplessCacheCoverage.missing(coverage, start, end);
+            if (!gaps.length) return await this.cache.readReadyRange(source, start, end, readSignal, coverage);
+            if (readSignal.aborted) throw new Error('cancelled');
+            const position = state.points
+              ? globalThis.GaplessCacheCoverage.seekBefore(gaps[0][0], state.points, state.rate) : 0;
+            state.coverage = await this.queue.request({ source, position, signal: readSignal, priority: priorityForRead(), budgetMs: 500 });
+            // A batch returns a committed index snapshot; completion alone is
+            // not proof that the requested byte interval has become available.
           }
-          const gaps = globalThis.GaplessCacheCoverage.missing(coverage, start, end);
-          if (!gaps.length) return await this.cache.readReadyRange(source, start, end, requestSignal, coverage);
-          if (performance.now() >= deadline) throw new Error('native-only-cache-range-timeout');
-          const position = state.points
-            ? globalThis.GaplessCacheCoverage.seekBefore(gaps[0][0], state.points, state.rate) : 0;
-          state.coverage = await this.queue.request({ source, position, signal: requestSignal, priority: priorityForRead(), budgetMs: 500 });
-          // The next iteration re-reads the committed index. A completed batch
-          // is not itself proof that the desired byte interval is available.
-        }
+        } catch (error) {
+          if (timedOut && !requestSignal.aborted) throw new Error('native-only-cache-range-timeout');
+          throw error;
+        } finally { clearTimeout(timer); requestSignal.removeEventListener('abort', abort); }
       };
       const end = Math.min(size, 32768), head = await read(0, end, signal);
       return { kind: 'native-source', partial: true,

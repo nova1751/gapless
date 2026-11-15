@@ -961,6 +961,10 @@ plugin.onLoad(async () => {
       } catch (error) {
         if (!valid()) { reply(callback); return; }
         c.loading = false; c.owns = false; c.blocked = true;
+        // Cancel the acquisition lane before any asynchronous output teardown
+        // or unmuting; a timed-out native Load/Seek must not outlive ownership.
+        cancelFill(); cacheQueue?.clear(); cancelPendingSeek(c);
+        resources.retain([]);
         clock.stop(c); await clock.close().catch(bridge.report);
         if (current !== c) { reply(callback); return; }
         await releaseNativeGate().catch(bridge.report);
