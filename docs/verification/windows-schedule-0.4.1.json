@@ -1,0 +1,36 @@
+{
+  "captureRate": 48000,
+  "callbackErrors": 0,
+  "boundaryInsideCapture": true,
+  "alignment": [
+    {
+      "relativeMs": -400.0,
+      "correlation": 0.9507,
+      "timelineErrorMs": -136.667
+    },
+    {
+      "relativeMs": -100.0,
+      "correlation": 0.942346,
+      "timelineErrorMs": -138.542
+    },
+    {
+      "relativeMs": 100.0,
+      "correlation": 0.94766,
+      "timelineErrorMs": -137.833
+    },
+    {
+      "relativeMs": 400.0,
+      "correlation": 0.972769,
+      "timelineErrorMs": -137.583
+    }
+  ],
+  "alignmentSpanMs": 1.875,
+  "longestNearZeroRunWithin100msAligned": 0,
+  "limits": "One seek-to-tail boundary; WASAPI only; not sample-exact DAC proof",
+  "version": "0.4.1",
+  "nextRemainderLeadSeconds": 226.2356009070295,
+  "claimDelayMs": 183.8,
+  "scheduledGapFrames": 0,
+  "originalReportedHitchRootCauseConfirmed": false,
+  "packageSha256": "E3019E88D0272EE55730BEC93937D8A3A3A3BE8587B43094176E0606C85926D2"
+}

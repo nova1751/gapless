@@ -137,7 +137,10 @@
           if (stream.error) throw new Error('stream-integrity');
           while (cursor < entry.buffer.length) {
             const when = at + (cursor - first) / rate;
-            if (when > this.ctx.currentTime + 2 && cursor !== first) break;
+            // Once verified PCM is complete, schedule the entire remaining
+            // buffer now, even for a track minutes in the future. Do not leave
+            // a last-second main-thread timer responsible for its continuation.
+            if (!stream.done && when > this.ctx.currentTime + 2 && cursor !== first) break;
             const available = stream.decodedFrames - cursor;
             if (available <= 0) {
               if (when < this.ctx.currentTime + 0.03) throw new Error('stream-underrun');
@@ -157,6 +160,9 @@
             node.onended = () => { nodes.delete(node); node.disconnect(); if (end === entry.buffer.length) owner.onended?.(); };
             node.start(Math.max(when, this.ctx.currentTime), stream.done ? cursor / rate : 0);
             cursor = end;
+            if (stream.done) this.trace('stream-fully-scheduled', { id: track.info?.songId || track.id,
+              start: when, offsetFrames: end - count, frames: count,
+              leadSeconds: when - this.ctx.currentTime });
           }
           if (cursor === entry.buffer.length) clearInterval(timer);
         } catch (error) {

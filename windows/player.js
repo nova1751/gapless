@@ -23,12 +23,19 @@ plugin.onLoad(async () => {
   function trace(event, detail = {}) {
     events.push({ at: Math.round(performance.now()), wallMs: Date.now(), event, ...detail });
     if (events.length > 180) events.shift();
-    if (!gaplessWindowsBuild.diagnostics && !gaplessWindowsBuild.probe) return;
+    const health = /^(loaded|native-settings|web-load-fallback|stream-output-fallback|restore|restored|prepare-fallback|claim-timeout|boundary|claimed|scheduled|stream-fully-scheduled)$/.test(event);
+    if (!gaplessWindowsBuild.diagnostics && !gaplessWindowsBuild.probe && !health) return;
     if (flush) return;
     flush = setTimeout(() => {
       flush = null;
+      const safe = events.slice(-80).map(({ at, wallMs, event, id, from, to, reason, mode, enabled,
+        rate, sourceRate, loadMs, leadSeconds, scheduledGapFrames, delayMs, blockers }) => ({
+        at, wallMs, event, id, from, to, mode, enabled, rate, sourceRate, loadMs, leadSeconds,
+        scheduledGapFrames, delayMs, blockers,
+        reason: reason ? (/^[a-z0-9:-]+$/.test(reason) ? reason : 'unavailable') : undefined,
+      }));
       void betterncm.fs.writeFile('C:\\betterncm\\gapless-windows.log',
-        new Blob([JSON.stringify(events, null, 2)]));
+        new Blob([JSON.stringify(safe, null, 2)])).catch(() => {});
     }, 200);
   }
   bridge.report = error => trace('bridge-error', { kind: error.name });
