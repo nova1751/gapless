@@ -1,0 +1,27 @@
+{
+  "scope": "Actual changed startup.js and native-cache.js executed in Node with a fake host bridge/stat provider; no permanent test source added. Not native disk or UI acceptance.",
+  "checks": {
+    "clearDeferredUntilReady": true,
+    "forwardExactlyOnce": true,
+    "originalArgumentsAndCallbackPreserved": true,
+    "failedObservationStillForwards": true,
+    "throwingErrorReporterStillForwards": true,
+    "lateMetadataWriteExtendedWaitMs": 803,
+    "continuousMetadataChangesReachTwoSecondDeadline": true,
+    "noRecentStopsReturnsImmediately": true
+  },
+  "candidatePolicy": {
+    "recentStopWindowMs": 2000,
+    "minimumObserveMs": 500,
+    "quietMetadataMs": 250,
+    "maximumObserveMs": 2000,
+    "sampleMs": 50,
+    "maximumStopRecords": 64
+  },
+  "limitations": [
+    "No native flush acknowledgement available from this change. A delayed commit beyond the observation window remains possible.",
+    "Exceptions or inability to inspect metadata are reported and native clear is still forwarded; these paths do not prove no residue.",
+    "Current installed package remains 374da7e. Candidate ZIP syntax/package checks passed, not installed.",
+    "No audio/cache write or deletion is performed by the new observation code."
+  ]
+}

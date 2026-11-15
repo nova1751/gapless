@@ -426,7 +426,16 @@ plugin.onLoad(async () => {
       // Only the default current-cache clear emits onclearcache on this client.
       // Clearing an explicitly named old directory was observed not to emit it.
       if (nativeSourceMode && !args[0]) cacheClearing = true;
-      return clearMemoryCache();
+      const result = clearMemoryCache();
+      if (nativeSourceMode && !args[0]) {
+        const stops = cacheSession.recentStops.filter(item => performance.now() - item.at < 2000);
+        return nativeCache.settleStoppedWrites(stops).catch(error => {
+          trace('native-cache-settle-failed', { reason: error.message });
+          // Still forward the user's native clear. Keep acquisition blocked
+          // until its real completion event, including on observation failure.
+        }).then(() => result);
+      }
+      return result;
     };
     function abandon(keepWarm = false) {
       if (keepWarm) rememberFill(current); else clearRetiredFills();

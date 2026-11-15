@@ -9,6 +9,7 @@
     constructor({ bridge, valid, snapshot, trace = () => {} }) {
       this.bridge = bridge; this.valid = valid; this.snapshot = snapshot; this.trace = trace;
       this.active = null; this.fault = null; this.serial = 0; this.retired = new Set();
+      this.recentStops = [];
       this.prefix = Date.now().toString(36) + '_' + (++instanceSerial);
       this.stats = { batches: 0, cancelled: 0, failed: 0, stopFailed: 0 };
     }
@@ -21,6 +22,9 @@
     stop(job) {
       if (!job.loaded) return;
       job.loaded = false;
+      const { songId, level, md5 } = job.source;
+      this.recentStops = this.recentStops.filter(item => performance.now() - item.at < 2000);
+      this.recentStops.push({ source: { songId, level, md5 }, at: performance.now() });
       // Remember IDs before Stop, including synchronous and delayed callbacks.
       this.retired.add(job.id);
       if (this.retired.size > 256) this.retired.delete(this.retired.values().next().value);

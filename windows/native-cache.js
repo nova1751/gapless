@@ -6,6 +6,40 @@
       this.settings = settings; this.trace = trace; this.mounts = new Map(); this.generation = 0;
     }
     clear() { this.generation++; this.mounts.clear(); }
+    async settleStoppedWrites(stops) {
+      // A bounded observation, not an atomic native flush acknowledgement.
+      // Stop can commit metadata after dispatch (observed about 154 ms later).
+      if (!stops.length) return;
+      const started = performance.now(), deadline = started + 2000;
+      const fs = globalThis.betterncm_native?.fs;
+      if (typeof fs?.getProperties !== 'function' || typeof fs?.exists !== 'function' || !this.services())
+        throw new Error('native-cache-settle-unavailable');
+      const settings = this.settings() || {};
+      const roots = [...new Set([this.storage.cacheDir, settings.cacheDir, settings.storageCachePath, settings.oldCacheDir]
+        .filter(p => typeof p === 'string' && /^[a-z]:[\\/]/i.test(p) && !p.split(/[\\/]/).includes('..'))
+        .flatMap(p => { const root = p.replace(/[\\/]+$/, ''); return [root + '\\Cache', root]; }))];
+      if (!roots.length || stops.length > 64) throw new Error('native-cache-settle-scope');
+      const paths = new Set();
+      for (const { source } of stops) {
+        const hash = globalThis.GaplessAudioResources.fingerprint(source), rate = BITRATE[source.level];
+        if (!/^\d+$/.test(String(source.songId)) || !hash || !rate) throw new Error('native-cache-settle-source');
+        for (const root of roots) for (const ext of ['idx', 'info']) paths.add(`${root}\\${source.songId}-${rate}-${hash}.${ext}`);
+      }
+      let previous, unchangedSince = started;
+      for (;;) {
+        const signature = JSON.stringify([...paths].map(path => {
+          const properties = fs.exists(path) ? fs.getProperties(path) : null;
+          return properties ? [properties.type, properties.size, properties.lastModified] : null;
+        }));
+        const now = performance.now();
+        if (signature !== previous) { previous = signature; unchangedSince = now; }
+        if (now - started >= 500 && now - unchangedSince >= 250) {
+          this.trace('native-cache-writes-settled', { waitMs: Math.round(now - started) }); return;
+        }
+        if (now >= deadline) throw new Error('native-cache-settle-timeout');
+        await new Promise(resolve => setTimeout(resolve, 50));
+      }
+    }
     async verifyParts(source, parts, signal) {
       if (!this.services()) throw new Error('native-only-cache-verifier');
       const hash = globalThis.GaplessAudioResources.fingerprint(source), size = Number(source.size ?? source.fileSize);
