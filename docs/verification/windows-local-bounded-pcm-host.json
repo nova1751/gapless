@@ -1,0 +1,44 @@
+{
+  "scope": "Actual candidate StreamingResources in isolated NetEase CEF instance; real BetterNCM local Range reads and same-rate OfflineAudioContext reference. No audible playback.",
+  "result": {
+    "indexed": true,
+    "initialReadBytes": 247399,
+    "fileBytes": 27081483,
+    "bounded": true,
+    "pcmBytes": 4227072,
+    "pcmLimit": 33554432,
+    "rangeReadBytes": 1452458,
+    "rangeRequests": 9,
+    "frames": 10238980,
+    "rate": 44100,
+    "comparisons": [
+      {
+        "target": 0,
+        "maxAbsoluteDifference": 0,
+        "rmsDifference": 0
+      },
+      {
+        "target": 229.1764172335601,
+        "maxAbsoluteDifference": 0,
+        "rmsDifference": 0
+      },
+      {
+        "target": 116.08820861678005,
+        "maxAbsoluteDifference": 0,
+        "rmsDifference": 0
+      }
+    ],
+    "peakPCM": 33226784,
+    "startEvicted": true,
+    "refillMatches": true,
+    "cacheReused": true
+  },
+  "counters": "rangeReadBytes/rangeRequests were captured after initial three positions, before the whole-track eviction sweep. peakPCM covers sweep.",
+  "limits": [
+    "One FLAC with valid seek table; non-indexed files keep existing budget/fallback.",
+    "32 MiB bounds stored PCM only, not temporary decode, scheduled output copies or total process memory.",
+    "Not installed. Current installed implementation remains b3fc4dc.",
+    "No real playback queue or replacement race tested."
+  ],
+  "cleanup": "Test copy deleted; user cache untouched; paused, switch enabled, capture released."
+}

@@ -128,9 +128,10 @@
               if (!spec || spec.codec !== 'flac' || ![8, 16, 24].includes(spec.bits)) throw new Error('decode-stream-header');
               const seekPoints = globalThis.GaplessSeekRange.index(prefix, spec,
                 Number(source.localKey ? input.response.headers.get('content-length') : source.size));
-              const bounded = input.kind === 'native-source' && seekPoints && input.seekRange;
-              // Reserve capacity plus immutable scheduled output copies; only
-              // native indexed input uses the bounded store in this candidate.
+              const bounded = (input.kind === 'native-source' || (input.kind === 'local-file' && source.localKey))
+                && seekPoints && input.seekRange;
+              // Indexed native and versioned local inputs share bounded PCM.
+              // Reserve capacity plus immutable scheduled output copies.
               const size = bounded ? Math.min(spec.frames * spec.channels * 4, 32 * 1024 * 1024) + 8 * 1024 * 1024
                 : spec.frames * spec.channels * 4;
               this.reserve(job, size + 8 * 1024 * 1024);
