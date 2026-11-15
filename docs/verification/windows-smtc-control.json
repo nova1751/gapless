@@ -1,0 +1,46 @@
+{
+  "date": "2026-11-16",
+  "candidate": "687e1b0",
+  "client": "Windows CloudMusic 3.1.43.205627",
+  "method": "Temporarily enable native SMTC in settings; inspect Windows.Media.Control session and invoke its TryPauseAsync/TryPlayAsync; independently observe app UI",
+  "webPlayback": {
+    "webLoadedConfirmed": true,
+    "loadMs": 1131,
+    "sourceRate": 44100,
+    "cloudMusicSessionCount": 1,
+    "titleMatchesCurrentTrack": true,
+    "initialStatus": "Playing",
+    "pauseAccepted": true,
+    "pausedUiObserved": true,
+    "eventualPausedStatusObserved": true,
+    "playAccepted": true,
+    "playingUiObserved": true,
+    "eventualPlayingStatusObserved": true,
+    "timelinePositionSeconds": 0,
+    "timelineEndSeconds": 0,
+    "seekControlEnabled": false
+  },
+  "nativeComparison": {
+    "pluginDisabledAndRestoreConfirmed": true,
+    "restoreElapsedMs": 260,
+    "playingStatusObserved": true,
+    "timelinePositionSeconds": 0,
+    "timelineEndSeconds": 0,
+    "seekControlEnabled": false,
+    "pauseAcceptedAndUiPaused": true,
+    "eventualPausedStatusObserved": true
+  },
+  "restoration": {
+    "pluginEnabled": true,
+    "smtcDisabledAsOriginallyConfigured": true,
+    "cloudMusicSessionCountAfterDisablingSmtc": 0,
+    "playbackPaused": true,
+    "screenCaptureReleased": true
+  },
+  "limits": [
+    "A successful control call precedes asynchronous status publication; immediate query may still show prior state.",
+    "Zero timeline and disabled seeking also occurred after restoring native playback; this observation does not prove all client versions lack timeline support.",
+    "Physical media key injection was unsupported by the automation tool; session API control was tested instead.",
+    "No lockscreen, next/previous session command, natural-boundary session update, acoustic pause, or other application session behavior claimed."
+  ]
+}
