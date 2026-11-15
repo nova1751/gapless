@@ -1,0 +1,82 @@
+{
+  "scope": "Actual repository Range reader over loopback TCP HTTP in Node, not CEF or whole-client offline test",
+  "rows": [
+    {
+      "mode": "status200",
+      "error": "seek-range-unsupported",
+      "elapsedMs": 30,
+      "acceptedBytes": 0
+    },
+    {
+      "mode": "status416",
+      "error": "seek-range-unsupported",
+      "elapsedMs": 3,
+      "acceptedBytes": 0
+    },
+    {
+      "mode": "shift",
+      "error": "seek-range-unsupported",
+      "elapsedMs": 2,
+      "acceptedBytes": 0
+    },
+    {
+      "mode": "size",
+      "error": "seek-range-unsupported",
+      "elapsedMs": 1,
+      "acceptedBytes": 0
+    },
+    {
+      "mode": "short",
+      "error": "seek-range-length",
+      "elapsedMs": 2,
+      "acceptedBytes": 0
+    },
+    {
+      "mode": "long",
+      "error": "seek-range-length",
+      "elapsedMs": 1,
+      "acceptedBytes": 0
+    },
+    {
+      "mode": "reset",
+      "error": "terminated",
+      "elapsedMs": 27,
+      "acceptedBytes": 0
+    },
+    {
+      "mode": "stall",
+      "error": "This operation was aborted",
+      "elapsedMs": 10018,
+      "acceptedBytes": 0
+    },
+    {
+      "mode": "cancel",
+      "error": "This operation was aborted",
+      "elapsedMs": 116,
+      "acceptedBytes": 0
+    },
+    {
+      "mode": "good",
+      "error": null,
+      "elapsedMs": 2,
+      "acceptedBytes": 10
+    }
+  ],
+  "requestCounts": {
+    "status200": 1,
+    "status416": 1,
+    "shift": 1,
+    "size": 1,
+    "short": 1,
+    "long": 1,
+    "reset": 1,
+    "stall": 2,
+    "good": 1
+  },
+  "implementation": "fc35c22 (windows/seek-range.js unchanged)",
+  "limitations": [
+    "Uses Node fetch over real loopback TCP; CEF transport is not exercised",
+    "No system network adapter or security settings changed",
+    "Does not prove native downloader offline recovery or absence of duplicate whole-process requests"
+  ]
+}
