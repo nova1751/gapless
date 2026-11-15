@@ -1,6 +1,6 @@
 # 当前交付状态（2026-11-16）
 
-目标仍未完成全部验收。Windows 当前机器已安装并保留 `e74d4b1` 原生数据源候选；不是默认打包产物，也不是正式发布。安装包及 runtime 对照见 [安装记录](verification/windows-candidate-install.json)。Mac 保持原有 0.2.5 候选，未移植本轮 Windows 原生缓存协议。
+目标仍未完成全部验收。Windows 当前机器已安装并保留 `b3fc4dc` 原生数据源候选；不是默认打包产物，也不是正式发布。安装包及 runtime 对照见 [安装记录](verification/windows-candidate-install.json)。Mac 保持原有 0.2.5 候选，未移植本轮 Windows 原生缓存协议。
 
 ## 当前实现
 
@@ -42,7 +42,7 @@ Windows 受支持的在线 FLAC：网易云提供授权音源、音质、队列�
 
 复现同步清理准备与诊断回调同时抛错时，原生清理请求没有转发。源码已隔离该诊断异常，并防止异步末端的诊断抛错产生未处理拒绝。实际 startup.js 的临时宿主检查覆盖同步失败、异步失败、成功三条路径，均只转发一次且保留原参数与回调；语法和 trial ZIP 检查通过。[证据](verification/windows-clear-error-forwarding.json)。尚未安装此源码候选，当前机器仍为 `e74d4b1`。
 
-## 本地按需读取源码候选
+## 本地按需读取候选
 
 Windows 流式本地输入已改为回环挂载的按需 Range 读取，顺序块上限 64 KiB，Seek 复用严格区间校验和读取前后版本检查。临时回环服务验证未预读、曲头取消后曲尾仍可读、版本变化拒绝；真实 BetterNCM 挂载读取合成文件也已通过曲头、曲尾及回跳中间的逐字节验证与取消检查：[记录](verification/windows-local-range-host.json)。尚未安装或进行本地歌曲解码/播放验收。当前安装仍是 `e74d4b1`。[范围与限制](LOCAL_SOURCE_IDENTITY.md)。
 
@@ -57,3 +57,7 @@ python windows/package.py --native-source-trial --diagnostics
 ```
 
 这是 ZIP 打包和增量语法检查。默认不带 trial 参数仍生成旧 Web 取数路径。当前安装仍显示 0.4.5，须用构建参数、源码提交和包哈希区别，不能只看版本号。备份位于插件目录之外，恢复时需先正常退出客户端。原音频、账号、缓存和签名地址不入库。
+
+## 最新安装与本地解码对照
+
+b3fc4dc 已安装，main/startup runtime 与包匹配；包含前述清理异常兜底。真实宿主隔离流式资源读取 27 MB FLAC，首次约 247 KB 就绪，曲尾及回跳中间累计约 1.45 MB；三个一秒 PCM 片段与完整解码逐样本一致，缓存复用通过。[记录](verification/windows-local-range-decode-host.json)。测试副本删除，原缓存未修改，正常重启暂停并恢复托盘设置。前述未安装描述是该阶段历史状态；尚未完成实际本地播放队列、输出回录及安装后播放回归。

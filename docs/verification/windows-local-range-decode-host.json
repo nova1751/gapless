@@ -1,0 +1,44 @@
+{
+  "implementation": "b3fc4dc",
+  "scope": "Isolated actual candidate AudioResources + StreamingResources + WindowsSource in NetEase CEF, native stat/mount and installed decoder. Test copy from existing complete FLAC cache.",
+  "result": {
+    "indexed": true,
+    "initialReadBytes": 247399,
+    "fileBytes": 27081483,
+    "rangeReadBytes": 1452458,
+    "rangeRequests": 9,
+    "frames": 10238980,
+    "rate": 44100,
+    "comparisons": [
+      {
+        "target": 0,
+        "maxAbsoluteDifference": 0,
+        "rmsDifference": 0
+      },
+      {
+        "target": 229.1764172335601,
+        "maxAbsoluteDifference": 0,
+        "rmsDifference": 0
+      },
+      {
+        "target": 116.08820861678005,
+        "maxAbsoluteDifference": 0,
+        "rmsDifference": 0
+      }
+    ],
+    "cacheReused": true
+  },
+  "reference": "Same-rate OfflineAudioContext.decodeAudioData of full test copy; compare one second in both channels at each reported position. Full reference read excluded from candidate range byte counters.",
+  "limits": [
+    "No audible output or actual player queue exercised.",
+    "Only one FLAC and three one-second PCM excerpts compared, not entire-song PCM or device bit-perfect.",
+    "Local PCM remains full-size allocation; range read does not bound PCM."
+  ],
+  "cleanup": {
+    "fixtureDeleted": true,
+    "cacheUnmodified": true,
+    "restartedPaused": true,
+    "closeToTrayRestored": true,
+    "captureReleased": true
+  }
+}
