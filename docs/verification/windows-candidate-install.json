@@ -9,12 +9,12 @@
   "nativeCacheBatchesObserved": 0,
   "status": "candidate installed, enabled, paused; not production release",
   "latestInstallation": {
-    "implementation": "b3fc4dc",
-    "installedSha256": "5E29CB2466DB2C5A7187030D0F31615C3FFC63C042F35F72F4B835C8B2DC63FB",
+    "implementation": "d4e7c87",
+    "installedSha256": "0FC2C9881DD4EC3D67DDEC3078854524294208B73F384DDA6D82575945DD1B7E",
     "mainRuntimeMatches": true,
     "startupRuntimeMatches": true,
-    "verification": "windows-local-range-decode-host.json",
-    "finalState": "Restarted paused, close-to-tray restored, capture released. No post-install audio test yet."
+    "verification": "windows-local-bounded-pcm-host.json",
+    "finalState": "Restarted paused; close-to-tray restored; screenshot released. Latest local bounded PCM validated in isolated host instance before installation; actual local queue not yet tested."
   },
   "previousInstallation": {
     "implementation": "687e1b0",
@@ -138,6 +138,14 @@
       "runtimeMatches": true,
       "verification": "windows-concurrent-clear-host.json",
       "finalState": "Restarted paused; 30 cache files restored with matching SHA256; close-to-tray restored; capture released."
+    },
+    {
+      "implementation": "b3fc4dc",
+      "installedSha256": "5E29CB2466DB2C5A7187030D0F31615C3FFC63C042F35F72F4B835C8B2DC63FB",
+      "mainRuntimeMatches": true,
+      "startupRuntimeMatches": true,
+      "verification": "windows-local-range-decode-host.json",
+      "finalState": "Restarted paused, close-to-tray restored, capture released. No post-install audio test yet."
     }
   ]
 }

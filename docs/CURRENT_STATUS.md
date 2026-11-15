@@ -1,6 +1,6 @@
 # 当前交付状态（2026-11-16）
 
-目标仍未完成全部验收。Windows 当前机器已安装并保留 `b3fc4dc` 原生数据源候选；不是默认打包产物，也不是正式发布。安装包及 runtime 对照见 [安装记录](verification/windows-candidate-install.json)。Mac 保持原有 0.2.5 候选，未移植本轮 Windows 原生缓存协议。
+目标仍未完成全部验收。Windows 当前机器已安装并保留 `d4e7c87` 原生数据源候选；不是默认打包产物，也不是正式发布。安装包及 runtime 对照见 [安装记录](verification/windows-candidate-install.json)。Mac 保持原有 0.2.5 候选，未移植本轮 Windows 原生缓存协议。
 
 ## 当前实现
 
@@ -74,4 +74,4 @@ b3fc4dc 已安装，main/startup runtime 与包匹配；包含前述清理异常
 
 ## 本地 PCM 内存候选
 
-本地有索引 FLAC 已复用 32 MiB PCM 分块缓存。宿主隔离资源的全曲扫描、淘汰、回跳补读通过，峰值约 31.7 MiB，抽样 PCM 与完整解码一致；尚未安装、未接入实际播放队列。[证据](verification/windows-local-bounded-pcm-host.json)。当前日常安装仍为 b3fc4dc。
+本地有索引 FLAC 已复用 32 MiB PCM 分块缓存。宿主隔离资源的全曲扫描、淘汰、回跳补读通过，峰值约 31.7 MiB，抽样 PCM 与完整解码一致；已安装为 d4e7c87，main/startup runtime 与包逐字节匹配；正常重启暂停，原托盘设置恢复，截图释放。尚未接入实际本地播放队列验收。[证据](verification/windows-local-bounded-pcm-host.json)。
