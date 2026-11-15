@@ -1,0 +1,15 @@
+{
+  "implementation": "45acc05",
+  "backupFiles": 30,
+  "backupBytes": 216431501,
+  "nativeClearSuccess": true,
+  "clearCallbackMs": 173,
+  "retainedPlaybackBudgetBytes": 41943040,
+  "filesObservedAfterClear": 6,
+  "remainingFilesBelongToCurrentAndNext": true,
+  "fallbackObserved": false,
+  "restoredFiles": 30,
+  "allRestoredHashesMatch": true,
+  "audioCapture": false,
+  "retiredFillActiveAtClear": "not established"
+}
