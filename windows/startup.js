@@ -51,16 +51,18 @@
     };
     host.call = function (name, callback, args) {
       if (name === 'storage.clearCache') {
+        // Diagnostics must never prevent the user's native clear request.
+        const reportClearError = error => { try { bridge.report?.(error); } catch {} };
         try {
           const ready = bridge.cacheClearRequested?.(args || []);
           if (ready && typeof ready.then === 'function') {
             // Cancel and settle the auxiliary writer before native deletion.
             // Preserve the original arguments and callback; dispatch once.
-            void Promise.resolve(ready).catch(error => { try { bridge.report?.(error); } catch {} })
-              .then(() => bridge.call(name, args, callback)).catch(error => bridge.report?.(error));
+            void Promise.resolve(ready).catch(reportClearError)
+              .then(() => bridge.call(name, args, callback)).catch(reportClearError);
             return;
           }
-        } catch (error) { bridge.report?.(error); }
+        } catch (error) { reportClearError(error); }
       }
       if (name === 'audioplayer.load') bridge.load = args;
       if (name === 'audioplayer.init' && args?.[0] === 'device') bridge.customOutput = !!args[1];

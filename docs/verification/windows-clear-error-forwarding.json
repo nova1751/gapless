@@ -1,0 +1,28 @@
+{
+  "scope": "Actual startup.js executed in Node VM with fake host. No disk clear or UI action.",
+  "before": {
+    "synchronousCleanupAndReporterThrow": "native clear was not forwarded"
+  },
+  "after": {
+    "synchronousCleanupAndReporterThrow": {
+      "nativeCalls": 1,
+      "originalCallbackAndArgs": true
+    },
+    "rejectedCleanupAndReporterThrow": {
+      "nativeCalls": 1,
+      "originalCallbackAndArgs": true
+    },
+    "successfulCleanup": {
+      "nativeCalls": 1,
+      "originalCallbackAndArgs": true
+    }
+  },
+  "checks": [
+    "node --check windows/startup.js",
+    "python windows/package.py --native-source-trial --diagnostics"
+  ],
+  "limitations": [
+    "Source candidate only; installed e74d4b1 remains unchanged.",
+    "Does not simulate native clear acknowledgement, network failure or active cache writes."
+  ]
+}
