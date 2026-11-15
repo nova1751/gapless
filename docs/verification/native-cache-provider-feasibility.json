@@ -1,0 +1,72 @@
+{
+  "client": "Windows 3.1.43.205627",
+  "installedVersionUnchanged": "0.4.5",
+  "preloadOnly": {
+    "seconds": 9,
+    "cachedSamples": [
+      0,
+      0,
+      0
+    ],
+    "observedInstanceEvents": 0,
+    "fileBytes": 0
+  },
+  "httpCacheScheme": {
+    "fetchFailed": true,
+    "reason": "duplicate Access-Control-Allow-Origin values",
+    "securityPolicyChanged": false
+  },
+  "nativePlaybackControl": {
+    "playedSeconds": 7.949,
+    "afterGracefulExitFileBytes": 26511114,
+    "afterGracefulExitValidRanges": [
+      [
+        0,
+        26511113
+      ]
+    ]
+  },
+  "nativeLoadSeekProbe": {
+    "nativePlayCommandSent": false,
+    "nativePlayedTimeStable": 0.221,
+    "nativePlayedAudioTimeStable": 0.266,
+    "middle": {
+      "targetSeconds": 120,
+      "bytesCompared": 230452,
+      "mismatches": 0
+    },
+    "tail": {
+      "targetSeconds": 237.066,
+      "bytesCompared": 155104,
+      "mismatches": 0,
+      "decodedSamples": 88064,
+      "expectedSamples": 88064,
+      "rate": 44100,
+      "decodeErrors": 0,
+      "bufferingEvents": [
+        1,
+        0
+      ]
+    },
+    "afterGracefulExitSize": 26684744,
+    "validRanges": [
+      [
+        0,
+        6641683
+      ],
+      [
+        13591884,
+        26684743
+      ]
+    ],
+    "nativeIndexAndInfoCreated": true,
+    "pluginDiskWrites": false
+  },
+  "limits": [
+    "No production integration",
+    "No continuous or multi-track cache-provider validation",
+    "Native load instance resource and statistics side effects unresolved",
+    "Live readable-range protocol unresolved",
+    "No new audio loopback"
+  ]
+}

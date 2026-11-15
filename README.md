@@ -2,6 +2,8 @@
 
 0.4.5 联动原生清缓存入口，释放闲置 PCM，并隔离 Web 接管期间的原生预加载请求。[本轮检查与限制](docs/WINDOWS_CACHE_LIFECYCLE_0.4.5.md)。
 
+最新调查：已实测原生 Load/Seek 取数、Web 读取目标缓存区块的可行基础；尚未接入生产版本。见[原生缓存数据源可行性](docs/NATIVE_CACHE_PROVIDER_FEASIBILITY.md)。
+
 原生缓存复核：当前并非只替换输出，Web 播放不能保证沿用原生落盘时机；cached=0 也可能存在原生部分缓存。见[缓存所有权调查](docs/NATIVE_CACHE_OWNERSHIP_AUDIT.md)。
 
 当前源码候选：**Windows 0.4.5 / macOS 0.2.5**。网易云决定授权音源、音质、队列和音量；插件负责受支持曲目的连续 Web Audio 输出，保留原生回退。不增加 EQ、交叉淡化或音质降档。
