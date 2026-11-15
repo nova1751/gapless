@@ -1,0 +1,92 @@
+{
+  "implementation": "9c45d0b",
+  "nativeClient": "3.1.43.205627",
+  "initialMissingBytes": 6231523,
+  "completionAfterBoundaryMs": 6876,
+  "cache": [
+    {
+      "songId": "2670863152",
+      "bytes": 27865486,
+      "md5Matches": true,
+      "index": {
+        "size": "27865486",
+        "t": true,
+        "zone": [
+          "0 27865485"
+        ]
+      }
+    },
+    {
+      "songId": "2670863319",
+      "bytes": 27081483,
+      "md5Matches": true,
+      "index": {
+        "size": "27081483",
+        "t": true,
+        "zone": [
+          "0 27081482"
+        ]
+      }
+    }
+  ],
+  "audio": {
+    "callbackErrors": 0,
+    "sampleRate": 48000,
+    "windowMs": 200,
+    "rows": [
+      {
+        "relativeMs": -800,
+        "correlation": 0.7386184081515307,
+        "lagMs": -137.75000000000003
+      },
+      {
+        "relativeMs": -600,
+        "correlation": 0.7366715301516458,
+        "lagMs": -137.77083333333317
+      },
+      {
+        "relativeMs": -400,
+        "correlation": 0.6360987918633816,
+        "lagMs": -137.75000000000003
+      },
+      {
+        "relativeMs": -200,
+        "correlation": 0.6468761500052032,
+        "lagMs": -137.75000000000003
+      },
+      {
+        "relativeMs": -100,
+        "correlation": 0.7694621765491768,
+        "lagMs": -137.75000000000003
+      },
+      {
+        "relativeMs": 0,
+        "correlation": 0.845359588537925,
+        "lagMs": -137.75000000000003
+      },
+      {
+        "relativeMs": 100,
+        "correlation": 0.9006002580413178,
+        "lagMs": -137.7291666666669
+      },
+      {
+        "relativeMs": 200,
+        "correlation": 0.8967313704441371,
+        "lagMs": -137.70833333333331
+      },
+      {
+        "relativeMs": 400,
+        "correlation": 0.8797682399252815,
+        "lagMs": -137.70833333333331
+      },
+      {
+        "relativeMs": 600,
+        "correlation": 0.8718278385592962,
+        "lagMs": -137.77083333333363
+      }
+    ],
+    "lagSpanMs": 0.06250000000031264,
+    "nearZeroRunMs": 0.0
+  },
+  "limits": "Partial native-cache fixture, resumed first song near end. Subsequent seek acted on Open Hearts after first transition. One sample; not fresh network or all lifecycle validation."
+}
