@@ -1,0 +1,24 @@
+{
+  "implementation": "b3fc4dc",
+  "host": "NetEase Windows 3.1.43.205627 / BetterNCM 1.3.4",
+  "scope": "Actual candidate WindowsSource.openLocalInput in CEF, actual native stat/mountFile and existing strict range reader. Synthetic 200000-byte alphabet-pattern fixture, not audio.",
+  "result": {
+    "firstReadBytes": 65536,
+    "headMatches": true,
+    "tailBytes": 10000,
+    "tailMatches": true,
+    "middleMatches": true,
+    "abortRejected": true
+  },
+  "limits": [
+    "No decode, audio output or playback queue integration exercised.",
+    "No native disk I/O trace; returned range bytes and validation only.",
+    "Candidate not installed; installed package remains e74d4b1."
+  ],
+  "cleanup": {
+    "fixtureDeleted": true,
+    "userMusicAndCacheUnchanged": true,
+    "playerPaused": true,
+    "captureReleased": true
+  }
+}
