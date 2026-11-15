@@ -38,6 +38,14 @@
       return match?.[1].toLowerCase() || null;
     } catch { return null; }
   }
+  function localIdentity(source) {
+    if (!source?.localKey) return null;
+    const size = Number(source.fileSize);
+    // Host metadata is a version hint, not proof that the path is unchanged.
+    // Never merge a reported replacement into PCM for the previous file.
+    return JSON.stringify(['local', source.localKey,
+      Number.isSafeInteger(size) && size > 0 ? size : null, fingerprint(source)]);
+  }
   class AudioResources {
     constructor({ resolve, trace, acceptRate, readCache = null, exactSize = false, openLocal, limit = 512 * MiB, fileLimit = 128 * MiB }) {
       this.resolve = resolve; this.trace = trace; this.acceptRate = acceptRate; this.readCache = readCache;
@@ -50,13 +58,13 @@
     lookup(ref, source) {
       const hash = source && fingerprint(source);
       return [...this.entries.values()].find(e => !e.stream?.error && e.requestKey === this.requestKey(ref)
-        && (!source || (source.localKey ? source.localKey === e.source.localKey
+        && (!source || (source.localKey ? localIdentity(source) === e.identity
           : this.exactSize ? this.identity(source) === e.identity && !!e.identity
             : e.hash && hash === e.hash && e.level === source.level))) || null;
     }
     identity(info) {
       if (!info) return null;
-      if (info.localKey) return JSON.stringify(['local', info.localKey]);
+      if (info.localKey) return localIdentity(info);
       const hash = fingerprint(info);
       return hash ? JSON.stringify([hash, info.level, Number(info.fileSize)]) : null;
     }
@@ -64,7 +72,7 @@
       const requestKey = this.requestKey(ref);
       const cached = this.lookup(ref, info);
       if (cached) return cached;
-      const identity = this.exactSize ? this.identity(info) : null;
+      const identity = this.exactSize || info?.localKey ? this.identity(info) : null;
       const pending = this.jobs.get(requestKey);
       if (pending && !pending.controller.signal.aborted) {
         if (pending.identity === identity) {
@@ -274,5 +282,5 @@
     resetFailures() { this.failures.clear(); }
     status() { return { held: this.held(), reserved: this.reserved, limit: this.limit, pending: this.jobs.size }; }
   }
-  globalThis.GaplessAudioResources = { AudioResources, header, fingerprint };
+  globalThis.GaplessAudioResources = { AudioResources, header, fingerprint, localIdentity };
 })();

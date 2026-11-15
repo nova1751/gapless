@@ -1,6 +1,6 @@
 /* MIT. Native source and queue adapter for NetEase Cloud Music 3.1.43.205627. */
 const WindowsSource = (() => {
-  const { fingerprint } = globalThis.GaplessAudioResources;
+  const { fingerprint, localIdentity } = globalThis.GaplessAudioResources;
   const allowedLevels = new Set(['standard', 'higher', 'exhigh', 'lossless', 'hires']);
   const rowId = row => String(row.resourceId || row.trackId || row.id);
   const trackId = info => String(info?.songId || '');
@@ -21,7 +21,8 @@ const WindowsSource = (() => {
   function same(a, b) {
     if (!valid(a) || !valid(b) || trackId(a) !== trackId(b)) return false;
     const path = localPath(a);
-    if (path) return path.toLowerCase() === localPath(b)?.toLowerCase();
+    if (path) return localIdentity({ ...a, localKey: path.toLowerCase() })
+      === localIdentity({ ...b, localKey: localPath(b)?.toLowerCase() });
     return !localPath(b) && a.level === b.level && Number(a.fileSize) === Number(b.fileSize)
       && fingerprint(a) === fingerprint(b);
   }
