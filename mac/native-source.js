@@ -1,0 +1,137 @@
+/* MIT. Mac 3.1.12 native acquisition; only native writes UC/IDX. No Play. */
+(() => {
+  'use strict';
+  const delay = ms => new Promise(resolve => setTimeout(resolve, ms));
+  class NativeSource {
+    constructor({ bridge, cache, valid, ensureGate, refresh, priority, trace }) {
+      Object.assign(this, { bridge, cache, valid, ensureGate, refresh, priority, trace });
+      this.queue = new globalThis.WindowsNativeCacheQueue(this);
+      this.active = null; this.retired = new Set(); this.serial = 0; this.fault = null;
+      this.prefix = Date.now().toString(36);
+      this.clearTimers = [];
+      this.stats = { batches: 0, reads: 0, hits: 0, failures: 0 };
+    }
+    observe(name, args) {
+      return name.startsWith('audioplayer.') && (args?.[0] === this.active?.id || this.retired.has(args?.[0]));
+    }
+    cancel() { this.queue.clear(); }
+    async beginClear() {
+      const timer = setTimeout(() => {
+        this.fault = 'native-only-cache-clear-timeout'; this.finishClear();
+      }, 10000);
+      this.clearTimers.push(timer);
+      await this.quiesce();
+      // Leave a bounded settling window before native deletion, after Stop's
+      // RPC. This is conservative ordering, not proof of an atomic native flush.
+      await delay(500);
+    }
+    finishClear() { const timer = this.clearTimers.shift(); if (timer) clearTimeout(timer); }
+    async quiesce() {
+      this.cancel();
+      const deadline = performance.now() + 4000;
+      while (this.queue.running) {
+        if (performance.now() > deadline) throw new Error('native-only-cache-stop-timeout');
+        await delay(10);
+      }
+    }
+    async batch({ source, position, signal, budgetMs }) {
+      if (this.fault) throw new Error(this.fault);
+      const job = { id: source.songId + '_gp_cache_' + this.prefix + '_' + (++this.serial), signal, source };
+      const check = () => {
+        if (signal.aborted || !this.valid(source)) throw new Error('cancelled');
+      };
+      const pending = promise => this.cache.wait(promise, signal);
+      let waiter, loaded = false;
+      this.active = job;
+      try {
+        check(); await this.ensureGate(source); check();
+        const refreshed = await pending(this.refresh(source)); check();
+        if (refreshed.md5 !== source.md5 || refreshed.level !== source.level
+          || Number(refreshed.fileSize) !== Number(source.size)) throw new Error('native-only-cache-source-changed');
+        waiter = this.bridge.waitNative('audioplayer.onLoad', args => args[0] === job.id, 3000);
+        void waiter.promise.catch(() => {});
+        loaded = true;
+        await pending(this.bridge.raw('audioplayer.load', [job.id, { ...refreshed, playId: job.id }], 2000));
+        const result = await pending(waiter.promise); check(); waiter.cancel(); waiter = null;
+        if (Number(result[1]?.code) !== 0) throw new Error('native-only-cache-load');
+        const token = job.id + '|seek';
+        waiter = this.bridge.waitNative('audioplayer.onSeek', args => args[0] === job.id && args[1] === token, 3000);
+        void waiter.promise.catch(() => {});
+        await pending(this.bridge.raw('audioplayer.seek', [job.id, token, position], 2000));
+        const sought = await pending(waiter.promise); check();
+        if (Number(sought[2]) !== 0) throw new Error('native-only-cache-seek');
+        const until = performance.now() + budgetMs;
+        while (performance.now() < until) { check(); await delay(20); }
+      } finally {
+        waiter?.cancel();
+        this.retired.add(job.id);
+        if (this.retired.size > 256) this.retired.delete(this.retired.values().next().value);
+        try {
+          if (loaded) await this.bridge.raw('audioplayer.stop', [job.id], 1500);
+        } catch (error) {
+          this.fault = 'native-only-cache-stop-failed';
+          throw new Error(this.fault);
+        } finally { if (this.active === job) this.active = null; }
+      }
+      check();
+      // Stop is followed by a verified committed index, never by an assumed
+      // delay/percentage/file-length definition of valid audio bytes.
+      await delay(30); check();
+      const coverage = await pending(this.cache.snapshotSource(source, signal)); check();
+      this.stats.batches++;
+      this.trace('native-cache-batch', { id: String(source.songId), position, complete: !!coverage?.complete });
+      return coverage;
+    }
+    async open(ref, info, signal) {
+      const source = { ...info, _gpAccount: ref.account };
+      let points, rate, committed;
+      const read = async (start, end, requestSignal) => {
+        const controller = new AbortController();
+        const abort = () => controller.abort();
+        if (requestSignal.aborted) abort();
+        requestSignal.addEventListener('abort', abort, { once: true });
+        const timeout = setTimeout(abort, 8000), inputSignal = controller.signal;
+        try {
+          for (;;) {
+            if (inputSignal.aborted || !this.valid(source)) throw new Error('cancelled');
+            if (this.fault) throw new Error(this.fault);
+            if (this.clearTimers.length) { await delay(20); continue; }
+            let coverage = committed?.generation === this.cache.generation ? committed
+              : await this.cache.snapshotSource(source, inputSignal);
+            let gaps = coverage ? globalThis.GaplessCacheCoverage.missing(coverage, start, end) : [[start, end]];
+            if (gaps.length) {
+              const position = points ? globalThis.GaplessCacheCoverage.seekBefore(gaps[0][0], points, rate) : 0;
+              try {
+                coverage = await this.queue.request({ source, position, signal: inputSignal,
+                  priority: this.priority(source), budgetMs: 500 });
+              } catch (error) {
+                if (['native-cache-preempted', 'native-cache-cleared'].includes(error.message)) continue;
+                throw error;
+              }
+              gaps = coverage ? globalThis.GaplessCacheCoverage.missing(coverage, start, end) : [[start, end]];
+              if (gaps.length) continue;
+            } else this.stats.hits++;
+            committed = coverage;
+            const bytes = await this.cache.readReadyRange(source, start, end, inputSignal, coverage);
+            this.stats.reads++;
+            return bytes;
+          }
+        } catch (error) {
+          if (requestSignal.aborted || !this.valid(source)) throw new Error('cancelled');
+          // Do not let the generic cache fallback create a second Web download
+          // after native acquisition has already started.
+          this.stats.failures++;
+          throw new Error(error.message.startsWith('native-only-') ? error.message : 'native-only-cache-' + error.message);
+        } finally { clearTimeout(timeout); requestSignal.removeEventListener('abort', abort); }
+      };
+      const size = Number(source.size), end = Math.min(size, 32768), head = await read(0, end, signal);
+      return { kind: 'native-source', partial: true,
+        response: new Response(head, { status: 206, headers: { 'content-range': `bytes 0-${end - 1}/${size}`,
+          'content-length': String(end) } }),
+        setIndex: (index, spec) => { points = index; rate = spec.rate; }, seekRange: read,
+        verifyParts: (parts, verifySignal) => this.cache.verifyParts(source, parts, verifySignal) };
+    }
+    status() { return { ...this.stats, ...this.queue.status(), pendingClears: this.clearTimers.length, fault: this.fault }; }
+  }
+  globalThis.GaplessMacNativeSource = NativeSource;
+})();

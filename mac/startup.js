@@ -132,12 +132,21 @@
     const original = channel.postMessage;
     bridge.nativePost = msg => { countNativeTransport(msg); return original.call(channel, msg); };
     channel.postMessage = function (msg) {
-      if (msg?.method === 'registerCall' && (msg.command?.startsWith('audioplayer.') || msg.command === 'winhelper.onHotkey')) {
+      if (msg?.method === 'registerCall' && (msg.command?.startsWith('audioplayer.') || msg.command === 'winhelper.onHotkey'
+        || msg.command === 'storage.onclearcache')) {
         bridge.registrations[msg.command] = msg.seq; bridge.protect();
       }
       if (msg?.method === 'call' && msg.command === 'storage.clearCache') {
         // Cleanup failure must never swallow the original native clear request.
-        try { bridge.cacheClearRequested?.(); } catch (error) { report(error); }
+        try {
+          const prepared = bridge.cacheClearRequested?.();
+          if (prepared?.then) {
+            const receiver = this, args = arguments;
+            // Both success and cleanup failure forward the exact request once.
+            void Promise.resolve(prepared).catch(report).then(() => original.apply(receiver, args)).catch(report);
+            return;
+          }
+        } catch (error) { report(error); }
       }
       if (msg?.method === 'call' && /^audioplayer\./.test(msg.command)) {
         if (msg.command === 'audioplayer.enableAudioData') bridge.audioDataEnabled = Number(msg.params?.[0]) === 1;

@@ -1,0 +1,704 @@
+{
+  "date": "2026-11-16",
+  "version": "0.3.1",
+  "baseMain": "aae1d5595053b66c52a889b34acfca05f2543755",
+  "environment": {
+    "client": "NetEase macOS 3.1.12 (3444)",
+    "host": "BetterNCM-mac 0.1.7"
+  },
+  "nativeAcquisitionProbe": {
+    "commands": [
+      "Load",
+      "Seek",
+      "Stop"
+    ],
+    "playCommands": 0,
+    "playedTime": 0,
+    "playedAudioTime": 0,
+    "fileSize": 61606634,
+    "index": {
+      "size": 61606634,
+      "zone": [
+        "0 61382502"
+      ]
+    },
+    "comparisons": [
+      {
+        "offset": 0,
+        "bytes": 32768,
+        "differences": 0
+      },
+      {
+        "offset": 20000000,
+        "bytes": 32768,
+        "differences": 0
+      },
+      {
+        "offset": 60000000,
+        "bytes": 32768,
+        "differences": 0
+      }
+    ],
+    "comparisonSource": "same native-authorized source, XOR A3 restored in memory",
+    "limitations": "One refreshed FLAC source; initial saved URL failed authorization. Sparse file size and cached percentage do not establish coverage."
+  },
+  "coldStartAfterNativeClear": {
+    "songId": "2670863319",
+    "requestToPlayingStatusMs": 1150,
+    "webLoadedMs": 851,
+    "origin": "native-source",
+    "nativeBatches": 1,
+    "sourceRate": 44100,
+    "scope": "protocol timing, not acoustic first-sample latency"
+  },
+  "pauseDuringLoad": {
+    "method": "temporary wrapper of real stream prepare, SDK.pause during load buffering; restored afterwards",
+    "phase": "owned",
+    "playing": false,
+    "loading": false,
+    "origin": "native-source",
+    "nativeFallback": false
+  },
+  "rapidSeek": {
+    "results": [
+      {
+        "playId": "2670863152",
+        "seekId": "2670863152|accept-first",
+        "code": -1,
+        "position": 40.19396825396828
+      },
+      {
+        "playId": "2670863152",
+        "seekId": "2670863152|accept-last",
+        "code": 0,
+        "position": 180
+      }
+    ],
+    "position": 180,
+    "playing": false,
+    "phase": "owned"
+  },
+  "audioBoundary": {
+    "measurement": {
+      "version": "0.3.1",
+      "capture": "ScreenCaptureKit NetEase application only",
+      "capturedRate": 48000,
+      "captureFrames": 1275840,
+      "captureStartWallMs": 1794771844594.0571,
+      "captureEndWallMs": 1794771871174.0364,
+      "estimatedBoundaryWallMs": 1794771852665.8708,
+      "measurementWindowMs": 2000,
+      "boundaryCovered": true,
+      "windowFrames": 96000,
+      "longestExactSilenceMs": 0,
+      "longestBelowMinus80dbMs": 0,
+      "windowRms": 0.18819622695446014,
+      "ptsMaxDiscontinuityMs": 4.470348362317633e-07
+    },
+    "protocol": {
+      "version": "0.3.1",
+      "samples": [
+        {
+          "at": 1794771845621,
+          "id": "2670863319",
+          "position": 225.1764172335601,
+          "playing": true
+        },
+        {
+          "at": 1794771846022,
+          "id": "2670863319",
+          "position": 225.5227664399093,
+          "playing": true
+        },
+        {
+          "at": 1794771846423,
+          "id": "2670863319",
+          "position": 225.92621315192744,
+          "playing": true
+        },
+        {
+          "at": 1794771846825,
+          "id": "2670863319",
+          "position": 226.33256235827665,
+          "playing": true
+        },
+        {
+          "at": 1794771847227,
+          "id": "2670863319",
+          "position": 226.73891156462585,
+          "playing": true
+        },
+        {
+          "at": 1794771847630,
+          "id": "2670863319",
+          "position": 227.142358276644,
+          "playing": true
+        },
+        {
+          "at": 1794771848033,
+          "id": "2670863319",
+          "position": 227.5487074829932,
+          "playing": true
+        },
+        {
+          "at": 1794771848441,
+          "id": "2670863319",
+          "position": 227.95505668934243,
+          "playing": true
+        },
+        {
+          "at": 1794771848843,
+          "id": "2670863319",
+          "position": 228.35850340136057,
+          "playing": true
+        },
+        {
+          "at": 1794771849244,
+          "id": "2670863319",
+          "position": 228.7445351473923,
+          "playing": true
+        },
+        {
+          "at": 1794771849645,
+          "id": "2670863319",
+          "position": 229.14798185941044,
+          "playing": true
+        },
+        {
+          "at": 1794771850046,
+          "id": "2670863319",
+          "position": 229.55433106575964,
+          "playing": true
+        },
+        {
+          "at": 1794771850448,
+          "id": "2670863319",
+          "position": 229.95777777777778,
+          "playing": true
+        },
+        {
+          "at": 1794771850849,
+          "id": "2670863319",
+          "position": 230.36412698412698,
+          "playing": true
+        },
+        {
+          "at": 1794771851251,
+          "id": "2670863319",
+          "position": 230.74725623582768,
+          "playing": true
+        },
+        {
+          "at": 1794771851653,
+          "id": "2670863319",
+          "position": 231.15360544217688,
+          "playing": true
+        },
+        {
+          "at": 1794771852062,
+          "id": "2670863319",
+          "position": 231.58027210884356,
+          "playing": true
+        },
+        {
+          "at": 1794771852464,
+          "id": "2670863319",
+          "position": 231.96340136054422,
+          "playing": true
+        },
+        {
+          "at": 1794771852865,
+          "id": "2670863152",
+          "position": 0.19333333333332448,
+          "playing": true
+        },
+        {
+          "at": 1794771853267,
+          "id": "2670863152",
+          "position": 0.5996825396825329,
+          "playing": true
+        },
+        {
+          "at": 1794771853669,
+          "id": "2670863152",
+          "position": 1.0031292517006705,
+          "playing": true
+        },
+        {
+          "at": 1794771854071,
+          "id": "2670863152",
+          "position": 1.409478458049879,
+          "playing": true
+        },
+        {
+          "at": 1794771854471,
+          "id": "2670863152",
+          "position": 1.792607709750559,
+          "playing": true
+        },
+        {
+          "at": 1794771854880,
+          "id": "2670863152",
+          "position": 2.219274376417225,
+          "playing": true
+        },
+        {
+          "at": 1794771855287,
+          "id": "2670863152",
+          "position": 2.62562358276643,
+          "playing": true
+        },
+        {
+          "at": 1794771855690,
+          "id": "2670863152",
+          "position": 3.0319727891156383,
+          "playing": true
+        },
+        {
+          "at": 1794771856090,
+          "id": "2670863152",
+          "position": 3.4151020408163184,
+          "playing": true
+        }
+      ],
+      "events": [
+        {
+          "at": 50788,
+          "event": "scheduled",
+          "from": "2670863319",
+          "to": "2670863152",
+          "leadSeconds": 232.06517006802721,
+          "sourceRate": 44100,
+          "decodedRate": 44100,
+          "contextRate": 44100,
+          "scheduledGapFrames": 0
+        },
+        {
+          "at": 61614,
+          "event": "scheduled",
+          "from": "2670863319",
+          "to": "2670863152",
+          "leadSeconds": 7.060000000000008,
+          "sourceRate": 44100,
+          "decodedRate": 44100,
+          "contextRate": 44100,
+          "scheduledGapFrames": 0
+        },
+        {
+          "at": 68674,
+          "event": "transition",
+          "from": "2670863319",
+          "to": "2670863152",
+          "scheduledGapFrames": 0
+        },
+        {
+          "at": 68832,
+          "event": "claimed",
+          "id": "2670863152",
+          "position": 0.14979591836733874,
+          "claimDelayMs": 158.40000009536743
+        },
+        {
+          "at": 69000,
+          "event": "scheduled",
+          "from": "2670863152",
+          "to": "1938192798",
+          "leadSeconds": 234.6028344671202,
+          "sourceRate": 44100,
+          "decodedRate": 44100,
+          "contextRate": 44100,
+          "scheduledGapFrames": 0
+        }
+      ],
+      "transport": {
+        "load": 0,
+        "play": 0,
+        "pause": 0,
+        "seek": 0,
+        "stop": 1,
+        "unload": 0
+      }
+    }
+  },
+  "ui": {
+    "lyrics": "original lyric page observed updating after cross; style retained",
+    "spectrum": {
+      "active": false,
+      "failed": false,
+      "frames": 11998,
+      "lastPosition": 40.108333333333334,
+      "maxWorkMs": 7.400000095367432,
+      "averageWorkMs": 0.3481080167232742,
+      "visualRate": 48000,
+      "visualChannels": 2,
+      "packetFrames": 400,
+      "packetBytes": 1600,
+      "maxPacketsPerTick": 6,
+      "resets": 3,
+      "skippedFrames": 0,
+      "affectsAudioOutput": false,
+      "renderClock": "output",
+      "renderClockHooks": [
+        "_AERenderMV",
+        "_AEWebSetPlaybackPosition"
+      ]
+    },
+    "previousNext": "actual UI next to Moth To A Flame, previous returned Open Hearts; lyrics and transport updated",
+    "system": "read-only system sampling reported rate=1 in 240 samples; full Control Center drag verification not completed"
+  },
+  "nativeClear": {
+    "api": "original SDK Storage.clearCache",
+    "result": true,
+    "pendingClearsAfterNotification": 0,
+    "activePriority": null,
+    "webOwnershipRetained": true,
+    "pluginDirectFileWrites": false,
+    "scope": "single daily clear; extreme delayed native writes not excluded"
+  },
+  "persistence": {
+    "afterNormalExit": [
+      {
+        "id": "2670863319",
+        "name": "2670863319-_-_999-_-_cad47df6dd03b5faa82ffc244f6a99c1.idx!",
+        "size": 59,
+        "sha256": "f808d191410c06a52cb52043a5a3e8af260f2afe9e38425429dc215002b9c602",
+        "index": {
+          "size": 27081483,
+          "zone": [
+            "0 18848954",
+            "26016039 27081482"
+          ]
+        },
+        "exists": true,
+        "unchanged": true
+      },
+      {
+        "id": "2670863319",
+        "name": "2670863319-_-_999-_-_cad47df6dd03b5faa82ffc244f6a99c1.info",
+        "size": 1216,
+        "sha256": "4d794ce54965c687a07f3883e81f7d02669f984e7802a659e740c971a22d31a4",
+        "index": null,
+        "exists": true,
+        "unchanged": true
+      },
+      {
+        "id": "2670863319",
+        "name": "2670863319-_-_999-_-_cad47df6dd03b5faa82ffc244f6a99c1.uc!",
+        "size": 27081483,
+        "sha256": "19e0aa6fe448a7666ec956140d3d60c6a9aa5c1401af40794b86bea178bcd00a",
+        "index": null,
+        "exists": true,
+        "unchanged": true
+      },
+      {
+        "id": "2670863152",
+        "name": "2670863152-_-_999-_-_d7dc2a24ddf0ed8d488511ec49536017.idx!",
+        "size": 39,
+        "sha256": "e39495b76856b1d429c2a6507a7e23b061db25b299d27c51306572777f7e1cf3",
+        "index": {
+          "size": 27865486,
+          "zone": [
+            "0 27865485"
+          ]
+        },
+        "exists": true,
+        "unchanged": true
+      },
+      {
+        "id": "2670863152",
+        "name": "2670863152-_-_999-_-_d7dc2a24ddf0ed8d488511ec49536017.info",
+        "size": 1240,
+        "sha256": "727aa8b8cfdd9ad844abe7c7ef364bb414c3df72d22ebb877122d750c5a49db3",
+        "index": null,
+        "exists": true,
+        "unchanged": true
+      },
+      {
+        "id": "2670863152",
+        "name": "2670863152-_-_999-_-_d7dc2a24ddf0ed8d488511ec49536017.uc!",
+        "size": 27865486,
+        "sha256": "8c668987a20829fa78730b5ba2158c2062565b675cf8c1d88801bdee64aeff38",
+        "index": null,
+        "exists": true,
+        "unchanged": true
+      }
+    ],
+    "nativeMetadataAfterRestart": [
+      {
+        "id": "2670863319",
+        "found": true,
+        "cached": 100,
+        "md5Match": true,
+        "bitrate": 999
+      },
+      {
+        "id": "2670863152",
+        "found": true,
+        "cached": 100,
+        "md5Match": true,
+        "bitrate": 999
+      }
+    ],
+    "pluginAfterRestart": {
+      "id": "2670863319",
+      "origin": "native-source",
+      "phase": "owned",
+      "playing": false,
+      "cache": {
+        "batches": 0,
+        "reads": 15,
+        "hits": 15,
+        "failures": 0,
+        "queued": 0,
+        "activePriority": null,
+        "generation": 1,
+        "closed": false,
+        "pendingClears": 0,
+        "fault": null
+      },
+      "transport": {
+        "load": 0,
+        "play": 0,
+        "pause": 0,
+        "seek": 0,
+        "stop": 1,
+        "unload": 0
+      },
+      "events": [
+        {
+          "at": 23200,
+          "event": "indexed-ready",
+          "id": "2670863319",
+          "origin": "native-source",
+          "readyMs": 39
+        },
+        {
+          "at": 23423,
+          "event": "indexed-ready",
+          "id": "2670863152",
+          "origin": "native-source",
+          "readyMs": 25
+        },
+        {
+          "at": 35670,
+          "event": "web-loaded",
+          "id": "2670863319",
+          "origin": "native-source",
+          "rate": 44100,
+          "loadMs": 90
+        }
+      ]
+    },
+    "note": "Baptized remained partial despite native cached=100; plugin used committed IDX zones. No new helper batch on restart. Normal native exitApp workflow used."
+  },
+  "readFailure": {
+    "method": "temporary snapshotSource rejection in installed real source pipeline; restored afterwards",
+    "injected": 1,
+    "events": [
+      {
+        "at": 38163,
+        "event": "web-load-fallback",
+        "id": "22764863",
+        "reason": "native-only-cache-read-probe"
+      },
+      {
+        "at": 38163,
+        "event": "restore-start",
+        "id": "22764863",
+        "reason": "web-load-native-only-cache-read-probe",
+        "position": 0
+      },
+      {
+        "at": 38279,
+        "event": "restored-native",
+        "id": "22764863",
+        "reason": "web-load-native-only-cache-read-probe",
+        "position": 0,
+        "playing": false,
+        "confirmed": true
+      }
+    ],
+    "nativeCache": {
+      "batches": 0,
+      "reads": 0,
+      "hits": 0,
+      "failures": 1,
+      "queued": 0,
+      "activePriority": null,
+      "generation": 2,
+      "closed": false,
+      "pendingClears": 0,
+      "fault": null
+    },
+    "note": "Found missing queue row in ordinary Load; fixed and native recovery confirmed. Fault injection is not an actual disk-permission failure."
+  },
+  "disable": {
+    "before": {
+      "id": "2670863152",
+      "position": 3.8214512471655233,
+      "playing": false
+    },
+    "phase": "native",
+    "ownsPlayback": false,
+    "playing": false,
+    "position": 3.8214512471655233,
+    "nativeOutputGated": false,
+    "memory": {
+      "held": 0,
+      "reserved": 0,
+      "limit": 536870912,
+      "pending": 0,
+      "encodedCache": {
+        "bytes": 0,
+        "limit": 67108864,
+        "hits": 3,
+        "reads": 22,
+        "joins": 0
+      },
+      "boundedPCM": {
+        "entries": 0,
+        "bytes": 0,
+        "capacity": 0
+      }
+    },
+    "nativeCache": {
+      "batches": 0,
+      "reads": 25,
+      "hits": 25,
+      "failures": 0,
+      "queued": 0,
+      "activePriority": null,
+      "generation": 2,
+      "closed": false,
+      "pendingClears": 0,
+      "fault": null
+    }
+  },
+  "restoration": {
+    "user": {
+      "version": "0.3.1",
+      "id": "22764863",
+      "position": 1.91,
+      "playing": false,
+      "phase": "native",
+      "enabled": true,
+      "cache": {
+        "batches": 0,
+        "reads": 0,
+        "hits": 0,
+        "failures": 1,
+        "queued": 0,
+        "activePriority": null,
+        "generation": 2,
+        "closed": false,
+        "pendingClears": 0,
+        "fault": null
+      }
+    },
+    "cache": {
+      "restoredFiles": 93,
+      "restoredBytes": 943827113,
+      "allHashesMatched": true
+    },
+    "userFinal": {
+      "id": "22764863",
+      "position": 1.911451247165533,
+      "playing": false,
+      "phase": "owned",
+      "enabled": true
+    }
+  },
+  "knownLimits": [
+    "Control Center seek rollback also observed with original native playback; not fixed here.",
+    "Mixed sample rates rebuild output; may leave a gap.",
+    "Only verified online indexed FLAC native acquisition is enabled. Local/encrypted downloads and full feature matrix are not newly verified.",
+    "No whole-song persistence guarantee after seek to tail, early stop, quick skip or exit.",
+    "No bit-perfect DAC or all-source audio-quality equivalence claim.",
+    "No new tests, full lint/typecheck or application build; only changed-file syntax and ZIP packaging."
+  ],
+  "installation": {
+    "version": "0.3.1",
+    "packageSha256": "5e6c1e2209760462b75deaaad97555286f41c41c3d87cd73e04189694165add0",
+    "installedMatches": true,
+    "releaseMatches": true,
+    "runtimeFiles": 7,
+    "runtimeMismatches": [],
+    "oldPackageBackup": "plugin_backups/mac-before-0.3.1-1794770817",
+    "syntax": "changed JS, manifest JSON and packaging Python passed",
+    "applicationBuildRun": false,
+    "newTestsAdded": false
+  },
+  "finalRapidSeek": {
+    "version": "0.3.1",
+    "results": [
+      {
+        "playId": "2670863319",
+        "seekId": "2670863319|final-first",
+        "code": -1,
+        "position": 38.191972789115646
+      },
+      {
+        "playId": "2670863319",
+        "seekId": "2670863319|final-last",
+        "code": 0,
+        "position": 180
+      }
+    ],
+    "events": [
+      {
+        "name": "audioplayer.onSeek",
+        "args": [
+          "2670863319",
+          "2670863319|final-first",
+          -1,
+          38.191972789115646
+        ]
+      },
+      {
+        "name": "audioplayer.onSeek",
+        "args": [
+          "2670863319",
+          "2670863319|final-last",
+          0,
+          180
+        ]
+      },
+      {
+        "name": "audioplayer.onPlayProgress",
+        "args": [
+          "2670863319",
+          "180.000",
+          "1.0000",
+          true
+        ]
+      },
+      {
+        "name": "audioplayer.onPlayState",
+        "args": [
+          "2670863319",
+          "2670863319|final-last",
+          2
+        ]
+      }
+    ],
+    "position": 180,
+    "playing": false,
+    "phase": "owned",
+    "cache": {
+      "batches": 0,
+      "reads": 31,
+      "hits": 32,
+      "failures": 0,
+      "queued": 0,
+      "activePriority": null,
+      "generation": 1,
+      "closed": false,
+      "pendingClears": 0,
+      "fault": null
+    }
+  },
+  "finalReview": [
+    "Stop/Unload aborts active indexed preparation before clearing native tasks; transitional stopped tracks do not trigger fault fallback.",
+    "Obsolete Web-owned Seek reply cannot fall through to native progress/state publication; actual final SDK seek events confirm only latest progress is emitted."
+  ]
+}

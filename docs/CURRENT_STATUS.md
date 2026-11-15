@@ -1,6 +1,6 @@
 # 当前交付状态（2026-11-16）
 
-目标仍未完成全部验收。Windows 当前机器已安装并保留 `d4e7c87` 原生数据源候选；不是默认打包产物，也不是正式发布。安装包及 runtime 对照见 [安装记录](verification/windows-candidate-install.json)。Mac 保持原有 0.2.5 候选，未移植本轮 Windows 原生缓存协议。
+目标仍未完成全部验收。Windows 当前机器已安装并保留 `aae1d55` 原生数据源候选；不是默认打包产物，也不是正式发布。安装包及 runtime 对照见 [安装记录](verification/windows-candidate-install.json)。Mac 0.3.1 已基于 `aae1d55` 安装：原生缓存区间供给 Web 输出及日常场景实机通过，保留格式、系统控制和完整缓存限制。见 [Mac 当前记录](MAC_NATIVE_CACHE_0.3.1.md)。
 
 ## 当前实现
 
@@ -27,7 +27,7 @@ Windows 受支持的在线 FLAC：网易云提供授权音源、音质、队列�
 | 原生内部是否重复下载、全部统计联动 | 辅助通道没有 Play，暂停 Seek 时原生听音计数未增长；已知预加载通道隔离 | 全进程请求、全部遥测与系统媒体对照仍未完成 |
 | 原生淡入淡出设置 | Web 播放时开启原生 playFade，原位置交还耗时 75 ms，原生播放继续；随后恢复原设置并暂停：[记录](verification/windows-native-fade-fallback.json) | UI/协议实测通过；未回录淡化包络，不代表所有音效或设备切换通过 |
 | Windows 系统媒体控制 | SMTC 单一网易云会话、曲名及 Playing/Paused 正确；系统会话 API 暂停/继续同步到 Web UI；关闭插件后的原生对照：[记录](verification/windows-smtc-control.json) | 两种后端均未提供时间线/Seek；已恢复原 SMTC 关闭设置。物理媒体键、锁屏、跨曲更新仍未验收 |
-| Mac 同等缓存行为 | [平台方案](CROSS_PLATFORM_BEST_PRACTICES.md)、历史 Mac 证据 | 不能把 Windows 的原生协议或运行结果当成 Mac 验收 |
+| Mac 缓存行为 | [Mac 0.3.1 原生区间读取、清理与重启实测](MAC_NATIVE_CACHE_0.3.1.md) | 在线索引 FLAC 日常通过；没有后台整首补齐或完整跨平台功能矩阵 |
 | 本地文件同大小修改 | 实际宿主文件 API、资源缓存和解码器：版本变化后旧 PCM 未命中、新 PCM 重新生成；原文件未改：[记录](verification/windows-local-host-cache.json) | 隔离资源实例通过；流式子类/播放队列、保留修改时间的替换及有界磁盘读取仍未完成 |
 
 ## 旧曲补齐清理修复与复测
@@ -48,7 +48,7 @@ Windows 流式本地输入已改为回环挂载的按需 Range 读取，顺序�
 
 ## 剩余收尾
 
-按用户更新的 [日常使用范围与收尾标准](GAPLESS_NATIVE_PARITY_PLAN.md) 收尾：复用已有实测，仅对相关改动补普通使用回归。弱网/断网、极端并发、长时间压力及全进程网络审计保留为未验证的扩展项，不再自动追加为个人日常使用门槛。Mac 原生缓存持久化仍是未完成的日常功能，Mac 实机验证也不能用 Windows 或模拟检查替代。
+按用户更新的 [日常使用范围与收尾标准](GAPLESS_NATIVE_PARITY_PLAN.md) 收尾：复用已有实测，仅对相关改动补普通使用回归。弱网/断网、极端并发、长时间压力及全进程网络审计保留为未验证的扩展项，不再自动追加为个人日常使用门槛。Mac 原生缓存持久化后来已在 0.3.1 日常场景接通并单独实测；仍不能用 Windows 或模拟检查替代其未验证项。
 
 ## 可复现打包
 
@@ -103,3 +103,9 @@ Windows 已有需要的主要播放/缓存架构，当前不新增同类实现�
 ## main 版本本机更新（2026-11-16）
 
 Windows 已安装 `aae1d55` 的 native-source-trial 包，含取消异常修复；main/startup 运行文件与包逐字节一致。普通起播就绪 963 ms，44.1 kHz；曲尾 Seek 后正常跨曲，预约间隔 0 帧，接认 340.3 ms；关闭交还约 113 ms。所采日志未见输出回退或欠载。本轮为 UI/日志冒烟检查，未重新回录，不宣称新增声学验收。已重新启用无缝并暂停，当前原生歌曲下次选歌接管，恢复关闭至托盘，截图会话释放。旧包已备份，未清除缓存或下载歌曲。[安装记录](verification/windows-candidate-install.json)。
+
+## Mac 0.3.1 原生缓存与实际跨曲
+
+Mac 原生 Load → Seek → Stop 已证实无 Play 取数、提交有效 IDX 区间；适配器启用在线有索引 FLAC。缺区块由原生获取，插件只读有效区间，工作缓冲保留 64 MiB 编码共享及每首 32 MiB PCM 上限，不增加永久缓存。已修复加载中暂停、连续 Seek 的过期回复、Seek 后旧预约及失败回退缺队列行。实际曲间回录覆盖 Baptized In Fear → Open Hearts 边界前后两秒，无检测到新增静音，音频时间戳连续；歌词/频谱与前后切歌保持原 UI。退出后缓存文件哈希不变，重启原生识别、插件起播 15 次区间命中且辅助批次 0。旧 93 个缓存文件已按哈希恢复、原曲与暂停位置恢复。
+
+本轮不修改 Windows 实现或安装。原生缓存可能部分持久化，cached=100 不能代替 IDX；不同采样率允许重建间隔，系统控制中心进度回跳仍未解决。[细节、交付与剩余限制](MAC_NATIVE_CACHE_0.3.1.md)，[机器记录](verification/mac-native-cache-0.3.1.json)。

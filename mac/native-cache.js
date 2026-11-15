@@ -1,4 +1,4 @@
-/* MIT. Read-only reuse of NetEase's completed, authorized playback cache. */
+/* MIT. Read-only reuse of NetEase's authorized, committed playback cache ranges. */
 (() => {
   'use strict';
   const BITRATE = { standard: 128, higher: 192, exhigh: 320, lossless: 999, hires: 1999 };
@@ -41,6 +41,73 @@
         method: 'POST', signal, headers: { BETTERNCM_API_KEY, 'Content-Type': 'application/json' }, body: JSON.stringify(args),
       });
       const data = await result.json(); return data.ok ? data.value : null;
+    }
+    async snapshotSource(source, signal) {
+      const generation = this.generation, id = String(source.songId), size = Number(source.size ?? source.fileSize);
+      const hash = String(source.md5 || '').toLowerCase(), bitrate = BITRATE[source.level];
+      if (!/^\d+$/.test(id) || !/^[a-f0-9]{32}$/.test(hash) || !bitrate || !Number.isSafeInteger(size) || size <= 0)
+        throw new Error('native-only-cache-source');
+      const check = () => { if (signal.aborted || generation !== this.generation) throw new Error('cancelled'); };
+      const record = await this.wait(this.storage().getTrackFromCacheFast({ trackId: id, md5: hash, bitrate }), signal);
+      check();
+      if (!record || String(record.songId) !== id || Number(record.bitrate) !== bitrate
+        || String(record.md5).toLowerCase() !== hash || String(record.et) !== '1') return null;
+      const metadata = JSON.parse(record.playInfoStr || '{}');
+      if (metadata.resourceType !== 'track' || metadata.freeTrialInfo || metadata.level !== source.level
+        || String(metadata.md5).toLowerCase() !== hash || Number(metadata.size) !== size) return null;
+      if (!this.home) {
+        const libraries = await this.nativeFs('getLibraries', [], signal); check();
+        const library = Array.isArray(libraries) && libraries.find(x => x.name === 'Music');
+        if (library?.path?.endsWith('/Music')) this.home = library.path.slice(0, -6);
+      }
+      for (const root of this.roots()) {
+        const prefix = `${root}/${id}-_-_${bitrate}-_-_${hash}`;
+        for (const suffix of ['!', '']) {
+          const path = prefix + '.uc' + suffix, indexPath = prefix + '.idx' + suffix;
+          const file = await this.nativeFs('getProperties', [path], signal); check();
+          if (file?.type !== 'file' || Number(file.size) > size) continue;
+          const before = await this.nativeFs('getProperties', [indexPath], signal); check();
+          if (before?.type !== 'file' || Number(before.size) > 1024 * 1024) continue;
+          const text = await this.nativeFs('readFileText', [indexPath], signal); check();
+          const after = await this.nativeFs('getProperties', [indexPath], signal); check();
+          if (!after || before.size !== after.size || before.lastModified !== after.lastModified) continue;
+          const coverage = globalThis.GaplessCacheCoverage.parse(text, size);
+          if (coverage.ranges.some(([, end]) => end > Number(file.size))) continue;
+          return { ...coverage, generation, path, indexPath };
+        }
+      }
+      return null;
+    }
+    async readReadyRange(source, start, end, signal, coverage) {
+      if (!coverage || coverage.generation !== this.generation
+        || globalThis.GaplessCacheCoverage.missing(coverage, start, end).length) throw new Error('native-only-cache-gap');
+      const before = await this.nativeFs('getProperties', [coverage.path], signal);
+      if (!before || Number(before.size) < end) throw new Error('native-only-cache-file');
+      if (!this.mounts.has(coverage.path)) this.mounts.set(coverage.path, await this.wait(betterncm.fs.mountFile(coverage.path), signal));
+      const url = this.mounts.get(coverage.path), parsed = new URL(url);
+      if (parsed.protocol !== 'http:' || parsed.hostname !== '127.0.0.1') throw new Error('native-only-cache-mount');
+      const bytes = await globalThis.GaplessSeekRange.read(url, start, end, coverage.size, signal, true, true);
+      const after = await this.nativeFs('getProperties', [coverage.path], signal);
+      if (signal.aborted || coverage.generation !== this.generation) throw new Error('cancelled');
+      if (!after || before.size !== after.size || before.lastModified !== after.lastModified)
+        throw new Error('native-only-cache-changed');
+      return bytes;
+    }
+    async verifyParts(source, parts, signal) {
+      const crypto = this.crypto(), generation = this.generation;
+      if (!crypto?.algo?.MD5?.create) throw new Error('native-only-cache-verifier');
+      const digest = crypto.algo.MD5.create(); let total = 0;
+      for (const part of parts) for (let at = 0; at < part.length; at += 65536) {
+        if (signal.aborted || generation !== this.generation) throw new Error('cancelled');
+        const chunk = part.subarray(at, at + 65536), words = new Array(Math.ceil(chunk.length / 4)).fill(0);
+        for (let i = 0; i < chunk.length; i++) words[i >>> 2] |= chunk[i] << (24 - (i & 3) * 8);
+        total += chunk.length; digest.update(crypto.lib.WordArray.create(words, chunk.length));
+        await new Promise(resolve => setTimeout(resolve, 0));
+      }
+      if (signal.aborted || generation !== this.generation) throw new Error('cancelled');
+      if (total !== Number(source.size ?? source.fileSize)
+        || digest.finalize().toString(crypto.enc.Hex).toLowerCase() !== String(source.md5).toLowerCase())
+        throw new Error('native-only-cache-integrity');
     }
     async read(ref, source, signal, full = false) {
       const generation = this.generation;

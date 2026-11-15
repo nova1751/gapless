@@ -2,7 +2,7 @@
   "manifest_version": 1,
   "name": "无缝播放",
   "slug": "gapless-player-mac",
-  "version": "0.3.0",
+  "version": "0.3.1",
   "author": "AntsandIce / Ehytr; macOS adaptation",
   "description": "macOS 3.1.12 无缝衔接；沿用原生音质选择和界面，不兼容时回退原生。",
   "type": "extension",

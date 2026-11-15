@@ -2,8 +2,9 @@
 (() => {
   'use strict';
   class MacMediaSession {
-    constructor({ snapshot, seek, transport, trace }) {
+    constructor({ snapshot, seek, cancelSeek, transport, trace }) {
       this.snapshot = snapshot; this.seek = seek; this.transport = transport; this.trace = trace; this.media = navigator.mediaSession;
+      this.cancelSeek = cancelSeek;
       this.supported = !!(this.media?.setActionHandler && this.media.setPositionState && globalThis.MediaMetadata);
       this.active = false; this.failed = false; this.generation = 0; this.positionAt = -Infinity;
       this.actions = ['play', 'pause', 'previoustrack', 'nexttrack', 'seekto'];
@@ -60,6 +61,7 @@
       this.lastSeek = { id: s.id, value, at: now };
       if (Math.abs(s.position - value) < 0.02) { this.sync(true); return; }
       this.pendingSeek = { id: s.id, value, generation: this.generation };
+      if (this.seeking) this.cancelSeek?.(s.id);
       void this.flushSeek();
     }
     async flushSeek() {
@@ -69,9 +71,16 @@
         while (this.pendingSeek) {
           const request = this.pendingSeek, s = this.snapshot(); this.pendingSeek = null;
           if (!this.active || !s?.owns || s.id !== request.id || request.generation !== this.generation) continue;
-          await this.seek(request.id, request.value);
+          try { await this.seek(request.id, request.value); }
+          catch (error) {
+            this.trace('system-media-seek-error', { reason: error.message });
+            // A newer drag must survive cancellation of its predecessor.
+            if (this.pendingSeek) continue;
+            this.sync(true); continue;
+          }
           const current = this.snapshot();
           if (!this.active || !current?.owns || current.id !== request.id || request.generation !== this.generation) continue;
+          if (this.pendingSeek) continue;
           this.trace('system-media-seek', { id: request.id, position: request.value });
           this.sync(true);
         }
