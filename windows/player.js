@@ -67,8 +67,55 @@ plugin.onLoad(async () => {
     const sameEnvironment = (a, b) => b?.capable && !customOutput && a?.queue === b.queue
       && a?.mode === b.mode && a?.quality === b.quality && a?.account === b.account;
     const nativeCache = new globalThis.WindowsNativeCache({ settings: () => native.read().setting, trace });
+    const nativeSourceMode = !!gaplessWindowsBuild.nativeSource;
+    const sourceLeaseValid = () => enabled() && current?.owns && !!nativeGate && !nativeGate.releasing && !restoring && !handback;
+    const cacheSession = nativeSourceMode ? new globalThis.WindowsNativeCacheSession({ bridge, valid: sourceLeaseValid,
+      snapshot: (info, signal) => nativeCache.snapshotSource(info, signal), trace }) : null;
+    const cacheQueue = cacheSession ? new globalThis.WindowsNativeCacheQueue(cacheSession) : null;
+    const nativeBytes = cacheQueue ? new globalThis.WindowsNativeByteSource({ cache: nativeCache, queue: cacheQueue, valid: sourceLeaseValid }) : null;
+    let fillJob = null, fillAfter = 0;
+    function cancelFill() { fillJob?.controller.abort(); }
+    function maybeFill(c) {
+      if (!cacheQueue) return;
+      const position = clock.position(c), entry = c.entry;
+      const safe = sourceLeaseValid() && c.playing && !c.loading && !c.pendingStreamSeek && !c.claimed
+        && entry?.origin === 'native-source' && Array.isArray(entry.stream?.seekPoints)
+        && globalThis.GaplessSeekRange.until(entry, Math.floor(position * entry.spec.rate))
+          >= Math.min(entry.buffer.length, Math.ceil((position + 6) * entry.spec.rate))
+        && (c.duration - position > 15 || !!selected?.entry);
+      if (!safe) { cancelFill(); return; }
+      if (fillJob || c.cacheComplete || performance.now() < fillAfter || cacheQueue.running || cacheQueue.queue.length) return;
+      const job = fillJob = { controller: new AbortController(), c };
+      const signal = job.controller.signal;
+      const valid = () => !signal.aborted && current === c && sourceLeaseValid();
+      void (async () => {
+        try {
+          const coverage = await nativeCache.snapshotSource(entry.source, signal);
+          if (!valid()) return;
+          if (coverage.complete) { c.cacheComplete = true; return; }
+          const gap = globalThis.GaplessCacheCoverage.missing(coverage)[0];
+          const target = globalThis.GaplessCacheCoverage.seekBefore(gap[0], entry.stream.seekPoints, entry.spec.rate);
+          const result = await cacheQueue.request({ source: entry.source, position: target, signal,
+            priority: globalThis.WindowsNativeCachePriority.fill, budgetMs: 500 });
+          if (valid() && result?.complete) { c.cacheComplete = true; trace('native-cache-complete', { id: source.trackId(c.info) }); }
+        } catch (error) {
+          if (!signal.aborted && !/^native-cache-(preempted|cleared|cancelled)$/.test(error.message))
+            fillAfter = performance.now() + 5000;
+        } finally { if (fillJob === job) fillJob = null; fillAfter = Math.max(fillAfter, performance.now() + 500); }
+      })();
+    }
     const resources = new globalThis.GaplessStreamingResources({
-      trace, readCache: (ref, info, signal, full) => nativeCache.read(ref, info, signal, full), exactSize: true, openLocal: source.openLocal, resolve: async () => { throw new Error('native-only-source'); }, acceptRate: () => true,
+      trace, readCache: async (ref, info, signal, full) => {
+        if (!nativeBytes) return nativeCache.read(ref, info, signal, full);
+        if (full) throw new Error('native-only-cache-index-required');
+        try { return await nativeBytes.open(info, signal, () => source.trackId(info) === source.trackId(current?.info)
+          ? (current?.entry?.stream?.priorityTarget != null ? 100 : 60) : 30); }
+        catch (error) {
+          if (signal.aborted || /^native-cache-(preempted|cleared|cancelled)$/.test(error.message)) throw new Error('cancelled');
+          // Do not silently start a second Web download after native acquisition.
+          throw new Error('native-only-cache-provider');
+        }
+      }, exactSize: true, openLocal: source.openLocal, resolve: async () => { throw new Error('native-only-source'); }, acceptRate: () => true,
     });
     const preparedPairs = new Map();
     const sameSpec = (a, b) => !!a && !!b && a.rate === b.rate && a.channels === b.channels
@@ -283,6 +330,8 @@ plugin.onLoad(async () => {
       resources.unpin(recentEntry); recentEntry = null;
     }
     function clearMemoryCache() {
+      cancelFill(); if (current) current.cacheComplete = false;
+      cacheQueue?.clear();
       const c = current;
       cancelPendingSeek(c); cancelCandidate(); clearRecent();
       // Do not cancel an already audible boundary claim: its PCM is active.
@@ -290,7 +339,7 @@ plugin.onLoad(async () => {
       const ref = claim ? makeRef(claim.info, claim.snapshot) : c?.owns ? makeRef(c.info, c.environment || getSnapshot()) : null;
       resources.retain(ref ? [ref] : []);
       resources.clearCachedData(active);
-      nativeCache.mounts.clear(); preparedPairs.clear();
+      nativeCache.clear(); preparedPairs.clear();
       if (c) {
         c.prepareAttempts = 0;
         c.prepareAfter = performance.now() + Math.max(0, Math.min(5000, (c.duration - clock.position(c) - 4) * 1000));
@@ -300,6 +349,8 @@ plugin.onLoad(async () => {
     }
     bridge.cacheClearRequested = clearMemoryCache;
     function abandon(keepWarm = false) {
+      cancelFill();
+      cacheQueue?.clear();
       clearTimeout(switchIdleTimer);
       // One recently heard buffer makes back/forward navigation responsive.
       // It remains inside the shared memory budget and is evicted before a
@@ -615,6 +666,8 @@ plugin.onLoad(async () => {
     }
 
     async function recover(c, reason) {
+      cancelFill();
+      cacheQueue?.clear();
       cancelPendingSeek(c);
       clearRecent();
       if (current === c && c.loading) { c.rejectLoadReason = reason; resources.retain([]); return; }
@@ -716,9 +769,10 @@ plugin.onLoad(async () => {
     }
 
     bridge.observe = (name, args) => {
+      if (cacheSession?.observe(name, args)) return true;
       const c = current;
       if (name === 'storage.onclearcache') {
-        nativeCache.mounts.clear(); trace('native-cache-clear-result', { success: !!args[0] }); return false;
+        nativeCache.clear(); trace('native-cache-clear-result', { success: !!args[0] }); return false;
       }
       if (name === 'audioplayer.onFetchPreloadInfo') {
         bridge.nativePreload.requested++;
@@ -799,6 +853,13 @@ plugin.onLoad(async () => {
           c.nativeAudioHeard = Number(count?.playedAudioTime || 0) + c.nativeAudioCarry;
         }
         const info = source.sourceInfo(c.info, c.environment.currentRow);
+        if (nativeSourceMode) {
+          if (nativeGate?.releasing) await nativeGate.releasing;
+          check();
+          if (nativeGate) nativeGate.c = c;
+          else await acquireNativeGate(c);
+          check();
+        }
         const ref = makeRef(info, c.environment);
         if (recentEntry && (recentEntry.requestKey !== resources.requestKey({ ...ref, id: recentEntry.id })
           || recentEntry.requestedLevel !== ref.level)) clearRecent();
@@ -808,7 +869,7 @@ plugin.onLoad(async () => {
         try {
           let deadline;
           try { entry = await Promise.race([resources.obtain(ref, info), new Promise((_, reject) => {
-            deadline = setTimeout(() => reject(new Error('native-only-start-deadline')), 1000);
+            deadline = setTimeout(() => reject(new Error('native-only-start-deadline')), nativeSourceMode ? 8000 : 1000);
           })]); } finally { clearTimeout(deadline); }
         }
         catch (error) {
@@ -909,6 +970,7 @@ plugin.onLoad(async () => {
     }
 
     bridge.handle = (name, callback, args) => {
+      if (['audioplayer.load', 'audioplayer.seek', 'audioplayer.pause', 'audioplayer.stop'].includes(name)) cancelFill();
       if (name === 'audioplayer.setFetchPreloadInfoResult' && current?.owns && !restoring && !handback
         && args[0] && typeof args[0] === 'object') {
         bridge.nativePreload.lateResultsSuppressed++;
@@ -1154,6 +1216,7 @@ plugin.onLoad(async () => {
           // Paused playback still has a valid authorized source and queue.
           // Prepare only; schedule() remains gated on actual playback intent.
           if (!temporaryBridge && !c.claimed && !finishLast && !selected) void prepare(c, snap);
+          maybeFill(c);
           if (!c.playing || c.claimed) return;
           if (performance.now() - lastProgress > 50) { lastProgress = performance.now(); progress(c); }
           prepareVisualClock();

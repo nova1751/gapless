@@ -34,21 +34,25 @@
     }
     return null;
   }
-  async function read(url, start, end, size, signal, xor = false) {
+  async function read(url, start, end, size, signal, xor = false, partialFile = false) {
     const controller = new AbortController();
     const cancel = () => controller.abort();
     if (signal.aborted) cancel();
     signal.addEventListener('abort', cancel, { once: true });
     const timer = setTimeout(cancel, 10000);
-    try { return await readBytes(url, start, end, size, controller.signal, xor); }
+    try { return await readBytes(url, start, end, size, controller.signal, xor, partialFile); }
     finally { clearTimeout(timer); signal.removeEventListener('abort', cancel); }
   }
-  async function readBytes(url, start, end, size, signal, xor) {
+  async function readBytes(url, start, end, size, signal, xor, partialFile) {
     if (!Number.isSafeInteger(size) || !Number.isSafeInteger(start) || !Number.isSafeInteger(end)
       || start < 0 || end <= start || end > size || end - start > 2 * MiB) throw new Error('seek-range-bounds');
     const response = await fetch(url, { headers: { Range: `bytes=${start}-${end - 1}` }, signal });
     const expected = `bytes ${start}-${end - 1}/${size}`;
-    if (response.status !== 206 || response.headers.get('content-range') !== expected) {
+    const contentRange = response.headers.get('content-range');
+    const nativeRange = partialFile && /^bytes (\d+)-(\d+)\/(\d+)$/.exec(contentRange || '');
+    const nativeFileValid = nativeRange && Number(nativeRange[1]) === start && Number(nativeRange[2]) === end - 1
+      && Number.isSafeInteger(Number(nativeRange[3])) && Number(nativeRange[3]) >= end && Number(nativeRange[3]) <= size;
+    if (response.status !== 206 || (contentRange !== expected && !nativeFileValid)) {
       await response.body?.cancel(); throw new Error('seek-range-unsupported');
     }
     const result = new Uint8Array(end - start), reader = response.body.getReader();

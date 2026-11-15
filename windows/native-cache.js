@@ -3,7 +3,51 @@
   const BITRATE = { standard: 128, higher: 192, exhigh: 320, lossless: 999, hires: 1999 };
   class WindowsNativeCache {
     constructor({ settings, trace }) {
-      this.settings = settings; this.trace = trace; this.mounts = new Map();
+      this.settings = settings; this.trace = trace; this.mounts = new Map(); this.generation = 0;
+    }
+    clear() { this.generation++; this.mounts.clear(); }
+    async snapshotSource(source, signal) {
+      const hash = globalThis.GaplessAudioResources.fingerprint(source), bitrate = BITRATE[source.level];
+      const size = Number(source.size ?? source.fileSize), id = String(source.songId || '');
+      if (!/^\d+$/.test(id) || !hash || !bitrate || source.freeTrialInfo || source.path
+        || !Number.isSafeInteger(size) || size <= 0 || !this.services()) throw new Error('native-only-cache-source');
+      const generation = this.generation, settings = this.settings() || {};
+      const roots = [...new Set([this.storage.cacheDir, settings.cacheDir, settings.storageCachePath, settings.oldCacheDir]
+        .filter(p => typeof p === 'string' && /^[a-z]:[\\/]/i.test(p) && !p.split(/[\\/]/).includes('..'))
+        .flatMap(p => { const root = p.replace(/[\\/]+$/, ''); return [root + '\\Cache', root]; }))];
+      const empty = { size, ranges: [], complete: false, path: null, generation };
+      for (const root of roots) {
+        const path = root + '\\' + `${id}-${bitrate}-${hash}.uc`, indexPath = path.slice(0, -3) + '.idx';
+        if (!await this.wait(betterncm.fs.exists(path), signal)
+          || !await this.wait(betterncm.fs.exists(indexPath), signal)) continue;
+        const blob = await this.wait(betterncm.fs.readFile(indexPath), signal);
+        if (!blob || blob.size > 1024 * 1024) throw new Error('native-only-cache-index');
+        const coverage = globalThis.GaplessCacheCoverage.parse(await this.wait(blob.text(), signal), size);
+        if (generation !== this.generation) throw new Error('cancelled');
+        return { ...coverage, path, generation };
+      }
+      if (generation !== this.generation) throw new Error('cancelled');
+      return empty;
+    }
+    async readReadyRange(source, start, end, signal) {
+      const snapshot = await this.snapshotSource(source, signal);
+      if (!snapshot.path || globalThis.GaplessCacheCoverage.missing(snapshot, start, end).length)
+        throw new Error('native-cache-range-missing');
+      let mounted = this.mounts.get(snapshot.path);
+      if (!mounted) {
+        mounted = await this.wait(betterncm.fs.mountFile(snapshot.path), signal);
+        if (snapshot.generation !== this.generation) throw new Error('cancelled');
+        if (this.mounts.size >= 16) this.mounts.delete(this.mounts.keys().next().value);
+        this.mounts.set(snapshot.path, mounted);
+      }
+      const url = new URL(mounted);
+      if (url.protocol !== 'http:' || !['localhost', '127.0.0.1'].includes(url.hostname)) throw new Error('cache-mount');
+      // A native partial .uc can be physically shorter than the final song.
+      // Its committed index authorizes the interval; the local server reports
+      // current physical length, not the final source length, in Content-Range.
+      const bytes = await globalThis.GaplessSeekRange.read(url.href, start, end, snapshot.size, signal, true, true);
+      if (snapshot.generation !== this.generation || signal.aborted) throw new Error('cancelled');
+      return bytes;
     }
     services() {
       if (this.storage && this.crypto) return true;

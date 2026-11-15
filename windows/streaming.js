@@ -30,7 +30,7 @@
       }
       // An active decode buffer is working state, not reusable cache. Continue
       // from the same authorized source if native disk files have been removed.
-      if (active?.stream?.indexed && !active.source.localKey && active.source.url) {
+      if (active?.stream?.indexed && active.origin !== 'native-source' && !active.source.localKey && active.source.url) {
         const source = active.source, key = active.stream.cacheKey;
         active.stream.verifyAvailable = null;
         active.stream.rangeOrigin = 'network';
@@ -134,6 +134,7 @@
                 ? (start, end, signal) => globalThis.GaplessSeekRange.read(source.url, start, end, Number(source.size), signal) : null);
               this.entries.set(entry.key, entry);
               this.reserved -= size; job.reserve -= size;
+              input.setIndex?.(entry.stream.seekPoints, spec);
               const cacheKey = entry.requestKey + ':' + (job.identity || hash || source.localKey || source.url);
               entry.stream.cacheKey = cacheKey;
               const rawRead = entry.stream.readRange;

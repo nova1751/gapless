@@ -11,9 +11,14 @@ parser = argparse.ArgumentParser(description=__doc__)
 parser.add_argument("--client", type=Path, default=Path(r"C:\Program Files\NetEase\CloudMusic\package\orpheus.ntpk"))
 parser.add_argument("--probe", action="store_true", help="Pass playback through and record native preloading.")
 parser.add_argument("--diagnostics", action="store_true")
+parser.add_argument("--native-source-trial", action="store_true", help="Evaluation only: native cache acquisition owns online FLAC bytes.")
 parser.add_argument("--temporary-bridge", action="store_true", help="Evaluation only: tail/head window with sequential native handback; output alignment not certified.")
 args = parser.parse_args()
+if args.native_source_trial and (args.probe or args.temporary_bridge):
+    parser.error('--native-source-trial cannot be combined with another trial backend')
 manifest = json.loads((root / "manifest.json").read_text(encoding="utf-8-sig"))
+if args.native_source_trial:
+    manifest["description"] = "原生缓存数据源试验；尚未完成音频、清理和后台补齐验收"
 if args.temporary_bridge:
     manifest["description"] = "短时桥接试验版；原生交还尚未完成声音对齐验收"
 
@@ -61,7 +66,8 @@ patched += """
 };
 """
 selector = "const selector = " + json.dumps({"original": original, "patched": patched}) + ";"
-mode = json.dumps({"probe": args.probe, "diagnostics": args.diagnostics, "temporaryBridge": args.temporary_bridge})
+mode = json.dumps({"probe": args.probe, "diagnostics": args.diagnostics, "temporaryBridge": args.temporary_bridge,
+                   "nativeSource": args.native_source_trial})
 def read(path):
     return path.read_text(encoding="utf-8-sig")
 
@@ -70,10 +76,12 @@ worker = '\n'.join(read(p) for p in [vendor / 'core.js', vendor / 'md5.js', root
 main = "\n".join([f"const gaplessWindowsBuild = {mode};", selector,
                   'globalThis.gaplessCacheWorkerSource = ' + json.dumps(worker) + ';',
                   read(root.parent / 'shared/cache-worker.js'),
+                  read(root / 'cache-coverage.js'), read(root / 'native-cache-session.js'),
+                  read(root / 'native-cache-queue.js'), read(root / 'native-byte-source.js'),
                   'new Function("module", "exports", "define", ' + json.dumps(read(root.parent / "vendor/flac-decoder-0.2.11/flac-decoder.min.js")) + ').call(globalThis);',
                   read(root.parent / "shared/audio-resources.js"),
                   read(root.parent / "shared/playback-clock.js"), read(root.parent / "shared/visual-pcm.js"), read(root.parent / "shared/bridge-window.js"), read(root.parent / "shared/native-handback.js"), read(root / "source.js"), read(root / "native-cache.js"), read(root / "toggle.js"), read(root / "probe.js"), read(root / "song-cache.js"), read(root / "seek-range.js"), read(root / "streaming.js"), read(root / "player.js")])
-output = root.parent / "dist" / f'gapless-player-windows-{manifest["version"]}{"-probe" if args.probe else "-bridge-trial" if args.temporary_bridge else ""}.plugin'
+output = root.parent / "dist" / f'gapless-player-windows-{manifest["version"]}{"-native-source-trial" if args.native_source_trial else "-probe" if args.probe else "-bridge-trial" if args.temporary_bridge else ""}.plugin'
 output.parent.mkdir(exist_ok=True)
 subprocess.run(["node", "--check", "-"], input=main.encode(), check=True)
 with ZipFile(output, "w", ZIP_DEFLATED) as archive:
