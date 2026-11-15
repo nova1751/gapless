@@ -83,7 +83,24 @@ plugin.onLoad(async () => {
     const cacheQueue = cacheSession ? new globalThis.WindowsNativeCacheQueue(cacheSession) : null;
     const nativeBytes = cacheQueue ? new globalThis.WindowsNativeByteSource({ cache: nativeCache, queue: cacheQueue,
       valid: sourceLeaseValid, awaitReady: awaitCacheReady }) : null;
-    let fillJob = null, fillAfter = 0;
+    let fillJob = null, fillAfter = 0, preferRetiredFill = true;
+    // Metadata only: never retain an old AudioBuffer/PCM entry for disk fill.
+    const retiredFills = [];
+    function clearRetiredFills() { cancelFill(); retiredFills.length = 0; }
+    function rememberFill(c) {
+      const entry = c?.entry, points = entry?.stream?.seekPoints;
+      if (!nativeSourceMode || c?.cacheComplete || entry?.origin !== 'native-source'
+        || !Array.isArray(points) || !points.length || points.length > 65536 || !c.environment) return;
+      const key = source.trackId(c.info) + ':' + globalThis.GaplessAudioResources.fingerprint(entry.source);
+      const previous = retiredFills.findIndex(item => item.key === key);
+      if (previous >= 0) retiredFills.splice(previous, 1);
+      retiredFills.push({ key, info: { songId: source.trackId(c.info) },
+        source: { ...entry.source }, points: points.map(p => ({ sample: p.sample, offset: p.offset })),
+        rate: entry.spec.rate, account: c.environment.account, quality: c.environment.quality,
+        generation: nativeCache.generation, expires: performance.now() + 10 * 60 * 1000,
+        cacheFillStalls: c.cacheFillStalls || 0, cacheFillRetryAt: c.cacheFillRetryAt || 0 });
+      while (retiredFills.length > 2) retiredFills.shift();
+    }
     function cancelFill() { fillJob?.controller.abort(); }
     function resetFillRetry(c) {
       if (c) { c.cacheFillStalls = 0; c.cacheFillRetryAt = 0; }
@@ -102,33 +119,53 @@ plugin.onLoad(async () => {
           >= Math.min(entry.buffer.length, Math.ceil((position + 6) * entry.spec.rate))
         && (c.duration - position > 15 || !!selected?.entry);
       if (!safe) { cancelFill(); return; }
-      if (fillJob || c.cacheComplete || c.cacheFillStalls >= 6 || performance.now() < (c.cacheFillRetryAt || 0)
-        || performance.now() < fillAfter || cacheQueue.running || cacheQueue.queue.length) return;
-      const job = fillJob = { controller: new AbortController(), c };
+      for (let i = retiredFills.length - 1; i >= 0; i--) {
+        const item = retiredFills[i];
+        if (item.cacheComplete || item.generation !== nativeCache.generation || item.expires < performance.now()
+          || item.account !== c.environment?.account || item.quality !== c.environment?.quality
+          || (item.source.songId === entry.source.songId
+            && globalThis.GaplessAudioResources.fingerprint(item.source) === globalThis.GaplessAudioResources.fingerprint(entry.source)))
+          retiredFills.splice(i, 1);
+      }
+      if (fillJob || performance.now() < fillAfter || cacheQueue.running || cacheQueue.queue.length) return;
+      const eligible = item => !item.cacheComplete && (item.cacheFillStalls || 0) < 6
+        && performance.now() >= (item.cacheFillRetryAt || 0);
+      const retired = retiredFills.find(eligible);
+      const owner = retired && (preferRetiredFill || !eligible(c)) ? retired : eligible(c) ? c : retired;
+      if (!owner) return;
+      preferRetiredFill = owner === c;
+      const fillSource = owner === c ? entry.source : owner.source;
+      const points = owner === c ? entry.stream.seekPoints : owner.points;
+      const rate = owner === c ? entry.spec.rate : owner.rate;
+      const job = fillJob = { controller: new AbortController(), c: owner };
       const signal = job.controller.signal;
-      const valid = () => !signal.aborted && current === c && sourceLeaseValid();
+      const generation = nativeCache.generation;
+      const valid = () => !signal.aborted && current === c && sourceLeaseValid()
+        && generation === nativeCache.generation && (owner === c || retiredFills.includes(owner));
+      const timer = setTimeout(() => { if (valid()) deferFill(owner); job.controller.abort(); }, 8000);
       void (async () => {
         try {
-          const coverage = await nativeCache.snapshotSource(entry.source, signal);
+          const coverage = await nativeCache.snapshotSource(fillSource, signal);
           if (!valid()) return;
-          if (coverage.complete) { c.cacheComplete = true; return; }
+          if (coverage.complete) { owner.cacheComplete = true; return; }
           const gap = globalThis.GaplessCacheCoverage.missing(coverage)[0];
-          const target = globalThis.GaplessCacheCoverage.seekBefore(gap[0], entry.stream.seekPoints, entry.spec.rate);
-          const result = await cacheQueue.request({ source: entry.source, position: target, signal,
+          const target = globalThis.GaplessCacheCoverage.seekBefore(gap[0], points, rate);
+          const result = await cacheQueue.request({ source: fillSource, position: target, signal,
             priority: globalThis.WindowsNativeCachePriority.fill,
-            budgetMs: Math.min(2000, 500 * 2 ** (c.cacheFillStalls || 0)) });
+            budgetMs: Math.min(2000, 500 * 2 ** (owner.cacheFillStalls || 0)) });
           if (!valid()) return;
-          if (result?.complete) { resetFillRetry(c); c.cacheComplete = true; trace('native-cache-complete', { id: source.trackId(c.info) }); }
+          if (result?.complete) { resetFillRetry(owner); owner.cacheComplete = true; trace('native-cache-complete', { id: source.trackId(owner.info) }); }
           else {
             const covered = snapshot => snapshot?.ranges.reduce((sum, [start, end]) => sum + end - start, 0) || 0;
-            if (covered(result) > covered(coverage)) resetFillRetry(c);
-            else deferFill(c);
+            if (covered(result) > covered(coverage)) resetFillRetry(owner);
+            else deferFill(owner);
           }
         } catch (error) {
-          if (valid() && !/^native-cache-(preempted|cleared|cancelled)$/.test(error.message)) deferFill(c);
-        } finally { if (fillJob === job) fillJob = null; fillAfter = Math.max(fillAfter, performance.now() + 500); }
+          if (valid() && !/^native-cache-(preempted|cleared|cancelled)$/.test(error.message)) deferFill(owner);
+        } finally { clearTimeout(timer); if (fillJob === job) fillJob = null; fillAfter = Math.max(fillAfter, performance.now() + 500); }
       })();
     }
+
     const resources = new globalThis.GaplessStreamingResources({
       trace, readCache: async (ref, info, signal, full) => {
         if (!nativeBytes) return nativeCache.read(ref, info, signal, full);
@@ -361,7 +398,7 @@ plugin.onLoad(async () => {
       resources.unpin(recentEntry); recentEntry = null;
     }
     function clearMemoryCache() {
-      cancelFill(); if (current) current.cacheComplete = false;
+      clearRetiredFills(); if (current) current.cacheComplete = false;
       resetFillRetry(current);
       cacheQueue?.clear();
       const c = current;
@@ -386,6 +423,7 @@ plugin.onLoad(async () => {
       return clearMemoryCache();
     };
     function abandon(keepWarm = false) {
+      if (keepWarm) rememberFill(current); else clearRetiredFills();
       cancelFill();
       cacheQueue?.clear();
       clearTimeout(switchIdleTimer);
@@ -708,7 +746,7 @@ plugin.onLoad(async () => {
     }
 
     async function recover(c, reason) {
-      cancelFill();
+      clearRetiredFills();
       cacheQueue?.clear();
       cancelPendingSeek(c);
       clearRecent();
@@ -963,7 +1001,7 @@ plugin.onLoad(async () => {
         c.loading = false; c.owns = false; c.blocked = true;
         // Cancel the acquisition lane before any asynchronous output teardown
         // or unmuting; a timed-out native Load/Seek must not outlive ownership.
-        cancelFill(); cacheQueue?.clear(); cancelPendingSeek(c);
+        clearRetiredFills(); cacheQueue?.clear(); cancelPendingSeek(c);
         resources.retain([]);
         clock.stop(c); await clock.close().catch(bridge.report);
         if (current !== c) { reply(callback); return; }
@@ -986,6 +1024,7 @@ plugin.onLoad(async () => {
         && bridge.registrations.has('audioplayer.onLoad')) {
         claim = null;
         clearTimeout(incoming.timer);
+        cancelFill(); rememberFill(incoming.previous);
         const c = current = incoming.track;
         c.id = id;
         c.info = info;
@@ -1304,6 +1343,7 @@ plugin.onLoad(async () => {
         bridge.call('audioplayer.setVolume', ['', '', value], () => localStorage.removeItem(gateKey));
     } catch {}
     window.addEventListener('beforeunload', () => {
+      clearRetiredFills(); cacheQueue?.close();
       if (nativeGate) bridge.call('audioplayer.setVolume', ['', '', clock.volume]);
     });
     if (bridge.load) {
@@ -1316,7 +1356,7 @@ plugin.onLoad(async () => {
     const publicStatus = {
       cacheStatus: () => ({ nativeSourceMode, clearing: cacheClearing, filling: !!fillJob,
         fillStalls: current?.cacheFillStalls || 0, fillSuspended: (current?.cacheFillStalls || 0) >= 6,
-        currentComplete: !!current?.cacheComplete, queue: cacheQueue?.status() || null,
+        currentComplete: !!current?.cacheComplete, pendingPrevious: retiredFills.length, queue: cacheQueue?.status() || null,
         session: cacheSession ? { ...cacheSession.stats } : null }),
       status: () => ({ enabled: enabled(), savingConfig, owns: !!current?.owns, loading: !!current?.loading,
         waitingForNextLoad: nativeSourceMode && enabled() && !!current && !current.owns && !current.loading,
@@ -1342,6 +1382,7 @@ plugin.onLoad(async () => {
     };
     function applyEnabled(value) {
         if (!value) {
+          clearRetiredFills(); cacheQueue?.clear();
           resources.songCache.clear();
           cancelPendingSeek(current);
           preparedPairs.clear();
