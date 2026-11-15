@@ -9,15 +9,15 @@
   "nativeCacheBatchesObserved": 0,
   "status": "candidate installed, enabled, paused; not production release",
   "latestInstallation": {
-    "implementation": "6c98ad3",
-    "installedSha256": "C77D74B6F0461A617BF7E5999B23D5F0F360ABEB2573494CC4F325A32C691BDF",
+    "implementation": "899325c",
+    "installedSha256": "9D39372D28F9876205B4BCD206FE141133A6C74178144C5D5745398C7EB21150",
     "runtimeMatchesInstalled": true,
-    "localIdentityFixPresent": true,
-    "webLoadMs": 1113,
+    "localVersionAndMetadataErrorGuardsPresent": true,
+    "webLoadMs": 1128,
     "sourceRate": 44100,
     "fallbackObserved": false,
     "finalState": "enabled and paused, close-to-tray restored, screen capture released",
-    "limits": "Startup and online playback smoke check only; real local-file replacement test not completed."
+    "limits": "Local and downloaded song lists empty; no real local replacement playback acceptance in this run."
   },
   "previousInstallation": {
     "implementation": "687e1b0",
@@ -28,5 +28,18 @@
     "sourceRate": 44100,
     "fallbackObserved": false,
     "finalState": "enabled and paused, close-to-tray restored"
-  }
+  },
+  "installationHistory": [
+    {
+      "implementation": "6c98ad3",
+      "installedSha256": "C77D74B6F0461A617BF7E5999B23D5F0F360ABEB2573494CC4F325A32C691BDF",
+      "runtimeMatchesInstalled": true,
+      "localIdentityFixPresent": true,
+      "webLoadMs": 1113,
+      "sourceRate": 44100,
+      "fallbackObserved": false,
+      "finalState": "enabled and paused, close-to-tray restored, screen capture released",
+      "limits": "Startup and online playback smoke check only; real local-file replacement test not completed."
+    }
+  ]
 }

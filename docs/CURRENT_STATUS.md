@@ -1,10 +1,10 @@
 # 当前交付状态（2026-11-16）
 
-目标仍未完成全部验收。Windows 当前机器已安装并保留 `6c98ad3` 原生数据源候选；不是默认打包产物，也不是正式发布。安装包及 runtime 对照见 [安装记录](verification/windows-candidate-install.json)。Mac 保持原有 0.2.5 候选，未移植本轮 Windows 原生缓存协议。
+目标仍未完成全部验收。Windows 当前机器已安装并保留 `899325c` 原生数据源候选；不是默认打包产物，也不是正式发布。安装包及 runtime 对照见 [安装记录](verification/windows-candidate-install.json)。Mac 保持原有 0.2.5 候选，未移植本轮 Windows 原生缓存协议。
 
 ## 当前实现
 
-后续源码已加入本地文件真实大小/修改时间校验，属性 API 已在宿主验证；该后续候选尚未安装。范围、检查证据与剩余竞态见[本地文件说明](LOCAL_SOURCE_IDENTITY.md)。
+后续源码已加入本地文件真实大小/修改时间校验，属性 API 已在宿主验证；该后续候选已安装为 `899325c`，runtime 匹配，在线播放加载 1128 ms；本地/下载列表为空，真实本地播放验收未完成。范围、检查证据与剩余竞态见[本地文件说明](LOCAL_SOURCE_IDENTITY.md)。
 
 源码新增[本地缓存身份修正](LOCAL_SOURCE_IDENTITY.md)：宿主报告文件大小/内容指纹变化时不再复用旧 PCM，语法、临时协议检查及 ZIP 打包通过；已安装并核对 runtime，重启后在线播放加载 1113 ms、44.1 kHz，未观察到回退；这不是实际文件替换验收。
 
