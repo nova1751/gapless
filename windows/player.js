@@ -69,6 +69,7 @@ plugin.onLoad(async () => {
     const nativeCache = new globalThis.WindowsNativeCache({ settings: () => native.read().setting, trace });
     const nativeSourceMode = !!gaplessWindowsBuild.nativeSource;
     let cacheClearing = false;
+    let pendingCacheClears = 0;
     const sourceLeaseValid = () => !cacheClearing && enabled() && current?.owns && !!nativeGate && !nativeGate.releasing && !restoring && !handback;
     async function awaitCacheReady(signal) {
       const deadline = performance.now() + 4000;
@@ -425,7 +426,10 @@ plugin.onLoad(async () => {
     bridge.cacheClearRequested = (args = []) => {
       // Only the default current-cache clear emits onclearcache on this client.
       // Clearing an explicitly named old directory was observed not to emit it.
-      if (nativeSourceMode && !args[0]) cacheClearing = true;
+      if (nativeSourceMode && !args[0]) {
+        pendingCacheClears++;
+        cacheClearing = true;
+      }
       const result = clearMemoryCache();
       if (nativeSourceMode && !args[0]) {
         const stops = cacheSession.recentStops.filter(item => performance.now() - item.at < 2000);
@@ -882,7 +886,11 @@ plugin.onLoad(async () => {
       if (cacheSession?.observe(name, args)) return true;
       const c = current;
       if (name === 'storage.onclearcache') {
-        cacheClearing = false;
+        // One result must not release the barrier for another clear that is
+        // still settling or deleting. A missing result keeps reads blocked;
+        // their existing deadline falls back to native instead of guessing.
+        pendingCacheClears = Math.max(0, pendingCacheClears - 1);
+        cacheClearing = pendingCacheClears > 0;
         nativeCache.clear(); trace('native-cache-clear-result', { success: !!args[0] }); return false;
       }
       if (name === 'audioplayer.onFetchPreloadInfo') {
@@ -1387,7 +1395,7 @@ plugin.onLoad(async () => {
     bridge.flushStartup?.();
     // Supported FLAC starts from an initial PCM segment, not a whole-file decode.
     const publicStatus = {
-      cacheStatus: () => ({ nativeSourceMode, clearing: cacheClearing, filling: !!fillJob,
+      cacheStatus: () => ({ nativeSourceMode, clearing: cacheClearing, pendingClears: pendingCacheClears, filling: !!fillJob,
         fillStalls: current?.cacheFillStalls || 0, fillSuspended: (current?.cacheFillStalls || 0) >= 6,
         currentComplete: !!current?.cacheComplete, pendingPrevious: retiredFills.length, queue: cacheQueue?.status() || null,
         session: cacheSession ? { ...cacheSession.stats } : null }),

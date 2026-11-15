@@ -1,0 +1,15 @@
+{
+  "scope": "Actual player.js clear-request and completion blocks extracted and run with simulated native notifications. No permanent test source added.",
+  "before": {
+    "twoRequestsOneCompletionBlocked": false
+  },
+  "after": {
+    "firstResultKeepsSecondBlocked": true,
+    "failureResultReleasesOwnRequest": true,
+    "extraIdleResultDoesNotUnderflow": true,
+    "explicitOldDirectoryDoesNotAddPending": true
+  },
+  "status": "Syntax and trial ZIP passed. Not installed.",
+  "requiredHostCheck": "Confirm one completion event per overlapping native default-cache clear. If native coalesces or duplicates results, counting is insufficient and must be replaced with serialized/coalesced dispatch; do not ship this candidate on simulation evidence alone.",
+  "limits": "No event transaction ID. A duplicate result while another request is pending cannot be distinguished by a counter. Missing completion retains the barrier and existing read deadline falls back to native."
+}
