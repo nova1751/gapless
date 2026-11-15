@@ -17,7 +17,7 @@
 - [0.2.1 采样率与音质保护](docs/AUDIO_QUALITY_0.2.1.md)
 - [0.2.0 实际跨曲回录记录](docs/verification/mac-continuous-web-0.2.0.json)
 - [Mac 安装及历史说明](mac/README.md)
-- [Windows 持续 Web 实施方案 v16](docs/WINDOWS_CONTINUOUS_WEB_AUDIO.md)：含已复查宿主维护状态、右上角入口/开关、缓存到在线音源顺序、首曲入口及具体交付物；尚无Windows适配器、安装包或实机验收
+- [Windows 持续 Web 实施方案 v17](docs/WINDOWS_CONTINUOUS_WEB_AUDIO.md)：含当前右上角完整菜单的样式基线、通用插件管理/注入能力、宿主维护状态、缓存优先、首曲入口及具体交付物；尚无Windows适配器、安装包或实机验收
 - [播放范围与原生特性风险](docs/PLAYBACK_SCOPE_AND_RISKS.md)
 - [网易云缓存读取边界](docs/CACHE_PRIORITY.md)
 - [原生无缝能力实查](docs/NATIVE_GAPLESS_FEASIBILITY.md)
