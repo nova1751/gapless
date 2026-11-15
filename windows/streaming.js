@@ -20,7 +20,13 @@
       super.unpin(entry);
       if (entry?.discardOnUnpin && !entry.pins && this.entries.get(entry.key) === entry) this.entries.delete(entry.key);
     }
-    status() { return { ...super.status(), encodedCache: this.songCache.status() }; }
+    status() {
+      const bounded = [...this.entries.values()].filter(entry => entry.stream?.bounded);
+      return { ...super.status(), encodedCache: this.songCache.status(), boundedPCM: {
+        entries: bounded.length, bytes: bounded.reduce((n, entry) => n + entry.buffer.bytes, 0),
+        capacity: bounded.reduce((n, entry) => n + entry.buffer.limit, 0),
+      } };
+    }
     clearCachedData(active) {
       for (const entry of this.entries.values()) entry.stream?.ensureController?.abort();
       this.songCache.clear(); this.failures.clear();
@@ -120,16 +126,22 @@
               if (prefix.length < 42) continue;
               spec = header(prefix);
               if (!spec || spec.codec !== 'flac' || ![8, 16, 24].includes(spec.bits)) throw new Error('decode-stream-header');
-              const size = spec.frames * spec.channels * 4;
+              const seekPoints = globalThis.GaplessSeekRange.index(prefix, spec,
+                Number(source.localKey ? input.response.headers.get('content-length') : source.size));
+              const bounded = input.kind === 'native-source' && seekPoints && input.seekRange;
+              // Reserve capacity plus immutable scheduled output copies; only
+              // native indexed input uses the bounded store in this candidate.
+              const size = bounded ? Math.min(spec.frames * spec.channels * 4, 32 * 1024 * 1024) + 8 * 1024 * 1024
+                : spec.frames * spec.channels * 4;
               this.reserve(job, size + 8 * 1024 * 1024);
-              const buffer = new AudioBuffer({ length: spec.frames, numberOfChannels: spec.channels, sampleRate: spec.rate });
+              const buffer = bounded ? new globalThis.GaplessPCMCache(spec)
+                : new AudioBuffer({ length: spec.frames, numberOfChannels: spec.channels, sampleRate: spec.rate });
               const hash = fingerprint(source);
               entry = { id: job.ref.id, requestKey: this.requestKey(job.ref), key: `${this.requestKey(job.ref)}:${job.identity}:${spec.rate}`,
                 identity: job.identity, source, hash, level: source.level, requestedLevel: job.ref.level,
                 spec, buffer, size, duration: spec.duration, origin: input.kind, pins: 0,
-                stream: { decodedFrames: 0, done: false, error: null } };
-              entry.stream.seekPoints = globalThis.GaplessSeekRange.index(prefix, spec,
-                Number(source.localKey ? input.response.headers.get('content-length') : source.size));
+                stream: { decodedFrames: 0, done: false, error: null, bounded: !!bounded } };
+              entry.stream.seekPoints = seekPoints;
               entry.stream.readRange = input.seekRange || (input.kind === 'network'
                 ? (start, end, signal) => globalThis.GaplessSeekRange.read(source.url, start, end, Number(source.size), signal) : null);
               this.entries.set(entry.key, entry);
@@ -274,7 +286,7 @@
             else {
               node.buffer = this.ctx.createBuffer(entry.spec.channels, count, rate);
               for (let ch = 0; ch < entry.spec.channels; ch++)
-                node.buffer.copyToChannel(entry.buffer.getChannelData(ch).subarray(cursor, end), ch);
+                entry.buffer.copyFromChannel(node.buffer.getChannelData(ch), ch, cursor);
             }
             nodes.add(node);
             node.onended = () => { nodes.delete(node); node.disconnect(); if (end === entry.buffer.length) owner.onended?.(); };

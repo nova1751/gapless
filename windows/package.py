@@ -76,7 +76,7 @@ worker = '\n'.join(read(p) for p in [vendor / 'core.js', vendor / 'md5.js', root
 main = "\n".join([f"const gaplessWindowsBuild = {mode};", selector,
                   'globalThis.gaplessCacheWorkerSource = ' + json.dumps(worker) + ';',
                   read(root.parent / 'shared/cache-worker.js'),
-                  read(root / 'cache-coverage.js'), read(root / 'native-cache-session.js'),
+                  read(root / 'cache-coverage.js'), read(root / 'pcm-cache.js'), read(root / 'native-cache-session.js'),
                   read(root / 'native-cache-queue.js'), read(root / 'native-byte-source.js'),
                   'new Function("module", "exports", "define", ' + json.dumps(read(root.parent / "vendor/flac-decoder-0.2.11/flac-decoder.min.js")) + ').call(globalThis);',
                   read(root.parent / "shared/audio-resources.js"),

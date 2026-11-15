@@ -46,17 +46,20 @@
         const count = Math.min(this.maxPackets, Math.floor((end - this.cursor) / this.packetFrames));
         if (count > 0) {
           const started = performance.now();
-          const left = buffer.getChannelData(0);
-          const right = buffer.numberOfChannels === 2 ? buffer.getChannelData(1) : left;
+          const left = buffer.sampleAt ? null : buffer.getChannelData(0);
+          const right = buffer.sampleAt ? null : buffer.numberOfChannels === 2 ? buffer.getChannelData(1) : left;
           const step = buffer.sampleRate / this.rate;
           for (let packet = 0; packet < count; packet++) {
             const start = this.cursor;
             for (let i = 0; i < this.packetFrames; i++) {
-              const at = (start + i) * step, first = Math.min(left.length - 1, Math.floor(at));
-              const next = Math.min(left.length - 1, first + 1), mix = at - first;
+              const at = (start + i) * step, first = Math.min(buffer.length - 1, Math.floor(at));
+              const next = Math.min(buffer.length - 1, first + 1), mix = at - first;
               for (let channel = 0; channel < this.channels; channel++) {
                 const data = channel ? right : left;
-                const sample = Math.max(-1, Math.min(1, data[first] + (data[next] - data[first]) * mix));
+                const sourceChannel = Math.min(channel, buffer.numberOfChannels - 1);
+                const a = buffer.sampleAt ? buffer.sampleAt(sourceChannel, first) : data[first];
+                const b = buffer.sampleAt ? buffer.sampleAt(sourceChannel, next) : data[next];
+                const sample = Math.max(-1, Math.min(1, a + (b - a) * mix));
                 this.view.setInt16((i * this.channels + channel) * 2,
                   Math.round(sample * (sample < 0 ? 32768 : 32767)), true);
               }

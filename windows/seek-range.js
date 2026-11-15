@@ -70,6 +70,7 @@
     } finally { await reader.cancel().catch(() => {}); }
   }
   function until(entry, sample) {
+    if (entry.stream?.bounded) return entry.buffer.until(sample);
     if (!entry.stream || entry.stream.done) return entry.buffer.length;
     let end = sample <= entry.stream.decodedFrames ? entry.stream.decodedFrames : sample;
     for (const range of entry.stream.ranges || []) if (range[0] <= end && range[1] > sample) end = Math.max(end, range[1]);
@@ -131,10 +132,13 @@
         for (let ch = 0; ch < entry.spec.channels; ch++) {
           const pcm = result.channelData[ch];
           for (let i = 0; i < pcm.length; i++) { const v = Math.round(pcm[i] * max); pcm[i] = v * (v < 0 ? negative : positive); }
-          entry.buffer.copyToChannel(pcm, ch, p.sample);
+          if (!entry.stream.bounded) entry.buffer.copyToChannel(pcm, ch, p.sample);
         }
-        merge(entry.stream, p.sample, next.sample);
-        if (entry.stream.indexed && entry.stream.ranges[0]?.[0] === 0) {
+        if (entry.stream.bounded) {
+          entry.buffer.put(p.sample, result.channelData);
+          entry.stream.decodedFrames = entry.buffer.until(0);
+        } else merge(entry.stream, p.sample, next.sample);
+        if (!entry.stream.bounded && entry.stream.indexed && entry.stream.ranges[0]?.[0] === 0) {
           entry.stream.decodedFrames = entry.stream.ranges[0][1];
           if (entry.stream.decodedFrames === entry.buffer.length) entry.stream.done = true;
         }
