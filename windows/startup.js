@@ -51,7 +51,7 @@
     };
     host.call = function (name, callback, args) {
       if (name === 'storage.clearCache') {
-        try { bridge.cacheClearRequested?.(); } catch (error) { bridge.report?.(error); }
+        try { bridge.cacheClearRequested?.(args || []); } catch (error) { bridge.report?.(error); }
       }
       if (name === 'audioplayer.load') bridge.load = args;
       if (name === 'audioplayer.init' && args?.[0] === 'device') bridge.customOutput = !!args[1];

@@ -2,7 +2,9 @@
 (() => {
   'use strict';
   class NativeByteSource {
-    constructor({ cache, queue, valid }) { this.cache = cache; this.queue = queue; this.valid = valid; }
+    constructor({ cache, queue, valid, awaitReady = async () => {} }) {
+      this.cache = cache; this.queue = queue; this.valid = valid; this.awaitReady = awaitReady;
+    }
     async open(source, signal, priorityForRead = () => globalThis.WindowsNativeCachePriority.playback) {
       const size = Number(source.size ?? source.fileSize);
       if (source.audioFormat !== 'flac' || !Number.isSafeInteger(size) || size < 4)
@@ -11,6 +13,7 @@
       const read = async (start, end, requestSignal) => {
         const deadline = performance.now() + 8000;
         for (;;) {
+          await this.awaitReady(requestSignal);
           if (requestSignal.aborted || !this.valid(source)) throw new Error('cancelled');
           const coverage = await this.cache.snapshotSource(source, requestSignal);
           const gaps = globalThis.GaplessCacheCoverage.missing(coverage, start, end);

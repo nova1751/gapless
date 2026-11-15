@@ -68,11 +68,21 @@ plugin.onLoad(async () => {
       && a?.mode === b.mode && a?.quality === b.quality && a?.account === b.account;
     const nativeCache = new globalThis.WindowsNativeCache({ settings: () => native.read().setting, trace });
     const nativeSourceMode = !!gaplessWindowsBuild.nativeSource;
-    const sourceLeaseValid = () => enabled() && current?.owns && !!nativeGate && !nativeGate.releasing && !restoring && !handback;
+    let cacheClearing = false;
+    const sourceLeaseValid = () => !cacheClearing && enabled() && current?.owns && !!nativeGate && !nativeGate.releasing && !restoring && !handback;
+    async function awaitCacheReady(signal) {
+      const deadline = performance.now() + 4000;
+      while (cacheClearing) {
+        if (signal.aborted) throw new Error('cancelled');
+        if (performance.now() >= deadline) throw new Error('native-only-cache-clear-pending');
+        await new Promise(resolve => setTimeout(resolve, 30));
+      }
+    }
     const cacheSession = nativeSourceMode ? new globalThis.WindowsNativeCacheSession({ bridge, valid: sourceLeaseValid,
       snapshot: (info, signal) => nativeCache.snapshotSource(info, signal), trace }) : null;
     const cacheQueue = cacheSession ? new globalThis.WindowsNativeCacheQueue(cacheSession) : null;
-    const nativeBytes = cacheQueue ? new globalThis.WindowsNativeByteSource({ cache: nativeCache, queue: cacheQueue, valid: sourceLeaseValid }) : null;
+    const nativeBytes = cacheQueue ? new globalThis.WindowsNativeByteSource({ cache: nativeCache, queue: cacheQueue,
+      valid: sourceLeaseValid, awaitReady: awaitCacheReady }) : null;
     let fillJob = null, fillAfter = 0;
     function cancelFill() { fillJob?.controller.abort(); }
     function maybeFill(c) {
@@ -268,7 +278,7 @@ plugin.onLoad(async () => {
       const began = performance.now(), entry = c.entry;
       startSeekRange(c, target);
       const valid = () => current === c && c.owns && enabled() && c.pendingStreamSeek === request;
-      const required = Math.min(entry.buffer.length, Math.ceil((target + 0.5) * entry.spec.rate));
+      const required = Math.min(entry.buffer.length, Math.ceil((target + seekBufferSeconds(entry)) * entry.spec.rate));
       trace('stream-seek-wait', { id: source.trackId(c.info), target });
       try {
         while (!entry.stream.done && globalThis.GaplessSeekRange.until(entry, Math.floor(target * entry.spec.rate)) < required) {
@@ -295,6 +305,12 @@ plugin.onLoad(async () => {
           trace('stream-seek-cancel', { reason: error.message });
         }
       }
+    }
+    function seekBufferSeconds(entry) {
+      // A target can land in the last fraction of a FLAC seek interval. Native
+      // Load/Seek/Stop plus committed-index reads need more runway than that
+      // fraction; do not switch after merely obtaining the target's first frame.
+      return entry?.origin === 'native-source' ? 2 : 0.5;
     }
     function deliverSeek() {
       const item = seekReplies[0];
@@ -347,7 +363,12 @@ plugin.onLoad(async () => {
       trace('cache-cleared', { retainedPlaybackBytes: active?.size || 0 });
       return { encodedBytes: resources.songCache.bytes, retainedPlaybackBytes: active?.size || 0 };
     }
-    bridge.cacheClearRequested = clearMemoryCache;
+    bridge.cacheClearRequested = (args = []) => {
+      // Only the default current-cache clear emits onclearcache on this client.
+      // Clearing an explicitly named old directory was observed not to emit it.
+      if (nativeSourceMode && !args[0]) cacheClearing = true;
+      return clearMemoryCache();
+    };
     function abandon(keepWarm = false) {
       cancelFill();
       cacheQueue?.clear();
@@ -772,6 +793,7 @@ plugin.onLoad(async () => {
       if (cacheSession?.observe(name, args)) return true;
       const c = current;
       if (name === 'storage.onclearcache') {
+        cacheClearing = false;
         nativeCache.clear(); trace('native-cache-clear-result', { success: !!args[0] }); return false;
       }
       if (name === 'audioplayer.onFetchPreloadInfo') {
@@ -883,9 +905,9 @@ plugin.onLoad(async () => {
         if (ref.duration > 0 && Math.abs(entry.duration - ref.duration) > 0.15) throw new Error('native-only-duration');
         c.entry = entry; c.duration = entry.duration;
         const seekWait = performance.now();
-        if (c.offset > 0 && entry.stream && !entry.stream.done) startSeekRange(c, c.offset);
+        if (entry.stream && !entry.stream.done) startSeekRange(c, c.offset);
         while (entry.stream && !entry.stream.done
-          && globalThis.GaplessSeekRange.until(entry, Math.floor(c.offset * entry.spec.rate)) < Math.min(entry.buffer.length, Math.ceil((c.offset + 0.5) * entry.spec.rate))) {
+          && globalThis.GaplessSeekRange.until(entry, Math.floor(c.offset * entry.spec.rate)) < Math.min(entry.buffer.length, Math.ceil((c.offset + seekBufferSeconds(entry)) * entry.spec.rate))) {
           check();
           if (entry.stream.error || performance.now() - seekWait > 10000) throw new Error('native-only-seek-buffer');
           await new Promise(resolve => setTimeout(resolve, 30));
@@ -1146,7 +1168,7 @@ plugin.onLoad(async () => {
           c.prepareAfter = 0; c.prepareAttempts = 0;
           cancelPendingSeek(c);
           if (c.entry?.stream && !c.entry.stream.done
-            && globalThis.GaplessSeekRange.until(c.entry, Math.floor(target * c.entry.spec.rate)) < Math.min(c.entry.buffer.length, Math.ceil((target + 0.5) * c.entry.spec.rate))) {
+            && globalThis.GaplessSeekRange.until(c.entry, Math.floor(target * c.entry.spec.rate)) < Math.min(c.entry.buffer.length, Math.ceil((target + seekBufferSeconds(c.entry)) * c.entry.spec.rate))) {
             void seekWhenReady(c, callback, mark, target);
             return true;
           }

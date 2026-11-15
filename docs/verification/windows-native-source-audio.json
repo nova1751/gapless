@@ -1,0 +1,30 @@
+{
+  "captureRate": 48000,
+  "callbackErrors": 0,
+  "boundaryInsideCapture": true,
+  "alignment": [
+    {
+      "relativeMs": -400.0,
+      "correlation": 0.9506715591272471,
+      "timelineErrorMs": -136.95833333333317
+    },
+    {
+      "relativeMs": -100.0,
+      "correlation": 0.9399549827370316,
+      "timelineErrorMs": -137.43749999999997
+    },
+    {
+      "relativeMs": 100.0,
+      "correlation": 0.9493462597294291,
+      "timelineErrorMs": -138.31249999999997
+    },
+    {
+      "relativeMs": 400.0,
+      "correlation": 0.9704794474017745,
+      "timelineErrorMs": -137.56250000000014
+    }
+  ],
+  "alignmentSpanMs": 1.3541666666667993,
+  "longestNearZeroRunWithin100msAligned": 0.0,
+  "limits": "One cached seek-to-tail WASAPI boundary; not cold network or DAC sample-exact proof"
+}
