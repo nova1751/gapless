@@ -1,0 +1,60 @@
+{
+  "date": "2026-11-15",
+  "upstream": "f6a4b72",
+  "client": "Windows NetEase 3.1.43.205627 / BetterNCM 1.3.4",
+  "plugin": "0.3.0",
+  "startupPrewarm": {
+    "origin": "native-cache",
+    "md5Verified": true,
+    "sampleRate": 44100,
+    "readValidateMs": 2947,
+    "decodeMs": 305,
+    "contextGeneration": 0,
+    "nativeLoad": 0,
+    "nativePlay": 0,
+    "heldBytes": 82881144
+  },
+  "pausedPreload": {
+    "pauseIssuedWhileLoading": true,
+    "playingState": 1,
+    "activeNodes": 0,
+    "currentOrigin": "native-cache",
+    "currentReadValidateMs": 1791,
+    "currentDecodeMs": 308,
+    "nextOrigin": "network",
+    "nextReadValidateMs": 355,
+    "nextDecodeMs": 318,
+    "heldBytes": 165436344,
+    "pending": 0
+  },
+  "persistence": {
+    "backend": "BetterNCM app.readConfig/writeConfig",
+    "savedValue": false,
+    "readbackMatched": true,
+    "enabledAfterImmediateForcedRestart": false,
+    "heldAfterRestart": 0,
+    "contextGenerationAfterRestart": 0
+  },
+  "worker": {
+    "byteRestoreAndMd5PositiveNegativeChecks": "passed in isolated JS runtime",
+    "windowsCreation": "blocked by client CSP SecurityError",
+    "fallback": "bounded main-thread chunks",
+    "securityPolicyChanged": false
+  },
+  "mac": {
+    "candidate": "0.2.5",
+    "syntax": "passed",
+    "package": "passed",
+    "liveValidation": "not performed"
+  },
+  "scope": {
+    "deviceLoopbackThisRound": false,
+    "nativeCacheWriteback": false,
+    "crossPlatformLatencyParity": false,
+    "allFailureCasesCovered": false
+  },
+  "artifacts": {
+    "gapless-player-windows-0.3.0.plugin": "052e0523ff7aa8e00a11b1e2caa7a54bb62ce65f867fa64c713756edeaf7b9a9",
+    "gapless-player-mac-0.2.5.plugin": "54997233b4f6ea94110fbe1a4803794f07bf75949983ae256c1c294e4cc45750"
+  }
+}

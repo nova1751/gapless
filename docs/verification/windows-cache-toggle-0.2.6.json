@@ -1,0 +1,319 @@
+{
+  "disabled": {
+    "enabled": false,
+    "owns": false,
+    "loading": false,
+    "directWebLoad": true,
+    "nativePrepared": false,
+    "handingBack": false,
+    "nativeMuted": false,
+    "mode": "continuous",
+    "bridgeSide": null,
+    "visual": {
+      "active": false,
+      "failed": false,
+      "frames": 0,
+      "lastPosition": 0,
+      "maxWorkMs": 0,
+      "averageWorkMs": 0,
+      "visualRate": 48000,
+      "visualChannels": 2,
+      "packetFrames": 400,
+      "packetBytes": 1600,
+      "maxPacketsPerTick": 6,
+      "resets": 0,
+      "skippedFrames": 0,
+      "affectsAudioOutput": false
+    },
+    "visualHooks": [
+      "_AERenderMV",
+      "_AEWebSetPlaybackPosition",
+      "_AESetAudioData"
+    ],
+    "clock": {
+      "sampleRatePolicy": "source-matched",
+      "contextGeneration": 3,
+      "activeNodes": 0,
+      "deviceFormat": "unknown"
+    },
+    "resources": {
+      "held": 0,
+      "reserved": 0,
+      "limit": 536870912,
+      "pending": 0
+    }
+  },
+  "events": [
+    {
+      "at": 1141,
+      "wallMs": 1794732369433,
+      "event": "loaded",
+      "client": "3.1.43.205627",
+      "probe": false
+    },
+    {
+      "at": 1146,
+      "wallMs": 1794732369438,
+      "event": "selector-connected"
+    },
+    {
+      "at": 20228,
+      "wallMs": 1794732388519,
+      "event": "native-cache-hit",
+      "id": "2670863319",
+      "level": "lossless",
+      "bytes": 27081483,
+      "md5Verified": true
+    },
+    {
+      "at": 20988,
+      "wallMs": 1794732389280,
+      "event": "decoded",
+      "id": "2670863319",
+      "level": "lossless",
+      "origin": "native-cache",
+      "sourceRate": 44100,
+      "decodedRate": 44100,
+      "channels": 2,
+      "size": 81911840
+    },
+    {
+      "at": 21130,
+      "wallMs": 1794732389422,
+      "event": "output-ready",
+      "waitMs": 73.79999999701977,
+      "contextTime": 0.040634920634920635,
+      "outputContextTime": 0.000312
+    },
+    {
+      "at": 21134,
+      "wallMs": 1794732389426,
+      "event": "web-loaded",
+      "id": "2670863319",
+      "sourceRate": 44100,
+      "decodedRate": 44100,
+      "contextRate": 44100,
+      "resume": false
+    },
+    {
+      "at": 21237,
+      "wallMs": 1794732389529,
+      "event": "native-settings",
+      "capable": true,
+      "mode": "playCycle",
+      "customOutput": false,
+      "playFade": false,
+      "blockers": [],
+      "nextKnown": true
+    },
+    {
+      "at": 28112,
+      "wallMs": 1794732396404,
+      "event": "native-cache-hit",
+      "id": "2670863152",
+      "level": "lossless",
+      "bytes": 27865486,
+      "md5Verified": true
+    },
+    {
+      "at": 28660,
+      "wallMs": 1794732396952,
+      "event": "decoded",
+      "id": "2670863152",
+      "level": "lossless",
+      "origin": "native-cache",
+      "sourceRate": 44100,
+      "decodedRate": 44100,
+      "channels": 2,
+      "size": 82881144
+    },
+    {
+      "at": 28660,
+      "wallMs": 1794732396952,
+      "event": "pair-ready",
+      "rate": 44100,
+      "devices": "default"
+    },
+    {
+      "at": 28665,
+      "wallMs": 1794732396956,
+      "event": "scheduled",
+      "from": "2670863319",
+      "to": "2670863152",
+      "sourceRate": 44100,
+      "decodedRate": 44100,
+      "contextRate": 44100,
+      "leadSeconds": 224.65605442176872,
+      "scheduledGapFrames": 0
+    },
+    {
+      "at": 130300,
+      "wallMs": 1794732498591,
+      "event": "restore",
+      "reason": "disabled",
+      "position": 109.11852207936286,
+      "desired": true
+    },
+    {
+      "at": 130369,
+      "wallMs": 1794732498661,
+      "event": "restored",
+      "position": 109.11852207936286,
+      "playing": true,
+      "handoff": "sequential-unverified"
+    }
+  ],
+  "audioNetwork": 0,
+  "layout": {
+    "nativeButtonsUnchanged": true,
+    "headerAndLyricsVisuallyChecked": true
+  },
+  "reenabled": true,
+  "invalidCache": {
+    "audioRequests": 2,
+    "status": {
+      "enabled": true,
+      "owns": true,
+      "loading": false,
+      "directWebLoad": true,
+      "nativePrepared": false,
+      "handingBack": false,
+      "nativeMuted": true,
+      "mode": "continuous",
+      "bridgeSide": null,
+      "visual": {
+        "active": true,
+        "failed": false,
+        "frames": 4849,
+        "lastPosition": 6.033333333333333,
+        "maxWorkMs": 30.600000001490116,
+        "averageWorkMs": 0.09832955246676389,
+        "visualRate": 48000,
+        "visualChannels": 2,
+        "packetFrames": 400,
+        "packetBytes": 1600,
+        "maxPacketsPerTick": 6,
+        "resets": 4,
+        "skippedFrames": 7009,
+        "affectsAudioOutput": false
+      },
+      "visualHooks": [
+        "_AERenderMV",
+        "_AEWebSetPlaybackPosition",
+        "_AESetAudioData"
+      ],
+      "clock": {
+        "sampleRate": 44100,
+        "sampleRatePolicy": "source-matched",
+        "contextState": "running",
+        "contextGeneration": 7,
+        "activeNodes": 2,
+        "deviceFormat": "unknown"
+      },
+      "resources": {
+        "held": 165436344,
+        "reserved": 0,
+        "limit": 536870912,
+        "pending": 0
+      }
+    },
+    "events": [
+      {
+        "at": 172588,
+        "wallMs": 1794732540880,
+        "event": "scheduled",
+        "from": "2670863319",
+        "to": "2670863152",
+        "sourceRate": 44100,
+        "decodedRate": 44100,
+        "contextRate": 44100,
+        "leadSeconds": 83.7981451247166,
+        "scheduledGapFrames": 0
+      },
+      {
+        "at": 207012,
+        "wallMs": 1794732575304,
+        "event": "native-cache-hit",
+        "id": "2670863152",
+        "level": "lossless",
+        "bytes": 27865486,
+        "md5Verified": true
+      },
+      {
+        "at": 207012,
+        "wallMs": 1794732575304,
+        "event": "native-cache-fallback",
+        "id": "2670863152",
+        "reason": "cache-unavailable-or-invalid"
+      },
+      {
+        "at": 207873,
+        "wallMs": 1794732576165,
+        "event": "decoded",
+        "id": "2670863152",
+        "level": "lossless",
+        "origin": "network",
+        "sourceRate": 44100,
+        "decodedRate": 44100,
+        "channels": 2,
+        "size": 82881144
+      },
+      {
+        "at": 207916,
+        "wallMs": 1794732576207,
+        "event": "output-ready",
+        "waitMs": 31.5,
+        "contextTime": 0.040634920634920635,
+        "outputContextTime": 0.000313
+      },
+      {
+        "at": 207917,
+        "wallMs": 1794732576209,
+        "event": "web-loaded",
+        "id": "2670863152",
+        "sourceRate": 44100,
+        "decodedRate": 44100,
+        "contextRate": 44100,
+        "resume": false
+      },
+      {
+        "at": 208832,
+        "wallMs": 1794732577124,
+        "event": "decoded",
+        "id": "1938192798",
+        "level": "hires",
+        "origin": "network",
+        "sourceRate": 44100,
+        "decodedRate": 44100,
+        "channels": 2,
+        "size": 82555200
+      },
+      {
+        "at": 208832,
+        "wallMs": 1794732577124,
+        "event": "pair-ready",
+        "rate": 44100,
+        "devices": "default"
+      },
+      {
+        "at": 208835,
+        "wallMs": 1794732577127,
+        "event": "scheduled",
+        "from": "2670863152",
+        "to": "1938192798",
+        "sourceRate": 44100,
+        "decodedRate": 44100,
+        "contextRate": 44100,
+        "leadSeconds": 234.00378684807256,
+        "scheduledGapFrames": 0
+      }
+    ]
+  },
+  "final": {
+    "version": "0.2.6",
+    "packageSHA256": "1324dd9d85a3c978a1083d42c8320c0c424bd5992f064600161b20387daea4b9",
+    "enabledAfterRestartVerified": false,
+    "restoredEnabled": true,
+    "diagnostics": false
+  }
+}

@@ -1,0 +1,423 @@
+{
+  "client": "3.1.43.205627",
+  "host": "BetterNCM 1.3.4",
+  "testedPath": "Favorites",
+  "requestedQuality": "Hi-Res",
+  "nativeBaseline": {
+    "preloadResponse": 1,
+    "endToNextLoadMs": 198,
+    "endToNextPlayStateMs": 571
+  },
+  "playedTracks": [
+    "Baptized In Fear",
+    "Open Hearts"
+  ],
+  "events": [
+    {
+      "at": 67929,
+      "event": "decoded",
+      "id": "2670863319",
+      "level": "lossless",
+      "sourceRate": 44100,
+      "decodedRate": 44100,
+      "channels": 2,
+      "size": 81911840
+    },
+    {
+      "at": 68722,
+      "event": "decoded",
+      "id": "2670863152",
+      "level": "lossless",
+      "sourceRate": 44100,
+      "decodedRate": 44100,
+      "channels": 2,
+      "size": 82881144
+    },
+    {
+      "at": 68981,
+      "event": "scheduled",
+      "from": "2670863319",
+      "to": "2670863152",
+      "sourceRate": 44100,
+      "decodedRate": 44100,
+      "contextRate": 44100,
+      "leadSeconds": 229.9564172335601,
+      "scheduledGapFrames": 0
+    },
+    {
+      "at": 78205,
+      "event": "scheduled",
+      "from": "2670863319",
+      "to": "2670863152",
+      "sourceRate": 44100,
+      "decodedRate": 44100,
+      "contextRate": 44100,
+      "leadSeconds": 7.0957823129252,
+      "scheduledGapFrames": 0
+    },
+    {
+      "at": 85290,
+      "event": "boundary",
+      "from": "2670863319",
+      "to": "2670863152"
+    },
+    {
+      "at": 85638,
+      "event": "claimed",
+      "id": "2670863152",
+      "delayMs": 347.7000000476837
+    },
+    {
+      "at": 87232,
+      "event": "decoded",
+      "id": "1938192798",
+      "level": "hires",
+      "sourceRate": 44100,
+      "decodedRate": 44100,
+      "channels": 2,
+      "size": 82555200
+    },
+    {
+      "at": 87279,
+      "event": "scheduled",
+      "from": "2670863152",
+      "to": "1938192798",
+      "sourceRate": 44100,
+      "decodedRate": 44100,
+      "contextRate": 44100,
+      "leadSeconds": 232.94065759637192,
+      "scheduledGapFrames": 0
+    }
+  ],
+  "digitalLoopback": {
+    "sampleRate": 48000,
+    "channels": 2,
+    "captureSeconds": 18,
+    "boundaryAboutSeconds": 12.12,
+    "exactZeroRunThresholdMs": 0.5,
+    "exactZeroRuns": [],
+    "quietPeakThreshold": 0.0001,
+    "quietRunThresholdMs": 2,
+    "quietRuns": [],
+    "lowest100msRms": 0.01084,
+    "audioSaved": false
+  },
+  "disableRecovery": {
+    "positionSeconds": 50.925,
+    "nativePlaybackConfirmed": true,
+    "durationMs": 183,
+    "reenabledAndTookOver": true
+  },
+  "windows011": {
+    "pausedSeeksThenResume": true,
+    "singleTrackRepeat": true,
+    "events": [
+      {
+        "at": 44522,
+        "event": "scheduled",
+        "from": "2670863319",
+        "to": "2670863152",
+        "sourceRate": 44100,
+        "decodedRate": 44100,
+        "contextRate": 44100,
+        "leadSeconds": 209.0564172335601,
+        "scheduledGapFrames": 0
+      },
+      {
+        "at": 59370,
+        "event": "scheduled",
+        "from": "2670863319",
+        "to": "2670863152",
+        "sourceRate": 44100,
+        "decodedRate": 44100,
+        "contextRate": 44100,
+        "leadSeconds": 8.740099773242637,
+        "scheduledGapFrames": 0
+      },
+      {
+        "at": 68115,
+        "event": "boundary",
+        "from": "2670863319",
+        "to": "2670863152"
+      },
+      {
+        "at": 68230,
+        "event": "claimed",
+        "id": "2670863152",
+        "delayMs": 114.89999997615814
+      },
+      {
+        "at": 69176,
+        "event": "scheduled",
+        "from": "2670863152",
+        "to": "1938192798",
+        "sourceRate": 44100,
+        "decodedRate": 44100,
+        "contextRate": 44100,
+        "leadSeconds": 233.84483900226755,
+        "scheduledGapFrames": 0
+      },
+      {
+        "at": 76180,
+        "event": "restore",
+        "reason": "environment-changed",
+        "position": 8.079854875283441,
+        "desired": true
+      },
+      {
+        "at": 76296,
+        "event": "restored",
+        "position": 8.079854875283441,
+        "playing": true
+      },
+      {
+        "at": 87080,
+        "event": "scheduled",
+        "from": "2670863152",
+        "to": "2670863152",
+        "sourceRate": 44100,
+        "decodedRate": 44100,
+        "contextRate": 44100,
+        "leadSeconds": 216.06487755102046,
+        "scheduledGapFrames": 0
+      },
+      {
+        "at": 93668,
+        "event": "scheduled",
+        "from": "2670863152",
+        "to": "2670863152",
+        "sourceRate": 44100,
+        "decodedRate": 44100,
+        "contextRate": 44100,
+        "leadSeconds": 7.651827664399093,
+        "scheduledGapFrames": 0
+      },
+      {
+        "at": 101315,
+        "event": "boundary",
+        "from": "2670863152",
+        "to": "2670863152"
+      },
+      {
+        "at": 101408,
+        "event": "claimed",
+        "id": "2670863152",
+        "delayMs": 93.19999998807907
+      },
+      {
+        "at": 101469,
+        "event": "scheduled",
+        "from": "2670863152",
+        "to": "2670863152",
+        "sourceRate": 44100,
+        "decodedRate": 44100,
+        "contextRate": 44100,
+        "leadSeconds": 234.77380045351478,
+        "scheduledGapFrames": 0
+      },
+      {
+        "at": 111002,
+        "event": "restore",
+        "reason": "native-settings-or-queue",
+        "position": 6.370122448979586,
+        "desired": false
+      },
+      {
+        "at": 111132,
+        "event": "restored",
+        "position": 6.370122448979586,
+        "playing": true
+      }
+    ]
+  },
+  "windows012Local": {
+    "source": "Generated two-track local library",
+    "mode": "playCycle",
+    "events": [
+      {
+        "at": 16843,
+        "event": "decoded",
+        "id": "FLAC",
+        "sourceRate": 44100,
+        "decodedRate": 44100,
+        "channels": 2,
+        "size": 12348000
+      },
+      {
+        "at": 16942,
+        "event": "decoded",
+        "id": "MP3",
+        "sourceRate": 44100,
+        "decodedRate": 44100,
+        "channels": 2,
+        "size": 12348000
+      },
+      {
+        "at": 17841,
+        "event": "decoded",
+        "id": "MP3",
+        "sourceRate": 44100,
+        "decodedRate": 44100,
+        "channels": 2,
+        "size": 12348000
+      },
+      {
+        "at": 17905,
+        "event": "decoded",
+        "id": "FLAC",
+        "sourceRate": 44100,
+        "decodedRate": 44100,
+        "channels": 2,
+        "size": 12348000
+      },
+      {
+        "at": 17952,
+        "event": "scheduled",
+        "from": "MP3",
+        "to": "FLAC",
+        "sourceRate": 44100,
+        "decodedRate": 44100,
+        "contextRate": 44100,
+        "leadSeconds": 34.75,
+        "scheduledGapFrames": 0
+      },
+      {
+        "at": 25025,
+        "event": "decoded",
+        "id": "FLAC",
+        "sourceRate": 44100,
+        "decodedRate": 44100,
+        "channels": 2,
+        "size": 12348000
+      },
+      {
+        "at": 25129,
+        "event": "decoded",
+        "id": "MP3",
+        "sourceRate": 44100,
+        "decodedRate": 44100,
+        "channels": 2,
+        "size": 12348000
+      },
+      {
+        "at": 25174,
+        "event": "scheduled",
+        "from": "FLAC",
+        "to": "MP3",
+        "sourceRate": 44100,
+        "decodedRate": 44100,
+        "contextRate": 44100,
+        "leadSeconds": 34.47999999999999,
+        "scheduledGapFrames": 0
+      },
+      {
+        "at": 31940,
+        "event": "scheduled",
+        "from": "FLAC",
+        "to": "MP3",
+        "sourceRate": 44100,
+        "decodedRate": 44100,
+        "contextRate": 44100,
+        "leadSeconds": 3.6693650793650825,
+        "scheduledGapFrames": 0
+      },
+      {
+        "at": 35606,
+        "event": "boundary",
+        "from": "FLAC",
+        "to": "MP3"
+      },
+      {
+        "at": 35723,
+        "event": "claimed",
+        "id": "MP3",
+        "delayMs": 117.69999998807907
+      },
+      {
+        "at": 35833,
+        "event": "decoded",
+        "id": "FLAC",
+        "sourceRate": 44100,
+        "decodedRate": 44100,
+        "channels": 2,
+        "size": 12348000
+      },
+      {
+        "at": 35840,
+        "event": "scheduled",
+        "from": "MP3",
+        "to": "FLAC",
+        "sourceRate": 44100,
+        "decodedRate": 44100,
+        "contextRate": 44100,
+        "leadSeconds": 34.77131519274377,
+        "scheduledGapFrames": 0
+      },
+      {
+        "at": 70606,
+        "event": "boundary",
+        "from": "MP3",
+        "to": "FLAC"
+      },
+      {
+        "at": 70696,
+        "event": "claimed",
+        "id": "FLAC",
+        "delayMs": 90
+      },
+      {
+        "at": 71106,
+        "event": "decoded",
+        "id": "MP3",
+        "sourceRate": 44100,
+        "decodedRate": 44100,
+        "channels": 2,
+        "size": 12348000
+      },
+      {
+        "at": 71141,
+        "event": "scheduled",
+        "from": "FLAC",
+        "to": "MP3",
+        "sourceRate": 44100,
+        "decodedRate": 44100,
+        "contextRate": 44100,
+        "leadSeconds": 34.46827664399093,
+        "scheduledGapFrames": 0
+      },
+      {
+        "at": 105605,
+        "event": "boundary",
+        "from": "FLAC",
+        "to": "MP3"
+      },
+      {
+        "at": 105726,
+        "event": "claimed",
+        "id": "MP3",
+        "delayMs": 120.79999995231628
+      },
+      {
+        "at": 106107,
+        "event": "decoded",
+        "id": "FLAC",
+        "sourceRate": 44100,
+        "decodedRate": 44100,
+        "channels": 2,
+        "size": 12348000
+      },
+      {
+        "at": 106140,
+        "event": "scheduled",
+        "from": "MP3",
+        "to": "FLAC",
+        "sourceRate": 44100,
+        "decodedRate": 44100,
+        "contextRate": 44100,
+        "leadSeconds": 34.47,
+        "scheduledGapFrames": 0
+      }
+    ],
+    "orderedTerminal": "Adapter simulation verified; installed client terminal behavior pending"
+  }
+}

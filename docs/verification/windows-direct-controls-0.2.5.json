@@ -1,0 +1,228 @@
+{
+  "rapidSelection": {
+    "track": "Open Hearts",
+    "status": {
+      "enabled": true,
+      "owns": true,
+      "loading": false,
+      "directWebLoad": true,
+      "nativePrepared": false,
+      "handingBack": false,
+      "nativeMuted": true,
+      "mode": "continuous",
+      "bridgeSide": null,
+      "visual": {
+        "active": false,
+        "failed": false,
+        "frames": 0,
+        "lastPosition": 0,
+        "maxWorkMs": 0,
+        "averageWorkMs": 0,
+        "visualRate": 48000,
+        "visualChannels": 2,
+        "packetFrames": 400,
+        "packetBytes": 1600,
+        "maxPacketsPerTick": 6,
+        "resets": 0,
+        "skippedFrames": 0,
+        "affectsAudioOutput": false
+      },
+      "visualHooks": [
+        "_AERenderMV",
+        "_AEWebSetPlaybackPosition",
+        "_AESetAudioData"
+      ],
+      "clock": {
+        "sampleRate": 44100,
+        "sampleRatePolicy": "source-matched",
+        "contextState": "running",
+        "contextGeneration": 4,
+        "activeNodes": 2,
+        "deviceFormat": "unknown"
+      },
+      "resources": {
+        "held": 247348184,
+        "reserved": 0,
+        "limit": 536870912,
+        "pending": 0
+      }
+    },
+    "events": [
+      {
+        "at": 10133,
+        "wallMs": 1794731092888,
+        "event": "output-ready",
+        "waitMs": 77,
+        "contextTime": 0.040634920634920635,
+        "outputContextTime": 0.000303
+      },
+      {
+        "at": 10135,
+        "wallMs": 1794731092890,
+        "event": "web-loaded",
+        "id": "2670863152",
+        "sourceRate": 44100,
+        "decodedRate": 44100,
+        "contextRate": 44100,
+        "resume": false
+      },
+      {
+        "at": 10159,
+        "wallMs": 1794731092914,
+        "event": "seek-replaced",
+        "id": "2670863152_R55HWB",
+        "switchLeadMs": 2.9024943310657636
+      },
+      {
+        "at": 10200,
+        "wallMs": 1794731092955,
+        "event": "native-settings",
+        "capable": true,
+        "mode": "playCycle",
+        "customOutput": false,
+        "playFade": false,
+        "blockers": [],
+        "nextKnown": true
+      },
+      {
+        "at": 11017,
+        "wallMs": 1794731093773,
+        "event": "decoded",
+        "id": "1938192798",
+        "level": "hires",
+        "origin": "network",
+        "sourceRate": 44100,
+        "decodedRate": 44100,
+        "channels": 2,
+        "size": 82555200
+      },
+      {
+        "at": 11018,
+        "wallMs": 1794731093773,
+        "event": "pair-ready",
+        "rate": 44100,
+        "devices": "default"
+      },
+      {
+        "at": 11018,
+        "wallMs": 1794731093773,
+        "event": "scheduled",
+        "from": "2670863152",
+        "to": "1938192798",
+        "sourceRate": 44100,
+        "decodedRate": 44100,
+        "contextRate": 44100,
+        "leadSeconds": 233.06473922902495,
+        "scheduledGapFrames": 0
+      },
+      {
+        "at": 11724,
+        "wallMs": 1794731094479,
+        "event": "decoded",
+        "id": "2670863319",
+        "level": "lossless",
+        "origin": "network",
+        "sourceRate": 44100,
+        "decodedRate": 44100,
+        "channels": 2,
+        "size": 81911840
+      }
+    ]
+  },
+  "loadingPause": {
+    "loading": {
+      "enabled": true,
+      "owns": true,
+      "loading": true,
+      "directWebLoad": true,
+      "nativePrepared": false,
+      "handingBack": false,
+      "nativeMuted": false,
+      "mode": "continuous",
+      "bridgeSide": null,
+      "visual": {
+        "active": false,
+        "failed": false,
+        "frames": 0,
+        "lastPosition": 0,
+        "maxWorkMs": 0,
+        "averageWorkMs": 0,
+        "visualRate": 48000,
+        "visualChannels": 2,
+        "packetFrames": 400,
+        "packetBytes": 1600,
+        "maxPacketsPerTick": 6,
+        "resets": 0,
+        "skippedFrames": 0,
+        "affectsAudioOutput": false
+      },
+      "visualHooks": [
+        "_AERenderMV",
+        "_AEWebSetPlaybackPosition",
+        "_AESetAudioData"
+      ],
+      "clock": {
+        "sampleRatePolicy": "source-matched",
+        "contextGeneration": 6,
+        "activeNodes": 0,
+        "deviceFormat": "unknown"
+      },
+      "resources": {
+        "held": 0,
+        "reserved": 0,
+        "limit": 536870912,
+        "pending": 0
+      }
+    },
+    "after": {
+      "enabled": true,
+      "owns": true,
+      "loading": false,
+      "directWebLoad": true,
+      "nativePrepared": false,
+      "handingBack": false,
+      "nativeMuted": true,
+      "mode": "continuous",
+      "bridgeSide": null,
+      "visual": {
+        "active": false,
+        "failed": false,
+        "frames": 0,
+        "lastPosition": 0,
+        "maxWorkMs": 0,
+        "averageWorkMs": 0,
+        "visualRate": 48000,
+        "visualChannels": 2,
+        "packetFrames": 400,
+        "packetBytes": 1600,
+        "maxPacketsPerTick": 6,
+        "resets": 0,
+        "skippedFrames": 0,
+        "affectsAudioOutput": false
+      },
+      "visualHooks": [
+        "_AERenderMV",
+        "_AEWebSetPlaybackPosition",
+        "_AESetAudioData"
+      ],
+      "clock": {
+        "sampleRate": 44100,
+        "sampleRatePolicy": "source-matched",
+        "contextState": "running",
+        "contextGeneration": 7,
+        "activeNodes": 0,
+        "deviceFormat": "unknown"
+      },
+      "resources": {
+        "held": 81911840,
+        "reserved": 0,
+        "limit": 536870912,
+        "pending": 0
+      }
+    },
+    "uiState": 1
+  },
+  "main": "08f1ca6",
+  "packageSHA256": "44ac6e1be46a52261dbd0e280d2dfc795b32e56b96bb5e68540bf4dac6ec235f",
+  "diagnosticsEnabled": false
+}

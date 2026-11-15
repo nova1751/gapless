@@ -65,6 +65,13 @@
       const url = this.mounts.get(path), parsed = new URL(url);
       if (parsed.hostname !== '127.0.0.1') throw new Error('native-cache-mount');
       const response = await fetch(url, { signal });
+      const worker = globalThis.GaplessCacheWorker?.create(hash, size, signal);
+      if (worker) return { kind: 'native-cache', response, worker: true,
+        transform: bytes => worker.transform(bytes), dispose: () => worker.dispose(),
+        validate: async total => {
+          await worker.validate(total);
+          this.trace('native-cache-hit', { id: ref.id, level: source.level, bytes: total, md5Verified: true, worker: true });
+        } };
       const digest = crypto.algo.MD5.create();
       return { kind: 'native-cache', response,
         transform(bytes) {

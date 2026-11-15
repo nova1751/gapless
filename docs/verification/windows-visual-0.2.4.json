@@ -1,0 +1,252 @@
+{
+  "track": "Open Hearts",
+  "before": {
+    "enabled": true,
+    "owns": true,
+    "nativePrepared": false,
+    "handingBack": false,
+    "nativeMuted": false,
+    "mode": "continuous",
+    "bridgeSide": "head",
+    "visual": {
+      "active": true,
+      "failed": false,
+      "frames": 8529,
+      "lastPosition": 35.083333333333336,
+      "maxWorkMs": 37.69999999925494,
+      "averageWorkMs": 0.09946066359212424,
+      "visualRate": 48000,
+      "visualChannels": 2,
+      "packetFrames": 400,
+      "packetBytes": 1600,
+      "maxPacketsPerTick": 6,
+      "resets": 9,
+      "skippedFrames": 52548,
+      "affectsAudioOutput": false
+    },
+    "visualHooks": [
+      "_AERenderMV",
+      "_AEWebSetPlaybackPosition",
+      "_AEWebSetPlayBarPosition",
+      "_AESetAudioData"
+    ],
+    "clock": {
+      "sampleRate": 44100,
+      "sampleRatePolicy": "source-matched",
+      "contextState": "running",
+      "contextGeneration": 2,
+      "activeNodes": 2,
+      "deviceFormat": "unknown"
+    },
+    "resources": {
+      "held": 165436344,
+      "reserved": 0,
+      "limit": 536870912,
+      "pending": 0
+    }
+  },
+  "after": {
+    "enabled": true,
+    "owns": true,
+    "nativePrepared": false,
+    "handingBack": false,
+    "nativeMuted": false,
+    "mode": "continuous",
+    "bridgeSide": "head",
+    "visual": {
+      "active": false,
+      "failed": false,
+      "frames": 8529,
+      "lastPosition": 35.083333333333336,
+      "maxWorkMs": 37.69999999925494,
+      "averageWorkMs": 0.09946066359212424,
+      "visualRate": 48000,
+      "visualChannels": 2,
+      "packetFrames": 400,
+      "packetBytes": 1600,
+      "maxPacketsPerTick": 6,
+      "resets": 9,
+      "skippedFrames": 52548,
+      "affectsAudioOutput": false
+    },
+    "visualHooks": [
+      "_AERenderMV",
+      "_AEWebSetPlaybackPosition",
+      "_AEWebSetPlayBarPosition",
+      "_AESetAudioData"
+    ],
+    "clock": {
+      "sampleRate": 44100,
+      "sampleRatePolicy": "source-matched",
+      "contextState": "running",
+      "contextGeneration": 2,
+      "activeNodes": 0,
+      "deviceFormat": "unknown"
+    },
+    "resources": {
+      "held": 165436344,
+      "reserved": 0,
+      "limit": 536870912,
+      "pending": 0
+    }
+  },
+  "events": [
+    {
+      "at": 1230,
+      "wallMs": 1794694657361,
+      "event": "loaded",
+      "client": "3.1.43.205627",
+      "probe": false
+    },
+    {
+      "at": 1235,
+      "wallMs": 1794694657366,
+      "event": "selector-connected"
+    },
+    {
+      "at": 7800,
+      "wallMs": 1794694663931,
+      "event": "native-load",
+      "id": "2670863319",
+      "level": "lossless",
+      "codec": "flac",
+      "valid": true
+    },
+    {
+      "at": 7850,
+      "wallMs": 1794694663981,
+      "event": "native-settings",
+      "capable": true,
+      "mode": "playCycle",
+      "customOutput": false,
+      "playFade": false,
+      "blockers": [],
+      "nextKnown": true
+    },
+    {
+      "at": 8692,
+      "wallMs": 1794694664823,
+      "event": "decoded",
+      "id": "2670863319",
+      "level": "lossless",
+      "origin": "network",
+      "sourceRate": 44100,
+      "decodedRate": 44100,
+      "channels": 2,
+      "size": 81911840
+    },
+    {
+      "at": 9446,
+      "wallMs": 1794694665577,
+      "event": "decoded",
+      "id": "2670863152",
+      "level": "lossless",
+      "origin": "network",
+      "sourceRate": 44100,
+      "decodedRate": 44100,
+      "channels": 2,
+      "size": 82881144
+    },
+    {
+      "at": 9446,
+      "wallMs": 1794694665577,
+      "event": "pair-ready",
+      "rate": 44100,
+      "devices": "default"
+    },
+    {
+      "at": 9587,
+      "wallMs": 1794694665718,
+      "event": "output-ready",
+      "waitMs": 77.69999999925494,
+      "contextTime": 0.040634920634920635,
+      "outputContextTime": 0.000263
+    },
+    {
+      "at": 9589,
+      "wallMs": 1794694665720,
+      "event": "scheduled",
+      "from": "2670863319",
+      "to": "2670863152",
+      "sourceRate": 44100,
+      "decodedRate": 44100,
+      "contextRate": 44100,
+      "leadSeconds": 230.4964172335601,
+      "scheduledGapFrames": 0
+    },
+    {
+      "at": 9594,
+      "wallMs": 1794694665725,
+      "event": "takeover",
+      "id": "2670863319",
+      "position": 1.68,
+      "playFade": false
+    },
+    {
+      "at": 87652,
+      "wallMs": 1794694743783,
+      "event": "scheduled",
+      "from": "2670863319",
+      "to": "2670863152",
+      "sourceRate": 44100,
+      "decodedRate": 44100,
+      "contextRate": 44100,
+      "leadSeconds": 6.095147392290301,
+      "scheduledGapFrames": 0
+    },
+    {
+      "at": 93738,
+      "wallMs": 1794694749869,
+      "event": "boundary",
+      "from": "2670863319",
+      "to": "2670863152",
+      "outputWallMs": 1794694749916
+    },
+    {
+      "at": 94047,
+      "wallMs": 1794694750178,
+      "event": "claimed",
+      "id": "2670863152",
+      "delayMs": 308.80000000074506
+    },
+    {
+      "at": 95508,
+      "wallMs": 1794694751639,
+      "event": "decoded",
+      "id": "1938192798",
+      "level": "hires",
+      "origin": "network",
+      "sourceRate": 44100,
+      "decodedRate": 44100,
+      "channels": 2,
+      "size": 82555200
+    },
+    {
+      "at": 95508,
+      "wallMs": 1794694751639,
+      "event": "pair-ready",
+      "rate": 44100,
+      "devices": "default"
+    },
+    {
+      "at": 95513,
+      "wallMs": 1794694751644,
+      "event": "scheduled",
+      "from": "2670863152",
+      "to": "1938192798",
+      "sourceRate": 44100,
+      "decodedRate": 44100,
+      "contextRate": 44100,
+      "leadSeconds": 233.15616780045355,
+      "scheduledGapFrames": 0
+    }
+  ],
+  "main": "08f1ca6",
+  "finalPackageSHA256": "a5f03637c46db4e7d61ac05ce05253db6bf7054f16a42343d72c3a592b98d6c3",
+  "limits": [
+    "Scheduler zero frames is not measured device silence",
+    "Initial native takeover remains; not complete upstream Load ownership port",
+    "Visual display stays 48kHz s16le; native packet format equivalence is not certified",
+    "No native bit-perfect equivalence claim"
+  ]
+}

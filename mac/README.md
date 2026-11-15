@@ -1,3 +1,13 @@
+# macOS 0.2.5 开发候选（未实机验收）
+
+本次与 Windows 共用可选缓存 XOR/MD5 Worker 及资源阶段计时，并允许暂停状态下准备已授权当前曲和可信下一首。输出仍由既有播放意图控制；不增加菜单、音效或永久音乐缓存。
+
+已完成修改文件语法及 ZIP 打包检查；当前工作环境是 Windows，未安装或实测 Mac 0.2.5。Mac 宿主是否允许 Worker、页面恢复、首次输入和系统媒体控制需在 Mac 验收。控制中心进度回跳未解决。见[统一最佳实践](../docs/CROSS_PLATFORM_BEST_PRACTICES.md)。
+
+运行 `python -X utf8 mac/package.py` 生成 `dist/gapless-player-mac-0.2.5.plugin`。历史 `releases/` 包保持原样，不代表本轮候选。
+
+以下是旧版本历史记录，不能当作 0.2.5 已通过的结论。
+
 # macOS 持续 Web Audio 0.2.4 候选
 
 当前包为[gapless-player-mac-0.2.4.plugin](../releases/gapless-player-mac-0.2.4.plugin)，完整包已安装并实读运行0.2.4。首个受支持的Load在原生出声前进入Web；宿主/播放器尚未就绪时启动队列最多等待2.5秒、32条命令。页面恢复优先直接装载Web，真实输入尚未授权时保持等待，避免自动先出原生声音再追赶接管。

@@ -1,0 +1,940 @@
+{
+  "date": "2026-11-15",
+  "upstream": "fe98ce3",
+  "windowsVersion": "0.1.3",
+  "mode": "temporary-trial",
+  "client": "3.1.43.205627",
+  "host": "BetterNCM 1.3.4",
+  "scope": "Protocol and lifecycle prototype. Not a port of calibrated Mac output handoffs.",
+  "initialRun": {
+    "status": {
+      "enabled": true,
+      "owns": false,
+      "mode": "temporary-trial",
+      "bridgeSide": null,
+      "clock": {
+        "contextGeneration": 8,
+        "activeNodes": 0,
+        "deviceFormat": "unknown"
+      },
+      "resources": {
+        "held": 165436344,
+        "reserved": 0,
+        "limit": 536870912,
+        "pending": 0
+      }
+    },
+    "events": [
+      {
+        "at": 1276,
+        "wallMs": 1794672060923,
+        "event": "loaded",
+        "client": "3.1.43.205627",
+        "probe": false
+      },
+      {
+        "at": 1282,
+        "wallMs": 1794672060929,
+        "event": "selector-connected"
+      },
+      {
+        "at": 8436,
+        "wallMs": 1794672068083,
+        "event": "native-load",
+        "id": "1909926052",
+        "level": "lossless",
+        "codec": "flac",
+        "valid": true
+      },
+      {
+        "at": 8484,
+        "wallMs": 1794672068130,
+        "event": "native-settings",
+        "capable": true,
+        "mode": "playCycle",
+        "customOutput": false,
+        "playFade": false,
+        "blockers": [],
+        "nextKnown": false
+      },
+      {
+        "at": 9084,
+        "wallMs": 1794672068731,
+        "event": "native-settings",
+        "capable": true,
+        "mode": "playCycle",
+        "customOutput": false,
+        "playFade": false,
+        "blockers": [],
+        "nextKnown": true
+      },
+      {
+        "at": 10478,
+        "wallMs": 1794672070125,
+        "event": "decoded",
+        "id": "1909926052",
+        "level": "lossless",
+        "origin": "network",
+        "sourceRate": 44100,
+        "decodedRate": 44100,
+        "channels": 2,
+        "size": 75575008
+      },
+      {
+        "at": 20893,
+        "wallMs": 1794672080540,
+        "event": "decoded",
+        "id": "1909927670",
+        "level": "lossless",
+        "origin": "network",
+        "sourceRate": 44100,
+        "decodedRate": 44100,
+        "channels": 2,
+        "size": 119607440
+      },
+      {
+        "at": 20893,
+        "wallMs": 1794672080540,
+        "event": "pair-ready",
+        "rate": 44100,
+        "devices": "default"
+      },
+      {
+        "at": 56291,
+        "wallMs": 1794672115938,
+        "event": "takeover-cancel",
+        "reason": "native-only-context-awaiting-gesture"
+      },
+      {
+        "at": 63276,
+        "wallMs": 1794672122923,
+        "event": "native-load",
+        "id": "1909927670",
+        "level": "lossless",
+        "codec": "flac",
+        "valid": true
+      },
+      {
+        "at": 63297,
+        "wallMs": 1794672122944,
+        "event": "native-settings",
+        "capable": true,
+        "mode": "playCycle",
+        "customOutput": false,
+        "playFade": false,
+        "blockers": [],
+        "nextKnown": false
+      },
+      {
+        "at": 63454,
+        "wallMs": 1794672123100,
+        "event": "native-settings",
+        "capable": true,
+        "mode": "playCycle",
+        "customOutput": false,
+        "playFade": false,
+        "blockers": [],
+        "nextKnown": true
+      },
+      {
+        "at": 64139,
+        "wallMs": 1794672123786,
+        "event": "decoded",
+        "id": "1909927670",
+        "level": "lossless",
+        "origin": "network",
+        "sourceRate": 44100,
+        "decodedRate": 44100,
+        "channels": 2,
+        "size": 119607440
+      },
+      {
+        "at": 65815,
+        "wallMs": 1794672125461,
+        "event": "decoded",
+        "id": "1909927671",
+        "level": "lossless",
+        "origin": "network",
+        "sourceRate": 44100,
+        "decodedRate": 44100,
+        "channels": 2,
+        "size": 66650376
+      },
+      {
+        "at": 65815,
+        "wallMs": 1794672125462,
+        "event": "pair-ready",
+        "rate": 44100,
+        "devices": "default"
+      },
+      {
+        "at": 119193,
+        "wallMs": 1794672178839,
+        "event": "native-settings",
+        "capable": true,
+        "mode": "playCycle",
+        "customOutput": false,
+        "playFade": false,
+        "blockers": [],
+        "nextKnown": false
+      },
+      {
+        "at": 119237,
+        "wallMs": 1794672178884,
+        "event": "native-load",
+        "id": "2670863319",
+        "level": "lossless",
+        "codec": "flac",
+        "valid": true
+      },
+      {
+        "at": 119386,
+        "wallMs": 1794672179033,
+        "event": "native-settings",
+        "capable": true,
+        "mode": "playCycle",
+        "customOutput": false,
+        "playFade": false,
+        "blockers": [],
+        "nextKnown": true
+      },
+      {
+        "at": 122391,
+        "wallMs": 1794672182038,
+        "event": "decoded",
+        "id": "2670863319",
+        "level": "lossless",
+        "origin": "network",
+        "sourceRate": 44100,
+        "decodedRate": 44100,
+        "channels": 2,
+        "size": 81911840
+      },
+      {
+        "at": 123509,
+        "wallMs": 1794672183156,
+        "event": "decoded",
+        "id": "2670863152",
+        "level": "lossless",
+        "origin": "network",
+        "sourceRate": 44100,
+        "decodedRate": 44100,
+        "channels": 2,
+        "size": 82881144
+      },
+      {
+        "at": 123509,
+        "wallMs": 1794672183156,
+        "event": "pair-ready",
+        "rate": 44100,
+        "devices": "default"
+      },
+      {
+        "at": 143792,
+        "wallMs": 1794672203439,
+        "event": "output-ready",
+        "waitMs": 171.9000000357628,
+        "contextTime": 0.040634920634920635,
+        "outputContextTime": 0.000274
+      },
+      {
+        "at": 143818,
+        "wallMs": 1794672203465,
+        "event": "output-ready",
+        "waitMs": 24.19999998807907,
+        "contextTime": 0.040634920634920635,
+        "outputContextTime": 0.000362
+      },
+      {
+        "at": 143912,
+        "wallMs": 1794672203560,
+        "event": "output-ready",
+        "waitMs": 25.400000035762787,
+        "contextTime": 0.040634920634920635,
+        "outputContextTime": 0.00043000000000000004
+      },
+      {
+        "at": 143926,
+        "wallMs": 1794672203573,
+        "event": "scheduled",
+        "from": "2670863319",
+        "to": "2670863152",
+        "sourceRate": 44100,
+        "decodedRate": 44100,
+        "contextRate": 44100,
+        "leadSeconds": 7.5404172335601,
+        "scheduledGapFrames": 0
+      },
+      {
+        "at": 143926,
+        "wallMs": 1794672203573,
+        "event": "takeover",
+        "id": "2670863319",
+        "position": 224.636,
+        "playFade": false
+      },
+      {
+        "at": 151456,
+        "wallMs": 1794672211103,
+        "event": "boundary",
+        "from": "2670863319",
+        "to": "2670863152",
+        "outputWallMs": 1794672211146
+      },
+      {
+        "at": 151801,
+        "wallMs": 1794672211448,
+        "event": "claimed",
+        "id": "2670863152",
+        "delayMs": 345.0999999642372
+      },
+      {
+        "at": 161594,
+        "wallMs": 1794672221242,
+        "event": "restore",
+        "reason": "bridge-head-complete",
+        "position": 10.094610845816899,
+        "desired": true
+      },
+      {
+        "at": 161698,
+        "wallMs": 1794672221346,
+        "event": "restored",
+        "position": 10.094610845816899,
+        "playing": true,
+        "handoff": "sequential-unverified"
+      },
+      {
+        "at": 162450,
+        "wallMs": 1794672222097,
+        "event": "decoded",
+        "id": "2670863152",
+        "level": "lossless",
+        "origin": "network",
+        "sourceRate": 44100,
+        "decodedRate": 44100,
+        "channels": 2,
+        "size": 82881144
+      },
+      {
+        "at": 164879,
+        "wallMs": 1794672224526,
+        "event": "decoded",
+        "id": "1938192798",
+        "level": "hires",
+        "origin": "network",
+        "sourceRate": 44100,
+        "decodedRate": 44100,
+        "channels": 2,
+        "size": 82555200
+      },
+      {
+        "at": 164879,
+        "wallMs": 1794672224527,
+        "event": "pair-ready",
+        "rate": 44100,
+        "devices": "default"
+      }
+    ]
+  },
+  "finalRun": {
+    "status": {
+      "enabled": true,
+      "owns": false,
+      "mode": "temporary-trial",
+      "bridgeSide": null,
+      "clock": {
+        "contextGeneration": 16,
+        "activeNodes": 0,
+        "deviceFormat": "unknown"
+      },
+      "resources": {
+        "held": 82881144,
+        "reserved": 0,
+        "limit": 536870912,
+        "pending": 0
+      }
+    },
+    "controls": {
+      "before": {
+        "enabled": true,
+        "owns": true,
+        "mode": "temporary-trial",
+        "bridgeSide": "head",
+        "clock": {
+          "sampleRate": 44100,
+          "contextState": "running",
+          "contextGeneration": 15,
+          "activeNodes": 1,
+          "deviceFormat": "unknown"
+        },
+        "resources": {
+          "held": 82881144,
+          "reserved": 0,
+          "limit": 536870912,
+          "pending": 0
+        }
+      },
+      "after": {
+        "enabled": true,
+        "owns": false,
+        "mode": "temporary-trial",
+        "bridgeSide": null,
+        "clock": {
+          "contextGeneration": 16,
+          "activeNodes": 0,
+          "deviceFormat": "unknown"
+        },
+        "resources": {
+          "held": 82881144,
+          "reserved": 0,
+          "limit": 536870912,
+          "pending": 0
+        }
+      },
+      "state": 1,
+      "events": [
+        {
+          "at": 185319,
+          "wallMs": 1794672576139,
+          "event": "output-ready",
+          "waitMs": 200.0999999642372,
+          "contextTime": 0.040634920634920635,
+          "outputContextTime": 0.000546
+        },
+        {
+          "at": 185429,
+          "wallMs": 1794672576250,
+          "event": "output-ready",
+          "waitMs": 30.80000001192093,
+          "contextTime": 0.040634920634920635,
+          "outputContextTime": 0.000589
+        },
+        {
+          "at": 185439,
+          "wallMs": 1794672576259,
+          "event": "scheduled",
+          "from": "2670863319",
+          "to": "2670863152",
+          "sourceRate": 44100,
+          "decodedRate": 44100,
+          "contextRate": 44100,
+          "leadSeconds": 2.63941723356009,
+          "scheduledGapFrames": 0
+        },
+        {
+          "at": 185439,
+          "wallMs": 1794672576259,
+          "event": "takeover",
+          "id": "2670863319",
+          "position": 229.537,
+          "playFade": false
+        },
+        {
+          "at": 188064,
+          "wallMs": 1794672578884,
+          "event": "boundary",
+          "from": "2670863319",
+          "to": "2670863152",
+          "outputWallMs": 1794672578935
+        },
+        {
+          "at": 188278,
+          "wallMs": 1794672579098,
+          "event": "claimed",
+          "id": "2670863152",
+          "delayMs": 214.5
+        },
+        {
+          "at": 189298,
+          "wallMs": 1794672580118,
+          "event": "restore",
+          "reason": "bridge-user-control",
+          "position": 1.1396303854875294,
+          "desired": false
+        },
+        {
+          "at": 189344,
+          "wallMs": 1794672580164,
+          "event": "restored",
+          "position": 1.1396303854875294,
+          "playing": false,
+          "handoff": "sequential-unverified"
+        }
+      ]
+    },
+    "events": [
+      {
+        "at": 1185,
+        "wallMs": 1794672392006,
+        "event": "loaded",
+        "client": "3.1.43.205627",
+        "probe": false
+      },
+      {
+        "at": 1190,
+        "wallMs": 1794672392011,
+        "event": "selector-connected"
+      },
+      {
+        "at": 24924,
+        "wallMs": 1794672415744,
+        "event": "native-load",
+        "id": "2670863319",
+        "level": "lossless",
+        "codec": "flac",
+        "valid": true
+      },
+      {
+        "at": 24933,
+        "wallMs": 1794672415754,
+        "event": "native-settings",
+        "capable": true,
+        "mode": "playCycle",
+        "customOutput": false,
+        "playFade": false,
+        "blockers": [],
+        "nextKnown": false
+      },
+      {
+        "at": 25110,
+        "wallMs": 1794672415931,
+        "event": "native-settings",
+        "capable": true,
+        "mode": "playCycle",
+        "customOutput": false,
+        "playFade": false,
+        "blockers": [],
+        "nextKnown": true
+      },
+      {
+        "at": 26209,
+        "wallMs": 1794672417029,
+        "event": "decoded",
+        "id": "2670863319",
+        "level": "lossless",
+        "origin": "network",
+        "sourceRate": 44100,
+        "decodedRate": 44100,
+        "channels": 2,
+        "size": 81911840
+      },
+      {
+        "at": 27384,
+        "wallMs": 1794672418204,
+        "event": "decoded",
+        "id": "2670863152",
+        "level": "lossless",
+        "origin": "network",
+        "sourceRate": 44100,
+        "decodedRate": 44100,
+        "channels": 2,
+        "size": 82881144
+      },
+      {
+        "at": 27384,
+        "wallMs": 1794672418205,
+        "event": "pair-ready",
+        "rate": 44100,
+        "devices": "default"
+      },
+      {
+        "at": 73095,
+        "wallMs": 1794672463915,
+        "event": "output-ready",
+        "waitMs": 75.19999998807907,
+        "contextTime": 0.040634920634920635,
+        "outputContextTime": 0.00021300000000000003
+      },
+      {
+        "at": 73213,
+        "wallMs": 1794672464033,
+        "event": "output-ready",
+        "waitMs": 21.700000047683716,
+        "contextTime": 0.040634920634920635,
+        "outputContextTime": 0.00024400000000000002
+      },
+      {
+        "at": 73314,
+        "wallMs": 1794672464134,
+        "event": "output-ready",
+        "waitMs": 21.80000001192093,
+        "contextTime": 0.040634920634920635,
+        "outputContextTime": 0.000293
+      },
+      {
+        "at": 73316,
+        "wallMs": 1794672464137,
+        "event": "scheduled",
+        "from": "2670863319",
+        "to": "2670863152",
+        "sourceRate": 44100,
+        "decodedRate": 44100,
+        "contextRate": 44100,
+        "leadSeconds": 4.679417233560081,
+        "scheduledGapFrames": 0
+      },
+      {
+        "at": 73316,
+        "wallMs": 1794672464137,
+        "event": "takeover",
+        "id": "2670863319",
+        "position": 227.497,
+        "playFade": false
+      },
+      {
+        "at": 77993,
+        "wallMs": 1794672468813,
+        "event": "boundary",
+        "from": "2670863319",
+        "to": "2670863152",
+        "outputWallMs": 1794672468865
+      },
+      {
+        "at": 78174,
+        "wallMs": 1794672468994,
+        "event": "claimed",
+        "id": "2670863152",
+        "delayMs": 181.29999995231628
+      },
+      {
+        "at": 88093,
+        "wallMs": 1794672478913,
+        "event": "restore",
+        "reason": "bridge-head-complete",
+        "position": 10.047833845793075,
+        "desired": true
+      },
+      {
+        "at": 88210,
+        "wallMs": 1794672479030,
+        "event": "restored",
+        "position": 10.047833845793075,
+        "playing": true,
+        "handoff": "sequential-unverified"
+      },
+      {
+        "at": 89107,
+        "wallMs": 1794672479927,
+        "event": "decoded",
+        "id": "1938192798",
+        "level": "hires",
+        "origin": "network",
+        "sourceRate": 44100,
+        "decodedRate": 44100,
+        "channels": 2,
+        "size": 82555200
+      },
+      {
+        "at": 89107,
+        "wallMs": 1794672479928,
+        "event": "pair-ready",
+        "rate": 44100,
+        "devices": "default"
+      },
+      {
+        "at": 119384,
+        "wallMs": 1794672510205,
+        "event": "native-load",
+        "id": "2670863319",
+        "level": "lossless",
+        "codec": "flac",
+        "valid": true
+      },
+      {
+        "at": 120099,
+        "wallMs": 1794672510920,
+        "event": "decoded",
+        "id": "2670863319",
+        "level": "lossless",
+        "origin": "network",
+        "sourceRate": 44100,
+        "decodedRate": 44100,
+        "channels": 2,
+        "size": 81911840
+      },
+      {
+        "at": 120485,
+        "wallMs": 1794672511305,
+        "event": "decoded",
+        "id": "2670863152",
+        "level": "lossless",
+        "origin": "network",
+        "sourceRate": 44100,
+        "decodedRate": 44100,
+        "channels": 2,
+        "size": 82881144
+      },
+      {
+        "at": 120485,
+        "wallMs": 1794672511305,
+        "event": "pair-ready",
+        "rate": 44100,
+        "devices": "default"
+      },
+      {
+        "at": 130673,
+        "wallMs": 1794672521493,
+        "event": "output-ready",
+        "waitMs": 156.4000000357628,
+        "contextTime": 0.040634920634920635,
+        "outputContextTime": 0.0004339999999999999
+      },
+      {
+        "at": 130734,
+        "wallMs": 1794672521554,
+        "event": "output-ready",
+        "waitMs": 30,
+        "contextTime": 0.040634920634920635,
+        "outputContextTime": 0.000632
+      },
+      {
+        "at": 130845,
+        "wallMs": 1794672521665,
+        "event": "output-ready",
+        "waitMs": 47.39999997615814,
+        "contextTime": 0.06095238095238095,
+        "outputContextTime": 0.009212000000000001
+      },
+      {
+        "at": 130861,
+        "wallMs": 1794672521681,
+        "event": "scheduled",
+        "from": "2670863319",
+        "to": "2670863152",
+        "sourceRate": 44100,
+        "decodedRate": 44100,
+        "contextRate": 44100,
+        "leadSeconds": 2.51241723356012,
+        "scheduledGapFrames": 0
+      },
+      {
+        "at": 130861,
+        "wallMs": 1794672521681,
+        "event": "takeover",
+        "id": "2670863319",
+        "position": 229.664,
+        "playFade": false
+      },
+      {
+        "at": 133364,
+        "wallMs": 1794672524184,
+        "event": "boundary",
+        "from": "2670863319",
+        "to": "2670863152",
+        "outputWallMs": 1794672524228
+      },
+      {
+        "at": 133649,
+        "wallMs": 1794672524469,
+        "event": "claimed",
+        "id": "2670863152",
+        "delayMs": 284.7999999523163
+      },
+      {
+        "at": 134698,
+        "wallMs": 1794672525519,
+        "event": "restore",
+        "reason": "bridge-user-control",
+        "position": 1.2869478458049595,
+        "desired": false
+      },
+      {
+        "at": 134839,
+        "wallMs": 1794672525660,
+        "event": "restored",
+        "position": 1.2869478458049595,
+        "playing": true,
+        "handoff": "sequential-unverified"
+      },
+      {
+        "at": 135583,
+        "wallMs": 1794672526404,
+        "event": "decoded",
+        "id": "1938192798",
+        "level": "hires",
+        "origin": "network",
+        "sourceRate": 44100,
+        "decodedRate": 44100,
+        "channels": 2,
+        "size": 82555200
+      },
+      {
+        "at": 135583,
+        "wallMs": 1794672526404,
+        "event": "pair-ready",
+        "rate": 44100,
+        "devices": "default"
+      },
+      {
+        "at": 183433,
+        "wallMs": 1794672574253,
+        "event": "native-load",
+        "id": "2670863319",
+        "level": "lossless",
+        "codec": "flac",
+        "valid": true
+      },
+      {
+        "at": 183477,
+        "wallMs": 1794672574297,
+        "event": "native-settings",
+        "capable": true,
+        "mode": "playCycle",
+        "customOutput": false,
+        "playFade": false,
+        "blockers": [],
+        "nextKnown": false
+      },
+      {
+        "at": 183598,
+        "wallMs": 1794672574419,
+        "event": "native-settings",
+        "capable": true,
+        "mode": "playCycle",
+        "customOutput": false,
+        "playFade": false,
+        "blockers": [],
+        "nextKnown": true
+      },
+      {
+        "at": 184324,
+        "wallMs": 1794672575144,
+        "event": "decoded",
+        "id": "2670863319",
+        "level": "lossless",
+        "origin": "network",
+        "sourceRate": 44100,
+        "decodedRate": 44100,
+        "channels": 2,
+        "size": 81911840
+      },
+      {
+        "at": 184952,
+        "wallMs": 1794672575772,
+        "event": "decoded",
+        "id": "2670863152",
+        "level": "lossless",
+        "origin": "network",
+        "sourceRate": 44100,
+        "decodedRate": 44100,
+        "channels": 2,
+        "size": 82881144
+      },
+      {
+        "at": 184952,
+        "wallMs": 1794672575772,
+        "event": "pair-ready",
+        "rate": 44100,
+        "devices": "default"
+      },
+      {
+        "at": 185319,
+        "wallMs": 1794672576139,
+        "event": "output-ready",
+        "waitMs": 200.0999999642372,
+        "contextTime": 0.040634920634920635,
+        "outputContextTime": 0.000546
+      },
+      {
+        "at": 185429,
+        "wallMs": 1794672576250,
+        "event": "output-ready",
+        "waitMs": 30.80000001192093,
+        "contextTime": 0.040634920634920635,
+        "outputContextTime": 0.000589
+      },
+      {
+        "at": 185439,
+        "wallMs": 1794672576259,
+        "event": "scheduled",
+        "from": "2670863319",
+        "to": "2670863152",
+        "sourceRate": 44100,
+        "decodedRate": 44100,
+        "contextRate": 44100,
+        "leadSeconds": 2.63941723356009,
+        "scheduledGapFrames": 0
+      },
+      {
+        "at": 185439,
+        "wallMs": 1794672576259,
+        "event": "takeover",
+        "id": "2670863319",
+        "position": 229.537,
+        "playFade": false
+      },
+      {
+        "at": 188064,
+        "wallMs": 1794672578884,
+        "event": "boundary",
+        "from": "2670863319",
+        "to": "2670863152",
+        "outputWallMs": 1794672578935
+      },
+      {
+        "at": 188278,
+        "wallMs": 1794672579098,
+        "event": "claimed",
+        "id": "2670863152",
+        "delayMs": 214.5
+      },
+      {
+        "at": 189298,
+        "wallMs": 1794672580118,
+        "event": "restore",
+        "reason": "bridge-user-control",
+        "position": 1.1396303854875294,
+        "desired": false
+      },
+      {
+        "at": 189344,
+        "wallMs": 1794672580164,
+        "event": "restored",
+        "position": 1.1396303854875294,
+        "playing": false,
+        "handoff": "sequential-unverified"
+      }
+    ]
+  },
+  "counterObservation": {
+    "unit": "seconds",
+    "examples": [
+      {
+        "playedTime": 0.752,
+        "playedAudioTime": 0.8
+      },
+      {
+        "playedTime": 1.816,
+        "playedAudioTime": 1.866
+      }
+    ],
+    "progressPeriodApproxMs": 30,
+    "counterPeriodApproxMs": 67
+  },
+  "audioValidation": {
+    "accepted": false,
+    "reason": "System WASAPI loopback included another playing application; zero-run results cannot establish continuity of NetEase output. No raw audio retained."
+  },
+  "controlFixValidation": "Native Load suppression replayed via temporary runtime observer wrapper; final source uses restoring-instance guard. Final package startup verified separately.",
+  "remaining": [
+    "Bidirectional output alignment",
+    "Silent native preparation and output selection",
+    "Windows authorized disk-cache adapter",
+    "System media / desktop lyrics / device changes"
+  ],
+  "finalPackage": {
+    "sha256": "70e91c52b9b785a24d256cef1276f3d36093ab8841f0e682aee47987b447888c",
+    "diagnostics": false,
+    "temporaryBridge": true,
+    "installedArchiveMatches": true,
+    "extractedRuntimeMatches": true,
+    "startupObserved": true
+  },
+  "cleanupVerification": {
+    "held": 0,
+    "reserved": 0,
+    "pending": 0,
+    "activeNodes": 0
+  }
+}

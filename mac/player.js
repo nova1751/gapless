@@ -348,14 +348,12 @@ plugin.onLoad(() => {
   }
   function prefetch() {
     const c = S.current;
-    const active = c?.owns ? c.playing : S.nativePlaying;
     const next = c && !c.blocked
       && ['native', 'owned', 'warming', 'pausing', 'loading'].includes(S.phase) ? nextTrack() : null;
     resources.retain([S.current?.blocked && !S.current.owns ? null : ref(S.current), next, ref(S.scheduled)]);
-    // Retain an already decoded next track across pause; do not start new
-    // background requests until playback resumes. Discarding it creates gaps
-    // when the user seeks near the end and resumes immediately.
-    if (!c?.entry || !next || (!active && !S.starting) || ['restoring', 'warming', 'pausing'].includes(S.phase)
+    // Prepare a trusted next source while paused too. Scheduling/output remain
+    // gated by playback intent; cancellation still checks epoch and queue.
+    if (!S.enabled || !c?.entry || !next || ['restoring', 'warming', 'pausing'].includes(S.phase)
       || resources.lookup(next) || resources.jobs.has(resources.requestKey(next))) return;
     const epoch = S.epoch, queueVersion = S.queueVersion;
     resources.obtain(next).then(() => {
@@ -427,7 +425,7 @@ plugin.onLoad(() => {
     else bridge.dispatch(msg.seq, [c.id, { code }]);
   }
   async function prepareCurrent(c) {
-    if (c.preparing || !S.nativePlaying) return; c.preparing = true;
+    if (c.preparing || !S.enabled || c.blocked || !allowed(c.info)) return; c.preparing = true;
     const epoch = S.epoch;
     try {
       const entry = await resources.obtain(ref(c), c.info);
