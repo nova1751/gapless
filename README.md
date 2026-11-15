@@ -1,5 +1,7 @@
 # gapless — 网易云无缝播放
 
+路线决策调研：[无缝播放与原生行为对齐方案](docs/GAPLESS_NATIVE_PARITY_PLAN.md)。比较纯原生、原生取数＋Web 输出及当前 Web 取数路线，覆盖缓存、任意位置起播、网络请求和逐项验收；这是后续方案，未部署新播放逻辑。
+
 0.4.5 联动原生清缓存入口，释放闲置 PCM，并隔离 Web 接管期间的原生预加载请求。[本轮检查与限制](docs/WINDOWS_CACHE_LIFECYCLE_0.4.5.md)。
 
 最新调查：已实测原生 Load/Seek 取数、Web 读取目标缓存区块的可行基础；尚未接入生产版本。见[原生缓存数据源可行性](docs/NATIVE_CACHE_PROVIDER_FEASIBILITY.md)。
