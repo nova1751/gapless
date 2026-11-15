@@ -1,8 +1,8 @@
 # gapless — 网易云无缝播放
 
-当前源码候选：**Windows 0.3.0 / macOS 0.2.5**。网易云决定授权音源、音质、队列和音量；插件负责受支持曲目的连续 Web Audio 输出，保留原生回退。不增加 EQ、交叉淡化或音质降档。
+当前源码候选：**Windows 0.3.1 / macOS 0.2.5**。网易云决定授权音源、音质、队列和音量；插件负责受支持曲目的连续 Web Audio 输出，保留原生回退。不增加 EQ、交叉淡化或音质降档。
 
-本次新增启动准备、暂停预取、可选缓存校验 Worker 与分阶段计时。Windows 修复开关强制重启后丢失：改用 BetterNCM 持久化配置，写入后回读。菜单只在主界面右上角，只有无缝播放和一个开关。
+Windows 0.3.1 优先修复冷歌起播等待：未准备好的曲目立即走原生，已准备的兼容曲目才进入 Web。首次原生边界不保证无缝；见[快速起播策略与实测](docs/WINDOWS_FAST_START_0.3.1.md)。以下 0.3.0 启动准备记录属于历史策略。Windows 修复开关强制重启后丢失：改用 BetterNCM 持久化配置，写入后回读。菜单只在主界面右上角，只有无缝播放和一个开关。
 
 - [跨平台最佳实践与实施方案](docs/CROSS_PLATFORM_BEST_PRACTICES.md)：生命周期、缓存、内存、时延口径、平台差异、后续门槛。
 - [Windows 使用与打包](windows/README.md) / [本次验证](docs/verification/windows-best-practices-0.3.0.json)

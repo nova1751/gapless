@@ -1,0 +1,52 @@
+{
+  "date": "2026-11-15",
+  "version": "0.3.1",
+  "client": "3.1.43.205627",
+  "chromium": "91.0.4472.164",
+  "capabilities": {
+    "AudioDecoder": false,
+    "AudioWorkletNode": true
+  },
+  "startupHeld": 0,
+  "coldWebBufferSamples": [
+    {
+      "songId": "1994361206",
+      "loadMs": 530,
+      "playingEventMs": 593,
+      "firstPosition": 0
+    },
+    {
+      "songId": "2670863319",
+      "loadMs": 112,
+      "playingEventMs": 181,
+      "firstPosition": 0
+    },
+    {
+      "songId": "2670863152",
+      "loadMs": 106,
+      "playingEventMs": 163,
+      "firstPosition": 0
+    }
+  ],
+  "warmWebLoadMs": [
+    152,
+    40
+  ],
+  "manualWebStartOffset": 0,
+  "naturalBoundary": {
+    "from": "2670863319",
+    "to": "2670863152",
+    "scheduledGapFrames": 0,
+    "claimDelayMs": 156,
+    "pausedActiveNodes": 0
+  },
+  "limits": [
+    "Not device-output latency",
+    "Disk cache not cleared",
+    "No loopback recording",
+    "Local header path code checked only",
+    "Mac unchanged; no Mac runtime test",
+    "Not a Web streaming decoder"
+  ],
+  "packageSha256": "EC3B528D781E2E9EB8CB26C4A2F3D312DA4D50DCD15361DEBF648B4F71F975D7"
+}

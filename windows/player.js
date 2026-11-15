@@ -63,6 +63,23 @@ plugin.onLoad(async () => {
     const resources = new globalThis.GaplessAudioResources.AudioResources({
       trace, readCache: (ref, info, signal) => nativeCache.read(ref, info, signal), exactSize: true, openLocal: source.openLocal, resolve: async () => { throw new Error('native-only-source'); }, acceptRate: () => true,
     });
+    const preparedPairs = new Map();
+    const sameSpec = (a, b) => !!a && !!b && a.rate === b.rate && a.channels === b.channels
+      && a.bits !== null && a.bits === b.bits;
+    function readyForWeb(info, snap) {
+      if (!allowsWeb(info, snap)) return false;
+      const full = source.sourceInfo(info, snap.currentRow), ref = makeRef(full, snap);
+      return sameEnvironment(preparedPairs.get(resources.requestKey(ref)), snap) && !!resources.lookup(ref, full);
+    }
+    async function peekSpec(ref, info, signal) {
+      const cached = resources.lookup(ref, info);
+      if (cached) return cached.spec;
+      if (!info.localKey) return nativeCache.peek(ref, info, signal);
+      const blob = await source.openLocal(info);
+      if (signal.aborted || !blob || blob.size > resources.fileLimit) return null;
+      const bytes = await blob.slice(0, 64 * 1024).arrayBuffer();
+      return signal.aborted ? null : globalThis.GaplessAudioResources.header(bytes, ref.duration);
+    }
     const clock = new globalThis.GaplessPlaybackClock({
       resources, trace,
       onState: state => {
@@ -168,7 +185,7 @@ plugin.onLoad(async () => {
     const loadInfo = c => ({ activeCode: 0, code: 0, errorCode: 0, errorString: '', duration: c.duration });
     function makeTrack(id, info) {
       return { id, info, duration: Number(info?.songDuration) / 1000, pendingNativeSeeks: new Set(), nativePlaying: false, nativePosition: 0, progressAt: performance.now(),
-        nativeReports: [], nativeHeard: 0, nativeAudioHeard: 0, nativeCarry: 0, nativeAudioCarry: 0, offset: 0, heard: 0, playing: false, owns: false };
+        createdAt: performance.now(), prepareAttempts: 0, prepareAfter: 0, nativeReports: [], nativeHeard: 0, nativeAudioHeard: 0, nativeCarry: 0, nativeAudioCarry: 0, offset: 0, heard: 0, playing: false, owns: false };
     }
     async function requestEvent(command, args, name, matches) {
       const waiter = bridge.wait('audioplayer.on' + name, matches);
@@ -199,6 +216,7 @@ plugin.onLoad(async () => {
     }
     function cancelCandidate() {
       if (!selected) return;
+      selected.controller?.abort();
       clock.stop(selected.track);
       selected = null;
     }
@@ -287,7 +305,7 @@ plugin.onLoad(async () => {
     async function prepare(c, snap) {
       if (selected && sameEnvironment(selected.snapshot, snap)) return;
       cancelCandidate();
-      const candidate = selected = { snapshot: snap, track: null, entry: null, info: null };
+      const candidate = selected = { snapshot: snap, track: null, entry: null, info: null, controller: new AbortController() };
       const stillCurrent = () => current === c && selected === candidate && enabled()
         && sameEnvironment(snap, getSnapshot());
       try {
@@ -299,6 +317,21 @@ plugin.onLoad(async () => {
         const currentInfo = source.sourceInfo(c.info, snap.currentRow);
         const nextInfo = source.sourceInfo(candidate.info, candidate.row);
         const firstRef = makeRef(currentInfo, snap), nextRef = makeRef(nextInfo, snap);
+        if (!temporaryBridge && !c.owns) {
+          const timer = setTimeout(() => candidate.controller.abort(), 1500);
+          let firstSpec, nextSpec;
+          try {
+            firstSpec = await peekSpec(firstRef, currentInfo, candidate.controller.signal);
+            if (!stillCurrent()) return;
+            nextSpec = await peekSpec(nextRef, nextInfo, candidate.controller.signal);
+          } finally { clearTimeout(timer); }
+          if (!stillCurrent()) return;
+          if (!sameSpec(firstSpec, nextSpec)) {
+            c.prepareAfter = performance.now() + 15000;
+            cancelCandidate();
+            trace('pair-skipped', { reason: 'cache-missing-or-incompatible' }); return;
+          }
+        }
         resources.retain([firstRef, nextRef]);
         const entry = await resources.obtain(firstRef, currentInfo);
         if (!stillCurrent()) return;
@@ -313,11 +346,15 @@ plugin.onLoad(async () => {
           }
         }
         if (!stillCurrent()) return;
-        if (temporaryBridge && c.entry.spec.rate !== candidate.entry.spec.rate) throw new Error('native-only-sample-rate');
+        if (!temporaryBridge && !sameSpec(c.entry.spec, candidate.entry.spec)) throw new Error('native-only-sample-spec');
         if ((firstRef.duration > 0 && Math.abs(c.entry.duration - firstRef.duration) > 0.15)
           || (nextRef.duration > 0 && Math.abs(candidate.entry.duration - nextRef.duration) > 0.15)) throw new Error('native-only-duration');
+        if (temporaryBridge && c.entry.spec.rate !== candidate.entry.spec.rate) throw new Error('native-only-sample-rate');
         c.duration = c.entry.duration;
         c.environment = snap;
+        preparedPairs.set(resources.requestKey(firstRef), snap);
+        preparedPairs.set(resources.requestKey(nextRef), snap);
+        while (preparedPairs.size > 6) preparedPairs.delete(preparedPairs.keys().next().value);
         trace('pair-ready', { rate: c.entry.spec.rate, devices: customOutput ? 'custom' : 'default' });
       } catch (error) {
         if (!stillCurrent()) return;
@@ -714,13 +751,16 @@ plugin.onLoad(async () => {
         await acquireNativeGate(c);
         check();
         c.loading = false; c.blocked = false; c.bridgeSide = null;
-        if (c.playing) clock.start(c, clock.ctx.currentTime + 0.01, c.offset);
         prepareVisualClock(); visual.sync();
         reply(callback);
         queueMicrotask(() => {
           if (current !== c || !c.owns) return;
           if (resume) { stateEvent(c, args[1], c.playing ? 1 : 2); progress(c, true); }
           else event('Load', [c.id, loadInfo(c)]);
+          if (current === c && c.owns && c.playing && !c.node) {
+            progress(c, true); clock.start(c, clock.ctx.currentTime + 0.01, c.offset);
+            trace('web-start', { id: source.trackId(c.info), offset: c.offset });
+          }
         });
         trace('web-loaded', { id: source.trackId(c.info), sourceRate: entry.spec.rate,
           decodedRate: entry.buffer.sampleRate, contextRate: clock.ctx.sampleRate, resume,
@@ -765,16 +805,17 @@ plugin.onLoad(async () => {
         queueMicrotask(() => { if (current === c) event('Load', [id, loadInfo(c)]); });
         return true;
       }
-      abandon(!observedNative && allowsWeb(info, snap));
+      const useWeb = !observedNative && readyForWeb(info, snap);
+      abandon(useWeb);
       current = makeTrack(id, info);
-      if (!observedNative && allowsWeb(info, snap)) {
+      if (useWeb) {
         current.environment = snap;
         clock.setVolume(snap.volume);
         void loadOwned(current, args, callback);
         return true;
       }
       trace('native-load', { id: source.trackId(info), level: info?.level, codec: info?.audioFormat,
-        valid: source.valid(info) });
+        valid: source.valid(info), reason: observedNative ? 'already-native' : 'not-prepared', pluginWaitMs: 0 });
       return false;
     }
 
@@ -812,7 +853,7 @@ plugin.onLoad(async () => {
           trace('claim-cleanup-stop');
           return false;
         }
-        if (!restoring) abandon(enabled() && !temporaryBridge && !!c.owns);
+        if (!restoring) abandon(enabled() && !temporaryBridge && (!!c.owns || !!selected?.entry));
         return false;
       }
       // PlaybackInfo describes the native device, not a synthetic listened-time record.
@@ -820,7 +861,9 @@ plugin.onLoad(async () => {
       if (name === 'audioplayer.getPlaybackInfo') return false;
       const query = name === 'audioplayer.getPlayedTime';
       const id = String(query ? args[0]?.playId : args[0]);
-      if (id !== c.id && !(c.loading && !id && /^audioplayer\.(play|pause|seek)$/.test(name))) return false;
+      const loadingControl = c.loading && /^audioplayer\.(play|pause|seek)$/.test(name)
+        && (!id || (id === source.trackId(c.info) && getSnapshot()?.sourceId === id));
+      if (id !== c.id && !loadingControl) return false;
       const play = name === 'audioplayer.play', pause = name === 'audioplayer.pause', seek = name === 'audioplayer.seek';
       if (play || pause || seek) {
         if (claim?.previous === c) clearClaim();
@@ -846,12 +889,6 @@ plugin.onLoad(async () => {
             Promise.resolve(native.pause()).catch(bridge.report);
           }
         }, 0);
-        return true;
-      }
-      if (!c.owns && play && !c.nativePlaying && !c.blocked && allowsWeb(c.info, getSnapshot())) {
-        c.environment = getSnapshot(); c.offset = c.nativePosition; c.playing = true;
-        clock.setVolume(c.environment.volume);
-        void loadOwned(c, args, callback, true);
         return true;
       }
       if (c.loading && (play || pause || seek)) {
@@ -892,7 +929,10 @@ plugin.onLoad(async () => {
       if (play || pause || seek) {
         const mark = args[1];
         if (play) {
-          if (!c.playing) clock.start(c, clock.ctx.currentTime);
+          if (!c.playing) {
+            progress(c, true); clock.start(c, clock.ctx.currentTime);
+            trace('web-start', { id: source.trackId(c.info), offset: c.offset });
+          }
           c.claimed = false;
           prepareVisualClock();
           visual.sync();
@@ -987,6 +1027,13 @@ plugin.onLoad(async () => {
             if (!selected) void prepare(c, snap);
             schedule(c, selected);
           }
+        } else if (!temporaryBridge && enabled() && snap.nextKnown && c.nativePlaying && snap.playing) {
+          // Prepare only an already-cached compatible pair. Never interrupt
+          // an already sounding native instance to chase Web ownership.
+          if (!selected && c.prepareAttempts < 4 && performance.now() >= c.prepareAfter
+            && performance.now() - c.createdAt >= 1500) {
+            c.prepareAttempts++; void prepare(c, snap);
+          }
         } else if (temporaryBridge && !switchIn && !handback && c.nativePlaying && snap.playing) {
           if (!selected || !sameEnvironment(selected.snapshot, snap)) void prepare(c, snap);
           else if (selected.entry && c.entry && !c.pendingNativeSeeks.size && performance.now() >= (c.bridgeNotBefore || 0) && c.duration - currentPosition(c) >= 0.5) void takeOver(c, selected);
@@ -1011,46 +1058,9 @@ plugin.onLoad(async () => {
     }
     bridge.readyForStartup = true;
     bridge.flushStartup?.();
-    // Resolve through the client's own authorization/quality path. Do not emit
-    // a fake Load or create a playback context just to prepare a saved song.
-    let startupRetries = 0;
-    async function prewarmStartup() {
-      if (!enabled() || temporaryBridge || current || !native.resolveCurrent) return;
-      const rev = revision, snap = getSnapshot();
-      if (!snap?.capable || !snap.currentRow || customOutput) {
-        // The host restores its queue after plugin onLoad. Bound this wait;
-        // a real Load or a disabled mode supersedes it on the next attempt.
-        if (++startupRetries <= 40) setTimeout(prewarmStartup, 250);
-        return;
-      }
-      try {
-        let sourceTimer;
-        const preload = await Promise.race([
-          native.resolveCurrent(),
-          new Promise((_, reject) => { sourceTimer = setTimeout(() => reject(new Error('startup-source-timeout')), 3500); }),
-        ]).finally(() => clearTimeout(sourceTimer));
-        if (revision !== rev || current || !enabled()) return;
-        const latest = getSnapshot();
-        if (!sameEnvironment(snap, latest) || latest?.sourceId !== snap.sourceId) {
-          if (++startupRetries <= 40) setTimeout(prewarmStartup, 250);
-          return;
-        }
-        if (!source.valid(preload?.info) || source.trackId(preload.info) !== snap.sourceId) {
-          trace('startup-prepare-skipped', { reason: 'no-authorized-source' }); return;
-        }
-        const info = source.sourceInfo(preload.info, preload.row), ref = makeRef(info, snap);
-        resources.retain([ref]);
-        await resources.obtain(ref, info);
-        if (revision === rev && !current) {
-          if (enabled() && sameEnvironment(snap, getSnapshot()) && getSnapshot()?.sourceId === snap.sourceId)
-            trace('startup-prepared', { id: ref.id });
-          else resources.retain([]);
-        }
-      } catch (error) { trace('startup-prepare-skipped', { reason: /^[a-z0-9-]+$/.test(error.message) ? error.message : 'unavailable' }); }
-    }
-    void prewarmStartup();
+    // Cold tracks pass through immediately; no startup decode queue.
     const publicStatus = {
-      status: () => ({ enabled: enabled(), savingConfig, owns: !!current?.owns, loading: !!current?.loading, directWebLoad: !temporaryBridge, nativePrepared: !!current?.nativeReady, handingBack: !!handback || !!restoring, nativeMuted: !!nativeGate, mode: temporaryBridge ? 'temporary-trial' : 'continuous', bridgeSide: current?.bridgeSide || null, visual: visual.status(), visualHooks: [...visualRenderHooks.keys()], clock: clock.status(), resources: resources.status() }),
+      status: () => ({ enabled: enabled(), savingConfig, owns: !!current?.owns, loading: !!current?.loading, directWebLoad: !temporaryBridge, startupPolicy: 'native-unless-pair-ready', nativePrepared: !!current?.nativeReady, handingBack: !!handback || !!restoring, nativeMuted: !!nativeGate, mode: temporaryBridge ? 'temporary-trial' : 'prepared-gapless', bridgeSide: current?.bridgeSide || null, visual: visual.status(), visualHooks: [...visualRenderHooks.keys()], clock: clock.status(), resources: resources.status() }),
       diagnostics: () => events.slice(),
       enable(value) {
         const next = Boolean(value);
@@ -1071,6 +1081,7 @@ plugin.onLoad(async () => {
     };
     function applyEnabled(value) {
         if (!value) {
+          preparedPairs.clear();
           clearRecent();
           if (current?.loading) { resources.retain([]); }
           else if (current?.owns) void recover(current, 'disabled');
@@ -1078,7 +1089,6 @@ plugin.onLoad(async () => {
           clearClaim();
         }
         if (value && current) { current.blocked = false; cancelCandidate(); }
-        if (value && !current) { startupRetries = 0; void prewarmStartup(); }
     }
     window.gaplessWindows = Object.freeze(publicStatus);
     installGaplessToggle(publicStatus);
