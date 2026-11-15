@@ -88,5 +88,137 @@
     "lagSpanMs": 0.06250000000031264,
     "nearZeroRunMs": 0.0
   },
-  "limits": "Partial native-cache fixture, resumed first song near end. Subsequent seek acted on Open Hearts after first transition. One sample; not fresh network or all lifecycle validation."
+  "limits": "Partial native-cache fixture, resumed first song near end. Subsequent seek acted on Open Hearts after first transition. One sample; not fresh network or all lifecycle validation.",
+  "audioChannelCorrection": {
+    "referenceVerification": [
+      {
+        "channel": 0,
+        "samples": 264600,
+        "correlation": 0.9999999998835597,
+        "rmsDifference": 7.763260301231541e-06,
+        "maxDifference": 2.9921531677246094e-05
+      },
+      {
+        "channel": 1,
+        "samples": 264600,
+        "correlation": 0.3962988469232179,
+        "rmsDifference": 0.4054024728072984,
+        "maxDifference": 1.9323099255561829
+      }
+    ],
+    "captureChannelComparison": {
+      "left": [
+        {
+          "relativeMs": -800,
+          "correlation": 0.950158,
+          "lagMs": -137.770833
+        },
+        {
+          "relativeMs": -400,
+          "correlation": 0.949904,
+          "lagMs": -137.791667
+        },
+        {
+          "relativeMs": -100,
+          "correlation": 0.942794,
+          "lagMs": -137.791667
+        },
+        {
+          "relativeMs": 0,
+          "correlation": 0.949138,
+          "lagMs": -137.770833
+        },
+        {
+          "relativeMs": 100,
+          "correlation": 0.961064,
+          "lagMs": -137.75
+        },
+        {
+          "relativeMs": 400,
+          "correlation": 0.974536,
+          "lagMs": -137.770833
+        },
+        {
+          "relativeMs": 600,
+          "correlation": 0.963956,
+          "lagMs": -137.791667
+        }
+      ],
+      "right": [
+        {
+          "relativeMs": -800,
+          "correlation": 0.346237,
+          "lagMs": 224.458333
+        },
+        {
+          "relativeMs": -400,
+          "correlation": 0.394683,
+          "lagMs": -108.041667
+        },
+        {
+          "relativeMs": -100,
+          "correlation": 0.631043,
+          "lagMs": -109.604167
+        },
+        {
+          "relativeMs": 0,
+          "correlation": 0.620219,
+          "lagMs": -135.145833
+        },
+        {
+          "relativeMs": 100,
+          "correlation": 0.641015,
+          "lagMs": -137.666667
+        },
+        {
+          "relativeMs": 400,
+          "correlation": 0.54605,
+          "lagMs": 331.5
+        },
+        {
+          "relativeMs": 600,
+          "correlation": 0.596121,
+          "lagMs": -137.604167
+        }
+      ],
+      "mean": [
+        {
+          "relativeMs": -800,
+          "correlation": 0.738618,
+          "lagMs": -137.75
+        },
+        {
+          "relativeMs": -400,
+          "correlation": 0.636099,
+          "lagMs": -137.75
+        },
+        {
+          "relativeMs": -100,
+          "correlation": 0.769462,
+          "lagMs": -137.75
+        },
+        {
+          "relativeMs": 0,
+          "correlation": 0.84536,
+          "lagMs": -137.75
+        },
+        {
+          "relativeMs": 100,
+          "correlation": 0.9006,
+          "lagMs": -137.729167
+        },
+        {
+          "relativeMs": 400,
+          "correlation": 0.879768,
+          "lagMs": -137.708333
+        },
+        {
+          "relativeMs": 600,
+          "correlation": 0.871828,
+          "lagMs": -137.770833
+        }
+      ]
+    },
+    "conclusion": "The reference is left-channel PCM, not the stereo mean. Prior lower correlations mixed channels. Matching left capture gives 0.942794-0.974536 with lag spread about 0.041667 ms. No playback code change."
+  }
 }

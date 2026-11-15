@@ -15,7 +15,7 @@ Windows 受支持的在线 FLAC：网易云提供授权音源、音质、队列�
 | 切歌后补齐未听过的中间区块 | 原生缺口 6,231,523 字节在切歌后约 6.9 秒补齐，两首整曲 MD5 匹配：[记录](verification/windows-retired-cache-fill.json) | 此场景实机通过；不保证快速连续切歌、退出或弱网全补齐 |
 | 原生清缓存与恢复 | 实际 UI 清理成功，30 文件原数据清除、播放时重新按需生成，测试后全部哈希恢复：[记录](verification/windows-ui-cache-clear.json) | 当前播放时通过；旧曲补齐正执行的竞态未在新候选实机复现 |
 | 缓存重启复用、关闭交还、重新开启 | runtime 校验、重新选曲、原位置恢复约 191 ms：[记录](verification/windows-candidate-install.json) | 实机通过这些操作；不是全进程网络审计 |
-| 自然跨曲及曲尾跳转 | 原生缓存未命中时目标等待 1297 ms；系统回录多窗口时间对齐、无新增近零段：[记录](verification/windows-native-source-cold-pair.json) | 特定两曲的时间连续性有证据；部分波形相关性偏低，不能承诺 bit-perfect |
+| 自然跨曲及曲尾跳转 | 原生缓存未命中时目标等待 1297 ms；系统回录多窗口时间对齐、无新增近零段：[记录](verification/windows-native-source-cold-pair.json) | 特定两曲的时间连续性有证据；已纠正参考声道误用，左声道相关性约 0.94–0.97；不能承诺 bit-perfect |
 | 内存受控、返回已淘汰位置 | 实机 PCM 平台期和回跳；同解码器区块数值对照：[说明](WINDOWS_BOUNDED_PCM_CANDIDATE.md) | 已覆盖选定 FLAC；其他路径仍使用原有预算/回退 |
 | 超时、清理与抢占 | 实际 session/queue/byte-source 组合加模拟不返回回调；8009 ms 截止、Stop、队列释放、随后命中缓存；前台抢占时旧 Stop 早于新 Load：[记录](verification/windows-native-pipeline-failure.json) | 协议检查通过；不是实际断网/限速环境 |
 | 原生内部是否重复下载、全部统计联动 | 辅助通道没有 Play，暂停 Seek 时原生听音计数未增长；已知预加载通道隔离 | 全进程请求、全部遥测与系统媒体对照仍未完成 |
