@@ -1,0 +1,86 @@
+[
+  {
+    "elapsed": 0,
+    "maxPCMBytes": 24690688,
+    "latestPCMBytes": 24690688,
+    "latestTarget": 60.00213151927436,
+    "outputFallbacks": 0
+  },
+  {
+    "elapsed": 10,
+    "maxPCMBytes": 24690688,
+    "latestPCMBytes": 5644288,
+    "latestTarget": 6.000408163265306,
+    "outputFallbacks": 0
+  },
+  {
+    "elapsed": 20,
+    "maxPCMBytes": 24690688,
+    "latestPCMBytes": 9871360,
+    "latestTarget": 17.999319727891155,
+    "outputFallbacks": 0
+  },
+  {
+    "elapsed": 30,
+    "maxPCMBytes": 24690688,
+    "latestPCMBytes": 13402112,
+    "latestTarget": 27.998412698412697,
+    "outputFallbacks": 0
+  },
+  {
+    "elapsed": 40,
+    "maxPCMBytes": 24690688,
+    "latestPCMBytes": 15515648,
+    "latestTarget": 34.000770975056696,
+    "outputFallbacks": 0
+  },
+  {
+    "elapsed": 50,
+    "maxPCMBytes": 24690688,
+    "latestPCMBytes": 19046400,
+    "latestTarget": 43.99986394557823,
+    "outputFallbacks": 0
+  },
+  {
+    "elapsed": 60,
+    "maxPCMBytes": 24690688,
+    "latestPCMBytes": 23281664,
+    "latestTarget": 55.998775510204084,
+    "outputFallbacks": 0
+  },
+  {
+    "elapsed": 70,
+    "maxPCMBytes": 27516928,
+    "latestPCMBytes": 27516928,
+    "latestTarget": 68.02090702947847,
+    "outputFallbacks": 0
+  },
+  {
+    "elapsed": 80,
+    "maxPCMBytes": 29630464,
+    "latestPCMBytes": 29630464,
+    "latestTarget": 74.00004535147393,
+    "outputFallbacks": 0
+  },
+  {
+    "elapsed": 90,
+    "maxPCMBytes": 33161216,
+    "latestPCMBytes": 33161216,
+    "latestTarget": 85.98154195011338,
+    "outputFallbacks": 0
+  },
+  {
+    "elapsed": 100,
+    "maxPCMBytes": 33169408,
+    "latestPCMBytes": 33169408,
+    "latestTarget": 96.02126984126984,
+    "outputFallbacks": 0
+  },
+  {
+    "elapsed": 110,
+    "maxPCMBytes": 33169408,
+    "latestPCMBytes": 33161216,
+    "latestTarget": 107.99986394557824,
+    "outputFallbacks": 0
+  }
+]

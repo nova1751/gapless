@@ -1,0 +1,30 @@
+{
+  "captureRate": 48000,
+  "callbackErrors": 0,
+  "boundaryInsideCapture": true,
+  "alignment": [
+    {
+      "relativeMs": -400.0,
+      "correlation": 0.9499961698774365,
+      "timelineErrorMs": -137.83333333333348
+    },
+    {
+      "relativeMs": -100.0,
+      "correlation": 0.93874674946787,
+      "timelineErrorMs": -136.52083333333343
+    },
+    {
+      "relativeMs": 100.0,
+      "correlation": 0.9486123761072008,
+      "timelineErrorMs": -137.27083333333346
+    },
+    {
+      "relativeMs": 400.0,
+      "correlation": 0.9763140260174935,
+      "timelineErrorMs": -137.58333333333317
+    }
+  ],
+  "alignmentSpanMs": 1.3125000000000568,
+  "longestNearZeroRunWithin100msAligned": 0.0,
+  "limits": "One cached seek-to-tail WASAPI sample with bounded PCM; not cold network, load stress or DAC proof."
+}

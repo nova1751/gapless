@@ -144,6 +144,8 @@
         }
         await entry.stream.verifyAvailable?.(signal); check();
         resources.trace('seek-range-ready', { id: entry.id, target, origin: entry.stream.rangeOrigin || entry.origin,
+          pcmBytes: entry.stream.bounded ? entry.buffer.bytes : undefined,
+          pcmCapacity: entry.stream.bounded ? entry.buffer.limit : undefined,
           waitMs: Math.round(performance.now() - started), decodedSeconds: (next.sample - p.sample) / entry.spec.rate });
         await new Promise(resolve => setTimeout(resolve, 0));
       }

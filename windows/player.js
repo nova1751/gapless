@@ -29,9 +29,9 @@ plugin.onLoad(async () => {
     flush = setTimeout(() => {
       flush = null;
       const safe = events.slice(-80).map(({ at, wallMs, event, id, from, to, reason, mode, enabled,
-        rate, sourceRate, loadMs, leadSeconds, scheduledGapFrames, delayMs, blockers, memoryHit, waitMs, target, position, decodedSeconds, retainedPlaybackBytes, success }) => ({
+        rate, sourceRate, loadMs, leadSeconds, scheduledGapFrames, delayMs, blockers, memoryHit, waitMs, target, position, decodedSeconds, retainedPlaybackBytes, success, outputWallMs, pcmBytes, pcmCapacity }) => ({
         at, wallMs, event, id, from, to, mode, enabled, rate, sourceRate, loadMs, leadSeconds,
-        scheduledGapFrames, delayMs, blockers, memoryHit, waitMs, target, position, decodedSeconds, retainedPlaybackBytes, success,
+        scheduledGapFrames, delayMs, blockers, memoryHit, waitMs, target, position, decodedSeconds, retainedPlaybackBytes, success, outputWallMs, pcmBytes, pcmCapacity,
         reason: reason ? (/^[a-z0-9:-]+$/.test(reason) ? reason : 'unavailable') : undefined,
       }));
       void betterncm.fs.writeFile('C:\\betterncm\\gapless-windows.log',
