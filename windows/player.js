@@ -68,7 +68,7 @@ plugin.onLoad(async () => {
       && a?.mode === b.mode && a?.quality === b.quality && a?.account === b.account;
     const nativeCache = new globalThis.WindowsNativeCache({ settings: () => native.read().setting, trace });
     const resources = new globalThis.GaplessStreamingResources({
-      trace, readCache: (ref, info, signal) => nativeCache.read(ref, info, signal), exactSize: true, openLocal: source.openLocal, resolve: async () => { throw new Error('native-only-source'); }, acceptRate: () => true,
+      trace, readCache: (ref, info, signal, full) => nativeCache.read(ref, info, signal, full), exactSize: true, openLocal: source.openLocal, resolve: async () => { throw new Error('native-only-source'); }, acceptRate: () => true,
     });
     const preparedPairs = new Map();
     const sameSpec = (a, b) => !!a && !!b && a.rate === b.rate && a.channels === b.channels
@@ -198,13 +198,18 @@ plugin.onLoad(async () => {
       if (seekReplies.length === 1) deliverSeek();
     }
     function startSeekRange(c, target) {
+      const entry = c.entry;
       c.seekRangeController?.abort();
+      entry.stream.ensureController?.abort();
+      entry.stream.priorityTarget = target;
       const controller = c.seekRangeController = new AbortController();
-      void globalThis.GaplessSeekRange.prepare(resources, c.entry, target, controller.signal)
-        .catch(() => { if (!controller.signal.aborted) trace('seek-range-unavailable'); });
+      void globalThis.GaplessSeekRange.prepare(resources, entry, target, controller.signal)
+        .catch(() => { if (!controller.signal.aborted) trace('seek-range-unavailable'); })
+        .finally(() => { if (c.seekRangeController === controller) entry.stream.priorityTarget = null; });
     }
     function cancelPendingSeek(c) {
       c?.seekRangeController?.abort();
+      if (c?.entry?.stream) c.entry.stream.priorityTarget = null;
       const request = c?.pendingStreamSeek;
       if (!request || request.finished) return;
       request.finished = true; c.pendingStreamSeek = null;
@@ -282,7 +287,7 @@ plugin.onLoad(async () => {
       // One recently heard buffer makes back/forward navigation responsive.
       // It remains inside the shared memory budget and is evicted before a
       // prefetch is allowed to fail for memory pressure.
-      if (keepWarm && current?.entry && !current.entry.stream?.error && (!current.entry.stream || current.entry.stream.done) && current.entry.size <= 128 * 1024 * 1024) {
+      if (keepWarm && current?.entry && !current.entry.stream?.error && (!current.entry.stream || current.entry.stream.done || current.entry.stream.indexed) && current.entry.size <= 128 * 1024 * 1024) {
         clearRecent(); recentEntry = current.entry; resources.pin(recentEntry);
       } else if (!keepWarm) clearRecent();
       revision++;
@@ -1184,6 +1189,7 @@ plugin.onLoad(async () => {
     };
     function applyEnabled(value) {
         if (!value) {
+          resources.songCache.clear();
           cancelPendingSeek(current);
           preparedPairs.clear();
           clearRecent();

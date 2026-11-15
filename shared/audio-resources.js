@@ -146,7 +146,15 @@
             const cache = await this.readCache(job.ref, source, cacheController.signal);
             this.check(job);
             if (this.streaming && cache) clearTimeout(cacheTimeout);
-            if (cache) return await this.decodeInput(job, source, cache);
+            if (cache) {
+              try { return await this.decodeInput(job, source, cache); }
+              catch (error) {
+                if (error.message !== 'range-header-unavailable') throw error;
+                this.check(job);
+                const full = await this.readCache(job.ref, source, cacheController.signal, true);
+                if (full) return await this.decodeInput(job, source, full);
+              }
+            }
           } catch (error) {
             this.check(job);
             // A format/rate/budget rejection also applies to the same original
@@ -163,8 +171,16 @@
         this.check(job);
         if (!source.url) throw new Error('native-only-rights');
         if (!['https:', 'http:'].includes(new URL(source.url).protocol)) throw new Error('native-only-source');
-        const response = await fetch(source.url, { signal: job.controller.signal });
-        return await this.decodeInput(job, source, { kind: 'network', response });
+        const indexed = this.overlapStreaming && source.audioFormat === 'flac' && Number.isSafeInteger(source.size) && source.size > 0;
+        const response = await fetch(source.url, { signal: job.controller.signal,
+          ...(indexed ? { headers: { Range: `bytes=0-${Math.min(source.size, 32768) - 1}` } } : {}) });
+        try { return await this.decodeInput(job, source, { kind: 'network', response, partial: indexed && response.status === 206 }); }
+        catch (error) {
+          if (error.message !== 'range-header-unavailable') throw error;
+          this.check(job);
+          const full = await fetch(source.url, { signal: job.controller.signal });
+          return await this.decodeInput(job, source, { kind: 'network', response: full });
+        }
       } catch (error) {
         if (job.controller.signal.reason === 'timeout') throw new Error('download-timeout');
         if (job.controller.signal.aborted) throw new Error('cancelled');

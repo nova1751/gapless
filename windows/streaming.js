@@ -10,7 +10,32 @@
     return () => new Promise(resolve => { waiting.push(resolve); channel.port2.postMessage(0); });
   })();
   class StreamingResources extends AudioResources {
-    constructor(options) { super(options); this.streaming = true; this.overlapStreaming = true; }
+    constructor(options) {
+      super(options); this.streaming = true; this.overlapStreaming = true;
+      this.songCache = new globalThis.GaplessSongCache(() => this.limit - this.held() - this.reserved);
+    }
+    held() { return super.held() + (this.songCache?.bytes || 0); }
+    status() { return { ...super.status(), encodedCache: this.songCache.status() }; }
+    retain(refs) {
+      const keep = new Set(refs.filter(Boolean).map(r => this.requestKey(r)));
+      for (const entry of this.entries.values()) if (!keep.has(entry.requestKey)) entry.stream?.ensureController?.abort();
+      super.retain(refs);
+      if (!keep.size) this.songCache.clear();
+    }
+    ensure(entry, target) {
+      if (!entry.stream.indexed || entry.stream.done || entry.stream.error) return;
+      if (entry.stream.priorityTarget != null && Math.abs(entry.stream.priorityTarget - target) > 1) return;
+      const sample = Math.floor(target * entry.spec.rate);
+      if (globalThis.GaplessSeekRange.until(entry, sample) >= Math.min(entry.buffer.length, sample + 4 * entry.spec.rate)) return;
+      const state = entry.stream;
+      if (state.ensureController && !state.ensureController.signal.aborted
+        && Math.abs((state.ensureTarget || 0) - target) < 4) return;
+      state.ensureController?.abort();
+      const controller = state.ensureController = new AbortController(); state.ensureTarget = target;
+      void globalThis.GaplessSeekRange.prepare(this, entry, target, controller.signal)
+        .catch(() => { if (!controller.signal.aborted) state.error = 'indexed-read-failed'; })
+        .finally(() => { if (state.ensureController === controller) state.ensureController = null; });
+    }
     async decodeInput(job, source, input) {
       const flac = source.audioFormat === 'flac' || /\.flac$/i.test(source.localKey || source.path || '');
       if (!flac || !globalThis['flac-decoder']?.FLACDecoder) return super.decodeInput(job, source, input);
@@ -19,6 +44,9 @@
       const started = performance.now();
       try {
         if (!input.response.ok) throw new Error('stream-read');
+        if (input.partial && input.response.headers.get('content-range') !== `bytes 0-${Math.min(Number(source.size), 32768) - 1}/${source.size}`) {
+          await input.response.body?.cancel(); throw new Error('range-header-unavailable');
+        }
         reader = input.response.body.getReader();
         decoder = new globalThis['flac-decoder'].FLACDecoder();
         await decoder.ready;
@@ -84,6 +112,36 @@
                 ? (start, end, signal) => globalThis.GaplessSeekRange.read(source.url, start, end, Number(source.size), signal) : null);
               this.entries.set(entry.key, entry);
               this.reserved -= size; job.reserve -= size;
+              const cacheKey = entry.requestKey + ':' + (job.identity || hash || source.localKey || source.url);
+              const rawRead = entry.stream.readRange;
+              if (input.verifyParts) entry.stream.verifyAvailable = async signal => {
+                if (entry.stream.integrityVerified) return;
+                const parts = this.songCache.complete(cacheKey, Number(source.size));
+                if (!parts) return;
+                try { await input.verifyParts(parts, signal); }
+                catch (error) { if (!signal.aborted) entry.stream.error = 'cache-integrity'; throw error; }
+                finally { parts.release(); }
+                entry.stream.integrityVerified = true;
+                this.trace('indexed-integrity-verified', { id: entry.id });
+              };
+              this.songCache.put(cacheKey, 0, prefix);
+              if (rawRead) entry.stream.readRange = (start, end, signal) => this.songCache.read(cacheKey, start, end, rawRead, signal);
+              if (entry.stream.seekPoints && rawRead) {
+                try {
+                  await globalThis.GaplessSeekRange.prepare(this, entry, 0, job.controller.signal, 1);
+                  this.check(job);
+                  if (globalThis.GaplessSeekRange.until(entry, 0) < Math.min(spec.frames, spec.rate * 0.75)) throw new Error('indexed-not-ready');
+                  entry.stream.indexed = true;
+                  await reader.cancel();
+                  this.trace('indexed-ready', { id: entry.id, origin: entry.origin, readyMs: Math.round(performance.now() - started) });
+                  published = true; job.publish?.(entry); return entry;
+                } catch (error) {
+                  this.check(job);
+                  this.trace('indexed-unavailable', { id: entry.id });
+                  if (input.partial) throw new Error('range-header-unavailable');
+                }
+              }
+              if (input.partial) throw new Error('range-header-unavailable');
               append(await decoder.decode(prefix)); prefix = null;
             } else append(await decoder.decode(bytes));
             // Bound main-thread decode/hash work; no security-policy changes for workers.
@@ -169,6 +227,7 @@
         if (stopped || track.node !== owner || this.generation !== generation) return;
         try {
           if (stream.error) throw new Error('stream-integrity');
+          this.resources.ensure?.(entry, offset + Math.max(0, this.ctx.currentTime - at));
           while (cursor < entry.buffer.length) {
             const when = at + (cursor - first) / rate;
             // Once verified PCM is complete, schedule the entire remaining

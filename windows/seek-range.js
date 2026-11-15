@@ -80,7 +80,7 @@
       else stream.ranges.push(range);
     }
   }
-  async function prepare(resources, entry, target, signal) {
+  async function prepare(resources, entry, target, signal, ahead = 8) {
     const points = entry.stream?.seekPoints, readRange = entry.stream?.readRange;
     if (!points || !readRange || entry.stream.done) return;
     const sample = Math.floor(target * entry.spec.rate);
@@ -88,13 +88,18 @@
     if (n < 0 || resources.held() + resources.reserved + 8 * MiB > resources.limit) return;
     resources.reserved += 8 * MiB; resources.pin(entry);
     let decoder;
+    const previous = entry.stream.decodeTail || Promise.resolve();
+    let release;
+    entry.stream.decodeTail = new Promise(resolve => { release = resolve; });
     const started = performance.now();
     const check = () => { if (signal.aborted || !resources.enabled || entry.stream.error) throw new Error('cancelled'); };
     try {
+      await previous; check();
       decoder = new globalThis['flac-decoder'].FLACDecoder(); await decoder.ready;
       for (; n + 1 < points.length; n++) {
         check();
-        if (entry.stream.done || entry.stream.decodedFrames >= points[n + 1].sample) return;
+        if (entry.stream.done || points[n].sample >= (target + ahead) * entry.spec.rate) return;
+        if (until(entry, points[n].sample) >= points[n + 1].sample) continue;
         const p = points[n], next = points[n + 1];
         // Bound one range's encoded bytes and temporary PCM before allocating.
         if (next.offset - p.offset > 2 * MiB || (next.sample - p.sample) * entry.spec.channels * 4 > 4 * MiB)
@@ -125,11 +130,16 @@
           entry.buffer.copyToChannel(pcm, ch, p.sample);
         }
         merge(entry.stream, p.sample, next.sample);
+        if (entry.stream.indexed && entry.stream.ranges[0]?.[0] === 0) {
+          entry.stream.decodedFrames = entry.stream.ranges[0][1];
+          if (entry.stream.decodedFrames === entry.buffer.length) entry.stream.done = true;
+        }
+        await entry.stream.verifyAvailable?.(signal); check();
         resources.trace('seek-range-ready', { id: entry.id, target, origin: entry.origin,
           waitMs: Math.round(performance.now() - started), decodedSeconds: (next.sample - p.sample) / entry.spec.rate });
         await new Promise(resolve => setTimeout(resolve, 0));
       }
-    } finally { decoder?.free(); resources.unpin(entry); resources.reserved -= 8 * MiB; }
+    } finally { decoder?.free(); resources.unpin(entry); resources.reserved -= 8 * MiB; release(); }
   }
   globalThis.GaplessSeekRange = { index, read, until, prepare };
 })();

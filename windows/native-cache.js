@@ -28,7 +28,7 @@
         Promise.resolve(promise).then(resolve, reject).finally(() => signal.removeEventListener('abort', abort));
       });
     }
-    async read(ref, source, signal) {
+    async read(ref, source, signal, full = false) {
       const hash = globalThis.GaplessAudioResources.fingerprint(source), bitrate = BITRATE[source.level];
       const size = Number(source.size);
       if (!/^\d+$/.test(ref.id) || !hash || !bitrate || !Number.isSafeInteger(size) || size <= 0
@@ -57,18 +57,32 @@
       }
       const url = new URL(this.mounts.get(path));
       if (url.protocol !== 'http:' || !['localhost', '127.0.0.1'].includes(url.hostname)) throw new Error('cache-mount');
-      const response = await fetch(url.href, { signal, redirect: 'error' });
+      const indexed = !full && source.audioFormat === 'flac';
+      const response = await fetch(url.href, { signal, redirect: 'error',
+        ...(indexed ? { headers: { Range: `bytes=0-${Math.min(size, 32768) - 1}` } } : {}) });
+      const partial = indexed && response.status === 206;
       if (!response.ok) { this.mounts.delete(path); throw new Error('cache-read'); }
       const seekRange = (start, end, rangeSignal) => globalThis.GaplessSeekRange.read(url.href, start, end, size, rangeSignal, true);
+      const verifyParts = async (parts, verifySignal) => {
+        const crypto = this.crypto, digest = crypto.algo.MD5.create();
+        for (const bytes of parts) {
+          if (verifySignal.aborted) throw new Error('cancelled');
+          const words = new Array(Math.ceil(bytes.length / 4)).fill(0);
+          for (let i = 0; i < bytes.length; i++) words[i >>> 2] |= bytes[i] << (24 - (i & 3) * 8);
+          digest.update(crypto.lib.WordArray.create(words, bytes.length));
+          await new Promise(resolve => setTimeout(resolve, 0));
+        }
+        if (digest.finalize().toString(crypto.enc.Hex).toLowerCase() !== hash) throw new Error('cache-integrity');
+      };
       const worker = globalThis.GaplessCacheWorker?.create(hash, size, signal);
-      if (worker) return { kind: 'native-cache', response, seekRange, worker: true,
+      if (worker) return { kind: 'native-cache', response, partial, seekRange, verifyParts, worker: true,
         transform: bytes => worker.transform(bytes), dispose: () => worker.dispose(),
         validate: async total => {
           await worker.validate(total);
           this.trace('native-cache-hit', { id: ref.id, level: source.level, bytes: total, md5Verified: true, worker: true });
         } };
       const crypto = this.crypto, digest = crypto.algo.MD5.create();
-      return { kind: 'native-cache', response, seekRange,
+      return { kind: 'native-cache', response, partial, seekRange, verifyParts,
         transform(bytes) {
           const words = new Array(Math.ceil(bytes.length / 4)).fill(0);
           for (let i = 0; i < bytes.length; i++) {

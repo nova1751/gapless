@@ -1,0 +1,63 @@
+{
+  "version": "0.4.4",
+  "client": "Windows 3.1.43.205627",
+  "mainSha256": "c850ac47abec9adfe1f4a9d160ce05733b1a13d21f303f8913bb1f3bf7d0b4f9",
+  "seekReuse": {
+    "targets": [
+      229.176,
+      120,
+      229.176
+    ],
+    "elapsedMs": [
+      117,
+      101,
+      12
+    ],
+    "readCounts": [
+      8,
+      13,
+      13
+    ],
+    "cacheBytes": [
+      1040312,
+      2220005,
+      2220005
+    ]
+  },
+  "boundary": {
+    "scheduledGapFrames": 0,
+    "claimed": true,
+    "fallback": false
+  },
+  "networkPlayback": {
+    "seconds": 13,
+    "initialRange": "bytes=0-32767",
+    "rangeResponses": 206,
+    "currentAndNextEncodedBytes": 2854068,
+    "indexedReadyMs": [
+      153,
+      224
+    ],
+    "fallback": false
+  },
+  "cacheProtocol": {
+    "sharedFetchCount": 1,
+    "cancelOnePreservesOther": true,
+    "repeatExtraFetches": 0,
+    "sourceIsolation": true,
+    "capacityBounded": true
+  },
+  "limits": [
+    "No native cache writeback",
+    "PCM still uses bounded full-track AudioBuffer layout",
+    "No new loopback recording",
+    "Mac not enabled or tested"
+  ],
+  "disableCleanup": {
+    "encodedBytes": 0,
+    "reserved": 0,
+    "activeNodes": 0,
+    "webOwned": false,
+    "enabledAgain": true
+  }
+}
