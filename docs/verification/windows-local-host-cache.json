@@ -1,0 +1,10 @@
+{
+  "date": "2026-11-16",
+  "candidate": "899325c",
+  "method": "Isolated AudioResources instance in real CloudMusic CEF using current WindowsSource adapter, native getProperties, BetterNCM readFile and OfflineAudioContext decoder",
+  "fixture": "Private copy of existing authorized FLAC cache; one Vorbis vendor metadata byte changed, same 27081483-byte length; original cache untouched; copy deleted after verification",
+  "firstRead": { "origin": "local-file", "frames": 10238980, "rate": 44100, "sameVersionReused": true },
+  "replacementRead": { "versionChanged": true, "oldLookupMiss": true, "staleSourceRejected": true, "newPCMObject": true, "origin": "local-file", "frames": 10238980, "rate": 44100 },
+  "cleanup": { "probeResourcesReleased": true, "globalProbeDeleted": true, "fixtureDeleted": true, "devtoolsClosed": true, "screenCaptureReleased": true, "playerRemainedPaused": true },
+  "limits": "Real host file/cache/decode integration, not playback-queue or streaming-subclass acceptance. Audio samples were not edited; this proves file-version invalidation, not detection of same-size replacements with preserved timestamps."
+}

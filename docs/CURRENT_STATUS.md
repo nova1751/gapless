@@ -26,6 +26,7 @@ Windows 受支持的在线 FLAC：网易云提供授权音源、音质、队列�
 | 原生淡入淡出设置 | Web 播放时开启原生 playFade，原位置交还耗时 75 ms，原生播放继续；随后恢复原设置并暂停：[记录](verification/windows-native-fade-fallback.json) | UI/协议实测通过；未回录淡化包络，不代表所有音效或设备切换通过 |
 | Windows 系统媒体控制 | SMTC 单一网易云会话、曲名及 Playing/Paused 正确；系统会话 API 暂停/继续同步到 Web UI；关闭插件后的原生对照：[记录](verification/windows-smtc-control.json) | 两种后端均未提供时间线/Seek；已恢复原 SMTC 关闭设置。物理媒体键、锁屏、跨曲更新仍未验收 |
 | Mac 同等缓存行为 | [平台方案](CROSS_PLATFORM_BEST_PRACTICES.md)、历史 Mac 证据 | 不能把 Windows 的原生协议或运行结果当成 Mac 验收 |
+| 本地文件同大小修改 | 实际宿主文件 API、资源缓存和解码器：版本变化后旧 PCM 未命中、新 PCM 重新生成；原文件未改：[记录](verification/windows-local-host-cache.json) | 隔离资源实例通过；流式子类/播放队列、保留修改时间的替换及有界磁盘读取仍未完成 |
 
 ## 剩余收尾
 
