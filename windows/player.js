@@ -178,7 +178,8 @@ plugin.onLoad(async () => {
           // Do not silently start a second Web download after native acquisition.
           throw new Error('native-only-cache-provider');
         }
-      }, exactSize: true, openLocal: source.openLocal, resolve: async () => { throw new Error('native-only-source'); }, acceptRate: () => true,
+      }, exactSize: true, openLocal: source.openLocal, openLocalInput: source.openLocalInput,
+      resolve: async () => { throw new Error('native-only-source'); }, acceptRate: () => true,
     });
     const preparedPairs = new Map();
     const sameSpec = (a, b) => !!a && !!b && a.rate === b.rate && a.channels === b.channels

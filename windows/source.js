@@ -26,6 +26,51 @@ const WindowsSource = (() => {
       throw new Error('native-only-local-changed');
     return blob;
   };
+  async function openLocalInput(info, signal) {
+    const before = localState(info);
+    const check = () => {
+      if (signal.aborted) throw new Error('cancelled');
+      if (info.localVersion !== before.version || localState(info).version !== before.version)
+        throw new Error('native-only-local-changed');
+    };
+    check();
+    const url = new URL(await betterncm.fs.mountFile(localPath(info)));
+    check();
+    if (url.protocol !== 'http:' || !['localhost', '127.0.0.1'].includes(url.hostname))
+      throw new Error('native-only-local-mount');
+    const read = async (start, end, rangeSignal) => {
+      check();
+      if (rangeSignal.aborted) throw new Error('cancelled');
+      const bytes = await globalThis.GaplessSeekRange.read(url.href, start, end, before.size, rangeSignal);
+      check();
+      if (rangeSignal.aborted) throw new Error('cancelled');
+      return bytes;
+    };
+    // Backpressure limits sequential file reads; indexed seeking uses the same
+    // checked range path. Cancelling the prefix must not disable later seeks.
+    const sequential = new AbortController();
+    const abort = () => sequential.abort();
+    signal.addEventListener('abort', abort, { once: true });
+    let offset = 0;
+    const body = new ReadableStream({
+      async pull(controller) {
+        try {
+          check();
+          if (offset === before.size) {
+            signal.removeEventListener('abort', abort); controller.close(); return;
+          }
+          const end = Math.min(before.size, offset + 65536);
+          const bytes = await read(offset, end, sequential.signal);
+          offset = end; controller.enqueue(bytes);
+        } catch (error) {
+          signal.removeEventListener('abort', abort); controller.error(error);
+        }
+      },
+      cancel() { signal.removeEventListener('abort', abort); sequential.abort(); },
+    }, { highWaterMark: 0 });
+    return { kind: 'local-file', seekRange: read,
+      response: new Response(body, { headers: { 'content-length': String(before.size) } }) };
+  }
   function valid(info) {
     if (localPath(info)) return !!trackId(info);
     if (!info || info.audioType !== 'track' || info.freeTrialInfo || info.path || info.isCue) return false;
@@ -111,5 +156,5 @@ const WindowsSource = (() => {
     return { ...info, songDuration: duration, fileSize: state.size,
       localKey: path.toLowerCase(), localVersion: state.version };
   }
-  return { valid, same, connect, snapshot, acceptsCandidate, trackId, sourceInfo, openLocal };
+  return { valid, same, connect, snapshot, acceptsCandidate, trackId, sourceInfo, openLocal, openLocalInput };
 })();

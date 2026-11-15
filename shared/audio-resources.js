@@ -47,9 +47,10 @@
       Number.isSafeInteger(size) && size > 0 ? size : null, fingerprint(source), source.localVersion ?? null]);
   }
   class AudioResources {
-    constructor({ resolve, trace, acceptRate, readCache = null, exactSize = false, openLocal, limit = 512 * MiB, fileLimit = 128 * MiB }) {
+    constructor({ resolve, trace, acceptRate, readCache = null, exactSize = false, openLocal, openLocalInput, limit = 512 * MiB, fileLimit = 128 * MiB }) {
       this.resolve = resolve; this.trace = trace; this.acceptRate = acceptRate; this.readCache = readCache;
       this.limit = limit; this.fileLimit = fileLimit; this.exactSize = exactSize; this.openLocal = openLocal;
+      this.openLocalInput = openLocalInput;
       this.entries = new Map(); this.jobs = new Map(); this.failures = new Map();
       this.tail = Promise.resolve(); this.reserved = 0; this.enabled = true;
     }
@@ -131,6 +132,13 @@
         this.check(job);
         if (source.freeTrialInfo) throw new Error('native-only-rights');
         if (Number(source.size) > this.fileLimit) throw new Error('native-only-file-size');
+        if (this.openLocalInput && this.overlapStreaming && source.localKey) {
+          this.reserve(job, 65536);
+          const input = await this.openLocalInput(source, job.controller.signal);
+          try { this.check(job); }
+          catch (error) { await input.response.body?.cancel(); throw error; }
+          return await this.decodeInput(job, source, input);
+        }
         if (this.openLocal && source.localKey) {
           this.reserve(job, this.fileLimit);
           const blob = await this.openLocal(source);
