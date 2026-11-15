@@ -184,9 +184,15 @@ plugin.onLoad(async () => {
       && a.codec === b.codec && (a.codec === 'mp3' || (a.bits !== null && a.bits === b.bits));
     function readyForWeb(info, snap) {
       if (!allowsWeb(info, snap)) return false;
-      const full = source.sourceInfo(info, snap.currentRow), ref = makeRef(full, snap);
-      return full.audioFormat === 'flac' || /\.flac$/i.test(full.path || '')
-        || (sameEnvironment(preparedPairs.get(resources.requestKey(ref)), snap) && !!resources.lookup(ref, full));
+      try {
+        const full = source.sourceInfo(info, snap.currentRow), ref = makeRef(full, snap);
+        return full.audioFormat === 'flac' || /\.flac$/i.test(full.path || '')
+          || (sameEnvironment(preparedPairs.get(resources.requestKey(ref)), snap) && !!resources.lookup(ref, full));
+      } catch {
+        // Still run handleLoad's old-owner teardown before forwarding native
+        // Load when a local file disappears or its version cannot be read.
+        return false;
+      }
     }
     const clock = new globalThis.GaplessStreamingClock({
       resources, trace,
@@ -1099,8 +1105,11 @@ plugin.onLoad(async () => {
         if (!restoring) {
           // The host replays the current row with Stop -> Play and no new Load.
           // Keep its source identity and paused buffer until Play or another Load.
-          const warmNext = selected?.info && sameEnvironment(selected.snapshot, getSnapshot())
-            ? makeRef(source.sourceInfo(selected.info, selected.row), selected.snapshot) : null;
+          let warmNext = null;
+          try {
+            if (selected?.info && sameEnvironment(selected.snapshot, getSnapshot()))
+              warmNext = makeRef(source.sourceInfo(selected.info, selected.row), selected.snapshot);
+          } catch { /* Invalid next-file metadata must not skip current Stop. */ }
           revision++; cancelPendingSeek(c); cancelCandidate(); visual.stop(); clock.stop(c);
           resources.retain([makeRef(c.info, c.environment || getSnapshot()), warmNext]);
           c.offset = 0; c.heard = 0; c.nativeHeard = 0; c.nativeAudioHeard = 0;
