@@ -28,22 +28,6 @@
         Promise.resolve(promise).then(resolve, reject).finally(() => signal.removeEventListener('abort', abort));
       });
     }
-    async peek(ref, info, signal) {
-      let input, reader;
-      try {
-        input = await this.read(ref, { ...info, size: Number(info.fileSize) }, signal);
-        if (!input) return null;
-        reader = input.response.body.getReader();
-        const { value, done } = await this.wait(reader.read(), signal);
-        if (done || !value) return null;
-        const bytes = await input.transform(value.subarray(0, Math.min(value.length, 64 * 1024)));
-        // Compatibility hint only; full size/MD5 verification is still required.
-        return globalThis.GaplessAudioResources.header(bytes, Number(info.songDuration) / 1000);
-      } finally {
-        input?.dispose?.();
-        try { await reader?.cancel(); } catch {}
-      }
-    }
     async read(ref, source, signal) {
       const hash = globalThis.GaplessAudioResources.fingerprint(source), bitrate = BITRATE[source.level];
       const size = Number(source.size);

@@ -70,8 +70,9 @@ worker = '\n'.join(read(p) for p in [vendor / 'core.js', vendor / 'md5.js', root
 main = "\n".join([f"const gaplessWindowsBuild = {mode};", selector,
                   'globalThis.gaplessCacheWorkerSource = ' + json.dumps(worker) + ';',
                   read(root.parent / 'shared/cache-worker.js'),
+                  'new Function("module", "exports", "define", ' + json.dumps(read(root.parent / "vendor/flac-decoder-0.2.11/flac-decoder.min.js")) + ').call(globalThis);',
                   read(root.parent / "shared/audio-resources.js"),
-                  read(root.parent / "shared/playback-clock.js"), read(root.parent / "shared/visual-pcm.js"), read(root.parent / "shared/bridge-window.js"), read(root.parent / "shared/native-handback.js"), read(root / "source.js"), read(root / "native-cache.js"), read(root / "toggle.js"), read(root / "probe.js"), read(root / "player.js")])
+                  read(root.parent / "shared/playback-clock.js"), read(root.parent / "shared/visual-pcm.js"), read(root.parent / "shared/bridge-window.js"), read(root.parent / "shared/native-handback.js"), read(root / "source.js"), read(root / "native-cache.js"), read(root / "toggle.js"), read(root / "probe.js"), read(root / "streaming.js"), read(root / "player.js")])
 output = root.parent / "dist" / f'gapless-player-windows-{manifest["version"]}{"-probe" if args.probe else "-bridge-trial" if args.temporary_bridge else ""}.plugin'
 output.parent.mkdir(exist_ok=True)
 subprocess.run(["node", "--check", "-"], input=main.encode(), check=True)
@@ -81,4 +82,6 @@ with ZipFile(output, "w", ZIP_DEFLATED) as archive:
     archive.writestr("main.js", main)
     archive.write(root.parent / "LICENSE", "LICENSE")
     archive.write(vendor / 'LICENSE', 'vendor/crypto-js-LICENSE')
+    for name in ["LICENSE", "libFLAC-COPYING"]:
+        archive.write(root.parent / "vendor/flac-decoder-0.2.11" / name, "vendor/flac-" + name)
 print(output)

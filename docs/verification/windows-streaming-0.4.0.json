@@ -1,0 +1,125 @@
+{
+  "date": "2026-11-15",
+  "windowsVersion": "0.4.0",
+  "client": "3.1.43.205627",
+  "initialWebMemoryEmpty": true,
+  "nativeCacheLoadMs": 555,
+  "forcedCacheMissNetworkLoadMs": 234,
+  "warmContextNetworkLoadMs": 110,
+  "startOffset": 0,
+  "nextSourcePreparedOnFirstPass": true,
+  "pcmComparison": {
+    "track": "2670863319",
+    "frames": 10238980,
+    "channels": 2,
+    "rate": 44100,
+    "bits": 16,
+    "differentSamples": 0,
+    "maxDifference": 0
+  },
+  "integerRecoveryExhaustive": {
+    "bits": [
+      8,
+      16,
+      24
+    ],
+    "mismatches": 0
+  },
+  "sameRowReplay": {
+    "hostPlayIdRestored": true,
+    "offset": 0,
+    "pauseActiveNodes": 0
+  },
+  "retry": {
+    "injectedTransientFailures": 1,
+    "retryDelayMs": 2007,
+    "scheduledAfterRetry": true
+  },
+  "disabled": {
+    "held": 0,
+    "reserved": 0,
+    "pending": 0,
+    "activeNodes": 0
+  },
+  "boundary": {
+    "captureRate": 48000,
+    "captureErrors": 0,
+    "boundaryInsideCapture": true,
+    "alignment": [
+      {
+        "relativeMs": -400.0,
+        "correlation": 0.951188,
+        "timelineErrorMs": -137.313
+      },
+      {
+        "relativeMs": -100.0,
+        "correlation": 0.941092,
+        "timelineErrorMs": -137.437
+      },
+      {
+        "relativeMs": 100.0,
+        "correlation": 0.949178,
+        "timelineErrorMs": -138.021
+      },
+      {
+        "relativeMs": 400.0,
+        "correlation": 0.972797,
+        "timelineErrorMs": -138.25
+      }
+    ],
+    "longestNearZeroRunWithin50ms": 0,
+    "limitations": "WASAPI output only; no DAC/analog measurement; one boundary sample",
+    "estimatedAudibleBoundaryOffsetMs": 137.755,
+    "longestNearZeroRunWithin100msAligned": 0,
+    "alignmentSpanMs": 0.937
+  },
+  "chunks": {
+    "captureErrors": 0,
+    "windowSeconds": 1,
+    "matches": [
+      {
+        "sourceSeconds": 1,
+        "correlation": 0.95048,
+        "arrivalOffsetMs": 334.872
+      },
+      {
+        "sourceSeconds": 2,
+        "correlation": 0.9501,
+        "arrivalOffsetMs": 335.532
+      },
+      {
+        "sourceSeconds": 3,
+        "correlation": 0.95363,
+        "arrivalOffsetMs": 334.391
+      },
+      {
+        "sourceSeconds": 4,
+        "correlation": 0.94744,
+        "arrivalOffsetMs": 333.879
+      },
+      {
+        "sourceSeconds": 5,
+        "correlation": 0.95563,
+        "arrivalOffsetMs": 334.339
+      }
+    ],
+    "arrivalOffsetSpanMs": 1.653,
+    "limitation": "Short windows produced ambiguous periodic matches; one-second windows used. Loopback timestamps and resampling do not establish sample-exact DAC output."
+  },
+  "packageSha256": "62DB1D7598E8A2ADF94C4E3983414953DB1C8D94E68A7E2C2EBDC2A874A27566",
+  "mac": "0.2.5 syntax and ZIP only; streaming not enabled",
+  "limitations": [
+    "Not a constant-memory PCM ring",
+    "No DAC/analog verification",
+    "No all-codec or all-network guarantee",
+    "24-bit actual music not runtime compared",
+    "Visual layout not retested; UI sources unchanged"
+  ],
+  "localSizeBranch": {
+    "declaredSourceSize": 0,
+    "responseBytes": 27865486,
+    "decodedFrames": 10360143,
+    "completed": true,
+    "scope": "In-memory Response fixture from authorized FLAC; not a local disk UI test"
+  }
+}

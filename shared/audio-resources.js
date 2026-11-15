@@ -49,7 +49,7 @@
     held() { return [...this.entries.values()].reduce((n, entry) => n + entry.size, 0); }
     lookup(ref, source) {
       const hash = source && fingerprint(source);
-      return [...this.entries.values()].find(e => e.requestKey === this.requestKey(ref)
+      return [...this.entries.values()].find(e => !e.stream?.error && e.requestKey === this.requestKey(ref)
         && (!source || (source.localKey ? source.localKey === e.source.localKey
           : this.exactSize ? this.identity(source) === e.identity && !!e.identity
             : e.hash && hash === e.hash && e.level === source.level))) || null;
@@ -80,6 +80,7 @@
       if (failure && (failure.permanent || failure.retryAt > performance.now())) throw new Error(failure.reason);
       const controller = new AbortController();
       const job = { ref, controller, identity, reserve: 0, queuedAt: performance.now() };
+      const early = this.streaming ? new Promise(resolve => { job.publish = resolve; }) : null;
       const run = () => this.acquire(job, info);
       job.promise = this.tail.then(run, run).catch(error => {
         if (this.jobs.get(requestKey) === job &&
@@ -95,6 +96,7 @@
         if (this.jobs.get(requestKey) === job) this.jobs.delete(requestKey);
       });
       this.tail = job.promise.catch(() => {});
+      if (early) job.promise = Promise.race([early, job.promise]);
       this.jobs.set(requestKey, job);
       return job.promise;
     }
@@ -108,7 +110,7 @@
     async acquire(job, info) {
       this.check(job);
       this.trace('resource-start', { id: job.ref.id, queueMs: Math.round(performance.now() - job.queuedAt) });
-      const timeout = setTimeout(() => job.controller.abort('timeout'), 25000);
+      const timeout = job.acquisitionTimer = setTimeout(() => job.controller.abort('timeout'), 25000);
       try {
         const source = info ? { ...info, url: info.musicurl, duration: Number(info.songDuration) / 1000,
           size: Number(info.fileSize) } : await this.resolve(job.ref, job.controller.signal);
@@ -130,6 +132,7 @@
           try {
             const cache = await this.readCache(job.ref, source, cacheController.signal);
             this.check(job);
+            if (this.streaming && cache) clearTimeout(cacheTimeout);
             if (cache) return await this.decodeInput(job, source, cache);
           } catch (error) {
             this.check(job);
