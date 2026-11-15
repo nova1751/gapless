@@ -445,6 +445,11 @@ plugin.onLoad(async () => {
     }
 
     async function prepare(c, snap) {
+      // Native acquisition reuses the host backend. Until Web owns output,
+      // leave that backend playing normally; preparation would either fail its
+      // lease or interrupt the audible native song. The next Load establishes
+      // ownership through loadOwned before requesting native cache bytes.
+      if (nativeSourceMode && !c.owns) return;
       if (selected && sameEnvironment(selected.snapshot, snap)) return;
       if (c.prepareAttempts >= 4 || performance.now() < c.prepareAfter) return;
       c.prepareAttempts++;
@@ -1255,7 +1260,7 @@ plugin.onLoad(async () => {
             if (!selected) void prepare(c, snap);
             schedule(c, selected);
           }
-        } else if (!temporaryBridge && enabled() && snap.nextKnown && c.nativePlaying && snap.playing) {
+        } else if (!temporaryBridge && !nativeSourceMode && enabled() && snap.nextKnown && c.nativePlaying && snap.playing) {
           // Prepare an authorized next source without waiting for a prior listen. Never interrupt
           // an already sounding native instance to chase Web ownership.
           if (!selected && c.prepareAttempts < 4 && performance.now() >= c.prepareAfter
@@ -1291,7 +1296,9 @@ plugin.onLoad(async () => {
       cacheStatus: () => ({ nativeSourceMode, clearing: cacheClearing, filling: !!fillJob,
         currentComplete: !!current?.cacheComplete, queue: cacheQueue?.status() || null,
         session: cacheSession ? { ...cacheSession.stats } : null }),
-      status: () => ({ enabled: enabled(), savingConfig, owns: !!current?.owns, loading: !!current?.loading, directWebLoad: !temporaryBridge, startupPolicy: 'stream-flac-native-fallback', nativePrepared: !!current?.nativeReady, handingBack: !!handback || !!restoring, nativeMuted: !!nativeGate, mode: temporaryBridge ? 'temporary-trial' : 'streaming-gapless', bridgeSide: current?.bridgeSide || null, visual: visual.status(), visualHooks: [...visualRenderHooks.keys()], clock: clock.status(), resources: resources.status(), nativeTransport: { ...bridge.nativeTransport }, nativePreload: { ...bridge.nativePreload } }),
+      status: () => ({ enabled: enabled(), savingConfig, owns: !!current?.owns, loading: !!current?.loading,
+        waitingForNextLoad: nativeSourceMode && enabled() && !!current && !current.owns && !current.loading,
+        directWebLoad: !temporaryBridge, startupPolicy: 'stream-flac-native-fallback', nativePrepared: !!current?.nativeReady, handingBack: !!handback || !!restoring, nativeMuted: !!nativeGate, mode: temporaryBridge ? 'temporary-trial' : 'streaming-gapless', bridgeSide: current?.bridgeSide || null, visual: visual.status(), visualHooks: [...visualRenderHooks.keys()], clock: clock.status(), resources: resources.status(), nativeTransport: { ...bridge.nativeTransport }, nativePreload: { ...bridge.nativePreload } }),
       diagnostics: () => events.slice(),
       clearMemoryCache,
       enable(value) {

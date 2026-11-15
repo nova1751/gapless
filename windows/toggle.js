@@ -59,7 +59,9 @@ function installGaplessToggle(controller) {
     const state = controller.status();
     toggle.setAttribute('aria-checked', String(state.enabled));
     toggle.disabled = busy || state.savingConfig || state.handingBack || (!state.enabled && (state.owns || state.loading));
-    message.textContent = saveError ? '设置未保存，请重试' : toggle.disabled ? '正在切换播放方式…' : state.enabled ? '无缝播放已开启' : '无缝播放已关闭，由网易云播放';
+    message.textContent = saveError ? '设置未保存，请重试' : toggle.disabled ? '正在切换播放方式…'
+      : state.waitingForNextLoad ? '已开启，当前保持原生播放，下次选歌生效'
+      : state.enabled ? '无缝播放已开启' : '无缝播放已关闭，由网易云播放';
   }
   function close(focus = false) {
     panel.hidden = true;
