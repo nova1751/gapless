@@ -461,7 +461,21 @@ plugin.onLoad(async () => {
 
     function schedule(c, candidate) {
       if (temporaryBridge && c.bridgeSide === 'head') return;
-      if (c.pendingStreamSeek || !c.owns || !c.playing || !candidate?.entry || candidate.track || clock.ctx?.state !== 'running') return;
+      if (c.pendingStreamSeek || !c.owns || !c.playing || !candidate?.entry || clock.ctx?.state !== 'running') return;
+      // Keep the prepared file's version, rather than comparing two host rows
+      // which may both omit file metadata. Recheck a queued local node without
+      // putting synchronous filesystem calls on every 40 ms progress tick.
+      if (!candidate.track || (candidate.entry.source.localKey
+        && performance.now() >= (candidate.fileCheckAt || 0))) {
+        candidate.fileCheckAt = performance.now() + 250;
+        if (!source.same(candidate.entry.source, candidate.info)) {
+          if (selected === candidate) cancelCandidate(); else clock.stop(candidate.track);
+          c.prepareAttempts = 0; c.prepareAfter = performance.now() + 1000;
+          trace('candidate-source-changed');
+          return;
+        }
+      }
+      if (candidate.track) return;
       if (!clock.matches(candidate.entry) || c.end - clock.ctx.currentTime < 0.08) return;
       const next = { ...makeTrack('', candidate.info), entry: candidate.entry, duration: candidate.entry.duration };
       clock.start(next, c.end, 0);
@@ -480,7 +494,8 @@ plugin.onLoad(async () => {
       visual.stop();
       const snap = getSnapshot();
       if (candidate?.track && snap?.id === c.id && snap.nextKnown
-        && sameEnvironment(candidate.snapshot, snap) && enabled()) {
+        && sameEnvironment(candidate.snapshot, snap) && enabled()
+        && source.same(candidate.entry.source, candidate.info)) {
         claim = candidate;
         claim.previous = c;
         claim.started = performance.now();
@@ -1026,7 +1041,7 @@ plugin.onLoad(async () => {
       const incoming = claim;
       const snap = getSnapshot();
       if (incoming && id !== incoming.previous.id && enabled() && sameEnvironment(incoming.snapshot, snap)
-        && snap.sourceId === source.trackId(info) && source.same(incoming.info, info) && incoming.track.node
+        && snap.sourceId === source.trackId(info) && source.same(incoming.track.entry?.source, info) && incoming.track.node
         && bridge.registrations.has('audioplayer.onLoad')) {
         claim = null;
         clearTimeout(incoming.timer);
