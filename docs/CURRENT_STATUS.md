@@ -19,6 +19,7 @@ Windows 受支持的在线 FLAC：网易云提供授权音源、音质、队列�
 | 内存受控、返回已淘汰位置 | 实机 PCM 平台期和回跳；同解码器区块数值对照：[说明](WINDOWS_BOUNDED_PCM_CANDIDATE.md) | 已覆盖选定 FLAC；其他路径仍使用原有预算/回退 |
 | 超时、清理与抢占 | 实际 session/queue/byte-source 组合加模拟不返回回调；8009 ms 截止、Stop、队列释放、随后命中缓存；前台抢占时旧 Stop 早于新 Load：[记录](verification/windows-native-pipeline-failure.json) | 协议检查通过；不是实际断网/限速环境 |
 | 原生内部是否重复下载、全部统计联动 | 辅助通道没有 Play，暂停 Seek 时原生听音计数未增长；已知预加载通道隔离 | 全进程请求、全部遥测与系统媒体对照仍未完成 |
+| 原生淡入淡出设置 | Web 播放时开启原生 playFade，原位置交还耗时 75 ms，原生播放继续；随后恢复原设置并暂停：[记录](verification/windows-native-fade-fallback.json) | UI/协议实测通过；未回录淡化包络，不代表所有音效或设备切换通过 |
 | Mac 同等缓存行为 | [平台方案](CROSS_PLATFORM_BEST_PRACTICES.md)、历史 Mac 证据 | 不能把 Windows 的原生协议或运行结果当成 Mac 验收 |
 
 ## 剩余收尾

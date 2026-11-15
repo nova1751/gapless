@@ -1,0 +1,19 @@
+{
+  "date": "2026-11-16",
+  "candidate": "687e1b0",
+  "client": "Windows CloudMusic 3.1.43.205627",
+  "scenario": "Enable native playFade during Web playback, then restore original disabled setting",
+  "observations": {
+    "blockers": ["fade"],
+    "restoreReason": "native-settings-or-queue",
+    "restorePositionSeconds": 208.33267756462288,
+    "restoreElapsedMs": 75,
+    "restoredPositionMatches": true,
+    "nativePlaybackUiContinued": true,
+    "originalFadeDisabledRestored": true,
+    "blockersAfterRestoringSetting": [],
+    "finalPlaybackPaused": true,
+    "screenCaptureReleased": true
+  },
+  "limits": "UI and diagnostic event verification only; no loopback recording, no acoustic fade measurement, and no claim covering all audio effects or output-device changes."
+}
