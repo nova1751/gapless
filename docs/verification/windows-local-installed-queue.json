@@ -1,0 +1,41 @@
+{
+  "implementation": "d4e7c87",
+  "platform": "Windows / CloudMusic 3.1.43.205627",
+  "scope": "Installed plugin, actual local music queue, isolated copies of two complete FLAC cache sources",
+  "startupMs": 782,
+  "sampleRate": 44100,
+  "seeks": [
+    {
+      "targetSeconds": 222.024,
+      "readyMs": 45
+    },
+    {
+      "targetSeconds": 117,
+      "readyMs": 68
+    },
+    {
+      "targetSeconds": 34.398,
+      "readyMs": 66
+    }
+  ],
+  "boundaryCount": 1,
+  "claimDelayMs": 160.6,
+  "scheduledGapFrames": 0,
+  "capture": {
+    "captureSeconds": 30.0,
+    "callbackErrors": 0,
+    "sampleClockLagSpanFrames": 2,
+    "nearZeroRunsWithinOneSecondOfReportedBoundary": []
+  },
+  "correlationRange": [
+    0.9419901972154308,
+    0.9787438831418458
+  ],
+  "fallbackOrUnderrunObserved": false,
+  "limits": [
+    "Single local FLAC pair with valid index; not offline/weak-network acceptance",
+    "Seek-ready is buffer readiness, not measured audible latency",
+    "2-frame alignment span at 48 kHz is not bit-perfect proof",
+    "File replacement and long-duration playback remain unverified"
+  ]
+}
