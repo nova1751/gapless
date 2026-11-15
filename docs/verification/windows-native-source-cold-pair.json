@@ -30,5 +30,191 @@
   "previousTrackCacheMissingBytes": 6231523,
   "limits": "One native-disk-cache-miss trial. Local downloads and OS caches not excluded. Previous track middle remained incomplete after transition; not a whole-cache guarantee.",
   "verdict": "inconclusive audio continuity; whole-track cache completion failed after early transition",
-  "implementation": "da59f91 native-source trial"
+  "implementation": "da59f91 native-source trial",
+  "multiWindowFollowup": {
+    "method": "Normalized cross-correlation, each search independently spans +/-600 ms. Mono WASAPI capture versus same existing boundary reference; no forced common-lag constraint.",
+    "windows": [
+      {
+        "windowMs": 80.0,
+        "relativeMs": -800,
+        "correlation": 0.69993,
+        "lagMs": -137.1667
+      },
+      {
+        "windowMs": 80.0,
+        "relativeMs": -600,
+        "correlation": 0.71124,
+        "lagMs": -137.1667
+      },
+      {
+        "windowMs": 80.0,
+        "relativeMs": -400,
+        "correlation": 0.63992,
+        "lagMs": -137.1458
+      },
+      {
+        "windowMs": 80.0,
+        "relativeMs": -200,
+        "correlation": 0.60109,
+        "lagMs": -137.1667
+      },
+      {
+        "windowMs": 80.0,
+        "relativeMs": -100,
+        "correlation": 0.70948,
+        "lagMs": 19.9167
+      },
+      {
+        "windowMs": 80.0,
+        "relativeMs": 0,
+        "correlation": 0.81545,
+        "lagMs": -137.1458
+      },
+      {
+        "windowMs": 80.0,
+        "relativeMs": 100,
+        "correlation": 0.86154,
+        "lagMs": -137.125
+      },
+      {
+        "windowMs": 80.0,
+        "relativeMs": 200,
+        "correlation": 0.93256,
+        "lagMs": -137.125
+      },
+      {
+        "windowMs": 80.0,
+        "relativeMs": 400,
+        "correlation": 0.90046,
+        "lagMs": -137.1667
+      },
+      {
+        "windowMs": 80.0,
+        "relativeMs": 600,
+        "correlation": 0.90569,
+        "lagMs": -137.0625
+      },
+      {
+        "windowMs": 200.0,
+        "relativeMs": -800,
+        "correlation": 0.73903,
+        "lagMs": -137.1458
+      },
+      {
+        "windowMs": 200.0,
+        "relativeMs": -600,
+        "correlation": 0.73664,
+        "lagMs": -137.1667
+      },
+      {
+        "windowMs": 200.0,
+        "relativeMs": -400,
+        "correlation": 0.63468,
+        "lagMs": -137.1458
+      },
+      {
+        "windowMs": 200.0,
+        "relativeMs": -200,
+        "correlation": 0.64893,
+        "lagMs": -137.1458
+      },
+      {
+        "windowMs": 200.0,
+        "relativeMs": -100,
+        "correlation": 0.76864,
+        "lagMs": -137.1458
+      },
+      {
+        "windowMs": 200.0,
+        "relativeMs": 0,
+        "correlation": 0.84561,
+        "lagMs": -137.125
+      },
+      {
+        "windowMs": 200.0,
+        "relativeMs": 100,
+        "correlation": 0.90045,
+        "lagMs": -137.125
+      },
+      {
+        "windowMs": 200.0,
+        "relativeMs": 200,
+        "correlation": 0.89701,
+        "lagMs": -137.1042
+      },
+      {
+        "windowMs": 200.0,
+        "relativeMs": 400,
+        "correlation": 0.8784,
+        "lagMs": -137.1042
+      },
+      {
+        "windowMs": 200.0,
+        "relativeMs": 600,
+        "correlation": 0.87478,
+        "lagMs": -137.1667
+      },
+      {
+        "windowMs": 400.0,
+        "relativeMs": -800,
+        "correlation": 0.73586,
+        "lagMs": -137.1458
+      },
+      {
+        "windowMs": 400.0,
+        "relativeMs": -600,
+        "correlation": 0.69015,
+        "lagMs": -137.1458
+      },
+      {
+        "windowMs": 400.0,
+        "relativeMs": -400,
+        "correlation": 0.6381,
+        "lagMs": -137.1458
+      },
+      {
+        "windowMs": 400.0,
+        "relativeMs": -200,
+        "correlation": 0.77142,
+        "lagMs": -137.1458
+      },
+      {
+        "windowMs": 400.0,
+        "relativeMs": -100,
+        "correlation": 0.84968,
+        "lagMs": -137.125
+      },
+      {
+        "windowMs": 400.0,
+        "relativeMs": 0,
+        "correlation": 0.87328,
+        "lagMs": -137.125
+      },
+      {
+        "windowMs": 400.0,
+        "relativeMs": 100,
+        "correlation": 0.88886,
+        "lagMs": -137.125
+      },
+      {
+        "windowMs": 400.0,
+        "relativeMs": 200,
+        "correlation": 0.88741,
+        "lagMs": -137.1042
+      },
+      {
+        "windowMs": 400.0,
+        "relativeMs": 400,
+        "correlation": 0.86699,
+        "lagMs": -137.125
+      },
+      {
+        "windowMs": 400.0,
+        "relativeMs": 600,
+        "correlation": 0.83015,
+        "lagMs": -137.1458
+      }
+    ],
+    "verdict": "The 80 ms outlier is not reproduced with 200/400 ms windows. Their lag spread is below 0.1 ms; short-window ambiguity does not establish a 157 ms audio discontinuity. Lower correlation still needs a fresh controlled capture."
+  }
 }
