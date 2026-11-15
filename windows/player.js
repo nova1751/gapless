@@ -197,7 +197,14 @@ plugin.onLoad(async () => {
       seekReplies.push({ c, callback, mark, target, revision, failed });
       if (seekReplies.length === 1) deliverSeek();
     }
+    function startSeekRange(c, target) {
+      c.seekRangeController?.abort();
+      const controller = c.seekRangeController = new AbortController();
+      void globalThis.GaplessSeekRange.prepare(resources, c.entry, target, controller.signal)
+        .catch(() => { if (!controller.signal.aborted) trace('seek-range-unavailable'); });
+    }
     function cancelPendingSeek(c) {
+      c?.seekRangeController?.abort();
       const request = c?.pendingStreamSeek;
       if (!request || request.finished) return;
       request.finished = true; c.pendingStreamSeek = null;
@@ -207,11 +214,12 @@ plugin.onLoad(async () => {
       cancelPendingSeek(c);
       const request = c.pendingStreamSeek = { callback, mark, target, finished: false };
       const began = performance.now(), entry = c.entry;
+      startSeekRange(c, target);
       const valid = () => current === c && c.owns && enabled() && c.pendingStreamSeek === request;
       const required = Math.min(entry.buffer.length, Math.ceil((target + 0.5) * entry.spec.rate));
       trace('stream-seek-wait', { id: source.trackId(c.info), target });
       try {
-        while (!entry.stream.done && entry.stream.decodedFrames < required) {
+        while (!entry.stream.done && globalThis.GaplessSeekRange.until(entry, Math.floor(target * entry.spec.rate)) < required) {
           if (!valid()) throw new Error('cancelled');
           if (entry.stream.error) throw new Error('stream-seek-source-failed');
           if (performance.now() - began > 10000) throw new Error('stream-seek-timeout');
@@ -781,8 +789,9 @@ plugin.onLoad(async () => {
         if (ref.duration > 0 && Math.abs(entry.duration - ref.duration) > 0.15) throw new Error('native-only-duration');
         c.entry = entry; c.duration = entry.duration;
         const seekWait = performance.now();
+        if (c.offset > 0 && entry.stream && !entry.stream.done) startSeekRange(c, c.offset);
         while (entry.stream && !entry.stream.done
-          && entry.stream.decodedFrames < Math.min(entry.buffer.length, Math.ceil((c.offset + 0.5) * entry.spec.rate))) {
+          && globalThis.GaplessSeekRange.until(entry, Math.floor(c.offset * entry.spec.rate)) < Math.min(entry.buffer.length, Math.ceil((c.offset + 0.5) * entry.spec.rate))) {
           check();
           if (entry.stream.error || performance.now() - seekWait > 10000) throw new Error('native-only-seek-buffer');
           await new Promise(resolve => setTimeout(resolve, 30));
@@ -1035,10 +1044,14 @@ plugin.onLoad(async () => {
           const target = Math.max(0, Math.min(Number(args[2]) || 0, c.duration - 0.001));
           cancelPendingSeek(c);
           if (c.entry?.stream && !c.entry.stream.done
-            && c.entry.stream.decodedFrames < Math.min(c.entry.buffer.length, Math.ceil((target + 0.5) * c.entry.spec.rate))) {
+            && globalThis.GaplessSeekRange.until(c.entry, Math.floor(target * c.entry.spec.rate)) < Math.min(c.entry.buffer.length, Math.ceil((target + 0.5) * c.entry.spec.rate))) {
             void seekWhenReady(c, callback, mark, target);
             return true;
           }
+          // A new seek into an already filled sparse range still needs its
+          // continuation; cancelling the previous request must not strand it.
+          if (c.entry?.stream && !c.entry.stream.done && target * c.entry.spec.rate >= c.entry.stream.decodedFrames)
+            startSeekRange(c, target);
           if (wasPlaying) clock.seek(c, target);
           else { clock.stop(c); c.offset = target; }
           completeSeek(c, callback, mark, target);

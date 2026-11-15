@@ -59,15 +59,16 @@
       if (url.protocol !== 'http:' || !['localhost', '127.0.0.1'].includes(url.hostname)) throw new Error('cache-mount');
       const response = await fetch(url.href, { signal, redirect: 'error' });
       if (!response.ok) { this.mounts.delete(path); throw new Error('cache-read'); }
+      const seekRange = (start, end, rangeSignal) => globalThis.GaplessSeekRange.read(url.href, start, end, size, rangeSignal, true);
       const worker = globalThis.GaplessCacheWorker?.create(hash, size, signal);
-      if (worker) return { kind: 'native-cache', response, worker: true,
+      if (worker) return { kind: 'native-cache', response, seekRange, worker: true,
         transform: bytes => worker.transform(bytes), dispose: () => worker.dispose(),
         validate: async total => {
           await worker.validate(total);
           this.trace('native-cache-hit', { id: ref.id, level: source.level, bytes: total, md5Verified: true, worker: true });
         } };
       const crypto = this.crypto, digest = crypto.algo.MD5.create();
-      return { kind: 'native-cache', response,
+      return { kind: 'native-cache', response, seekRange,
         transform(bytes) {
           const words = new Array(Math.ceil(bytes.length / 4)).fill(0);
           for (let i = 0; i < bytes.length; i++) {

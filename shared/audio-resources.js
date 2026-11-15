@@ -96,7 +96,13 @@
         if (this.jobs.get(requestKey) === job) this.jobs.delete(requestKey);
       });
       this.tail = job.promise.catch(() => {});
-      if (early) job.promise = Promise.race([early, job.promise]);
+      if (early) {
+        job.promise = Promise.race([early, job.promise]);
+        // Windows indexed seeks can reach the tail before sequential decoding
+        // finishes. Let the next authorized track prepare after first PCM is
+        // published, while both jobs still share the memory budget and retain guards.
+        if (this.overlapStreaming) this.tail = job.promise.catch(() => {});
+      }
       this.jobs.set(requestKey, job);
       return job.promise;
     }
@@ -122,7 +128,14 @@
           const blob = await this.openLocal(source);
           this.check(job);
           if (!(blob.size > 0 && blob.size <= this.fileLimit)) throw new Error('native-only-file-size');
-          return await this.decodeInput(job, source, { kind: 'local-file', response: new Response(blob, { headers: { 'content-length': String(blob.size) } }) });
+          return await this.decodeInput(job, source, { kind: 'local-file',
+            seekRange: this.overlapStreaming ? async (start, end, signal) => {
+              if (signal.aborted) throw new Error('cancelled');
+              const bytes = new Uint8Array(await blob.slice(start, end).arrayBuffer());
+              if (signal.aborted || bytes.length !== end - start) throw new Error('cancelled');
+              return bytes;
+            } : null,
+            response: new Response(blob, { headers: { 'content-length': String(blob.size) } }) });
         }
         if (this.readCache) {
           const cacheController = new AbortController();

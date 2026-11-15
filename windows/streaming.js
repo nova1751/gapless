@@ -10,7 +10,7 @@
     return () => new Promise(resolve => { waiting.push(resolve); channel.port2.postMessage(0); });
   })();
   class StreamingResources extends AudioResources {
-    constructor(options) { super(options); this.streaming = true; }
+    constructor(options) { super(options); this.streaming = true; this.overlapStreaming = true; }
     async decodeInput(job, source, input) {
       const flac = source.audioFormat === 'flac' || /\.flac$/i.test(source.localKey || source.path || '');
       if (!flac || !globalThis['flac-decoder']?.FLACDecoder) return super.decodeInput(job, source, input);
@@ -78,6 +78,10 @@
                 identity: job.identity, source, hash, level: source.level, requestedLevel: job.ref.level,
                 spec, buffer, size, duration: spec.duration, origin: input.kind, pins: 0,
                 stream: { decodedFrames: 0, done: false, error: null } };
+              entry.stream.seekPoints = globalThis.GaplessSeekRange.index(prefix, spec,
+                Number(source.localKey ? input.response.headers.get('content-length') : source.size));
+              entry.stream.readRange = input.seekRange || (input.kind === 'network'
+                ? (start, end, signal) => globalThis.GaplessSeekRange.read(source.url, start, end, Number(source.size), signal) : null);
               this.entries.set(entry.key, entry);
               this.reserved -= size; job.reserve -= size;
               append(await decoder.decode(prefix)); prefix = null;
@@ -126,17 +130,32 @@
       }
       const ctx = await super.open(entry); this.readyContext = ctx; return ctx;
     }
-    start(track, at, offset = track.offset || 0) {
+    start(track, at, offset = track.offset || 0, replace = false) {
       const stream = track.entry?.stream;
       if (!stream || stream.done) return super.start(track, at, offset);
       if (stream.error || this.ctx?.state !== 'running' || !this.matches(track.entry)) throw new Error('native-only-stream');
-      this.stop(track);
       at = Math.max(at, this.ctx.currentTime + 0.06);
+      const previous = replace && track.playing ? track.node : null;
+      const heard = previous ? this.heard(track) + Math.max(0, at - this.ctx.currentTime) : 0;
+      if (previous) { track.node = null; this.active.delete(track); }
+      else this.stop(track);
       const entry = track.entry, rate = entry.spec.rate, generation = this.generation;
       const nodes = new Set(); let timer, stopped = false, cursor = Math.round(offset * rate);
       const first = cursor;
       const owner = { streaming: true, onended: null,
-        stop: () => { stopped = true; clearInterval(timer); for (const n of nodes) { n.onended = null; try { n.stop(); } catch {} n.disconnect(); } nodes.clear(); },
+        stop: when => {
+          stopped = true; clearInterval(timer);
+          if (Number.isFinite(when) && when > this.ctx.currentTime) {
+            for (const n of nodes) {
+              n.onended = () => { nodes.delete(n); n.disconnect(); if (!nodes.size) owner.onended?.(); };
+              try { n.stop(when); } catch { nodes.delete(n); n.disconnect(); }
+            }
+            if (!nodes.size) owner.onended?.();
+          } else {
+            for (const n of nodes) { n.onended = null; try { n.stop(); } catch {} n.disconnect(); }
+            nodes.clear();
+          }
+        },
         disconnect: () => {} };
       track.offset = offset; track.start = at; track.end = at + track.duration - offset;
       track.node = owner; track.playing = true; track.clockGeneration = generation;
@@ -156,7 +175,7 @@
             // buffer now, even for a track minutes in the future. Do not leave
             // a last-second main-thread timer responsible for its continuation.
             if (!stream.done && when > this.ctx.currentTime + 2 && cursor !== first) break;
-            const available = stream.decodedFrames - cursor;
+            const available = globalThis.GaplessSeekRange.until(entry, cursor) - cursor;
             if (available <= 0) {
               if (when < this.ctx.currentTime + 0.03) throw new Error('stream-underrun');
               break;
@@ -189,11 +208,21 @@
         }
       };
       timer = setInterval(pump, 20); pump();
+      if (previous) {
+        const retired = { track, finish: () => {
+          if (!this.retiring.delete(previous)) return;
+          previous.onended = null; previous.disconnect(); this.resources.unpin(entry);
+        } };
+        this.retiring.set(previous, retired); previous.onended = retired.finish;
+        previous.stop(at);
+        track.heard = heard; track.heardUntil = at;
+        this.trace('seek-replaced', { id: track.id, switchLeadMs: (at - this.ctx.currentTime) * 1000 });
+      }
     }
     seek(track, offset) {
-      if (track.node && track.playing && track.node?.streaming) {
-        // Start ahead of the rendering head, preserving the exact requested offset.
-        this.start(track, this.ctx.currentTime + 0.04, offset); return;
+      if (track.node && track.playing && track.entry?.stream && !track.entry.stream.done) {
+        // Stop the old nodes at the exact scheduled start of the replacement.
+        this.start(track, this.ctx.currentTime + 0.06, offset, true); return;
       }
       return super.seek(track, offset);
     }

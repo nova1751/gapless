@@ -1,0 +1,44 @@
+{
+  "version": "0.4.3",
+  "client": "Windows 3.1.43.205627",
+  "mainSha256": "06cccd8984c0f959f40366f65010ec33e7e978f39f1ee3d53df1e8048ed9dbb4",
+  "coldIndexedSeek": {
+    "trackId": "2670863319",
+    "targetSeconds": 229.176,
+    "origin": "native-cache",
+    "firstRangeReadyMs": 75,
+    "seekReadyMs": 142,
+    "replacementLeadMs": 60,
+    "oldStopEqualsNewStart": true,
+    "nextScheduleLeadSeconds": 2.4189659863945696,
+    "scheduledGapFrames": 0,
+    "nextClaimed": true,
+    "nativeFallback": false
+  },
+  "networkRangePCM": {
+    "trackId": "2670863152",
+    "rate": 44100,
+    "bits": 16,
+    "channelSamplesCompared": 434846,
+    "mismatches": 0,
+    "rangeBudgetReleased": true
+  },
+  "supersessionAndPause": {
+    "targets": [
+      229,
+      220
+    ],
+    "bothReplied": true,
+    "completedTarget": 220,
+    "seekReadyMs": 251,
+    "activeNodesAfterWait": 0,
+    "webOwned": true
+  },
+  "limitations": [
+    "No new audio loopback",
+    "Requires valid FLAC seek table present in initial header bytes and range support",
+    "Unsupported ranges retain sequential seek wait",
+    "Manual next/previous host transaction gap remains",
+    "Mac unchanged and not tested"
+  ]
+}
