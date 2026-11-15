@@ -9,12 +9,18 @@
   "nativeCacheBatchesObserved": 0,
   "status": "candidate installed, enabled, paused; not production release",
   "latestInstallation": {
-    "implementation": "d4e7c87",
-    "installedSha256": "0FC2C9881DD4EC3D67DDEC3078854524294208B73F384DDA6D82575945DD1B7E",
+    "implementation": "aae1d55",
+    "installedSha256": "6CCE4B28B7A7701A2EB3B4F39646CC372A8B70F74447FBCA98DE524F30456A3A",
     "mainRuntimeMatches": true,
     "startupRuntimeMatches": true,
-    "verification": "windows-local-bounded-pcm-host.json",
-    "finalState": "Restarted paused; close-to-tray restored; screenshot released. Latest local bounded PCM validated in isolated host instance before installation; actual local queue not yet tested."
+    "webLoadMs": 963,
+    "sourceRate": 44100,
+    "tailSeekBoundaryCount": 1,
+    "claimDelayMs": 340.3,
+    "scheduledGapFrames": 0,
+    "disableRestoreMs": 113,
+    "finalState": "Enabled, paused; current native playback retained until next selection; close-to-tray restored; screenshot session released",
+    "limits": "Ordinary UI/log smoke check; no new acoustic capture, no extreme-condition testing"
   },
   "previousInstallation": {
     "implementation": "687e1b0",
