@@ -1,6 +1,6 @@
 # 当前交付状态（2026-11-16）
 
-目标仍未完成全部验收。Windows 当前机器已安装并保留 `45acc05` 原生数据源候选；不是默认打包产物，也不是正式发布。安装包及 runtime 对照见 [安装记录](verification/windows-candidate-install.json)。Mac 保持原有 0.2.5 候选，未移植本轮 Windows 原生缓存协议。
+目标仍未完成全部验收。Windows 当前机器已安装并保留 `687e1b0` 原生数据源候选；不是默认打包产物，也不是正式发布。安装包及 runtime 对照见 [安装记录](verification/windows-candidate-install.json)。Mac 保持原有 0.2.5 候选，未移植本轮 Windows 原生缓存协议。
 
 ## 当前实现
 

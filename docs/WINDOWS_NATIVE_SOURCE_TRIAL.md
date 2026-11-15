@@ -156,3 +156,8 @@ python windows/package.py --native-source-trial --diagnostics
 现在 Stop 分发异常会锁定 session.fault=native-cache-stop-failed 并记录 stopFailed；cancel() 保证唤醒等待而不向 AbortSignal 监听器抛出。后续辅助取数直接拒绝，不在旧原生 Stop 状态不明时发起另一次 Load；重新加载插件后才建立新会话。不宣称失败的 Stop 已被原生执行，也不把它当作网络下载已停止的证据。缓存已齐的只读路径仍可使用，缺失数据按既有失败路径回退。
 
 实际 session/queue 组合分别模拟 clear 取消、前台抢占以及正常收尾时的 Stop 分发异常：三者都释放 active/running；后续请求返回明确错误；整个场景原生 Load 只有一次。增量语法和 trial ZIP 打包通过。该修复不修改音频、UI、原生授权及缓存文件格式。
+
+
+### 687e1b0 安装复核
+
+桌面访问恢复后，正常退出并备份上一候选，安装 Stop 失败保护版本。安装 SHA-256 为 `2DAAD15D4C0E5E4C16B3D8EB31D9811CFEF2F0B546508C14323F34BEEBDE535D`；runtime main.js 与包内字节一致，包含 native-cache-stop-failed 保护。恢复 Baptized In Fear 的 Web 加载日志 1160 ms、44100 Hz，无 fallback，界面进度前进。随后暂停，恢复关闭主面板最小化到托盘并释放屏幕采集。当前机器保留该候选，没有修改音乐缓存。此操作验证正常启动/播放，Stop 故障本身仍是协议注入验证。

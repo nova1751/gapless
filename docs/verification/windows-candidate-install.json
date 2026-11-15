@@ -7,5 +7,15 @@
   "restorePositionSeconds": 21.894805401359058,
   "restoreConfirmationMs": 191,
   "nativeCacheBatchesObserved": 0,
-  "status": "candidate installed, enabled, paused; not production release"
+  "status": "candidate installed, enabled, paused; not production release",
+  "latestInstallation": {
+    "implementation": "687e1b0",
+    "installedSha256": "2DAAD15D4C0E5E4C16B3D8EB31D9811CFEF2F0B546508C14323F34BEEBDE535D",
+    "runtimeMatchesInstalled": true,
+    "stopFailureGuardPresent": true,
+    "webLoadMs": 1160,
+    "sourceRate": 44100,
+    "fallbackObserved": false,
+    "finalState": "enabled and paused, close-to-tray restored"
+  }
 }
