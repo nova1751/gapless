@@ -6,6 +6,31 @@
       this.settings = settings; this.trace = trace; this.mounts = new Map(); this.generation = 0;
     }
     clear() { this.generation++; this.mounts.clear(); }
+    async verifyParts(source, parts, signal) {
+      if (!this.services()) throw new Error('native-only-cache-verifier');
+      const hash = globalThis.GaplessAudioResources.fingerprint(source), size = Number(source.size ?? source.fileSize);
+      if (!hash || !Number.isSafeInteger(size) || size <= 0) throw new Error('native-only-cache-source');
+      const generation = this.generation;
+      const check = () => { if (signal.aborted || generation !== this.generation) throw new Error('cancelled'); };
+      const crypto = this.crypto, digest = crypto.algo.MD5.create(); let total = 0;
+      for (const bytes of parts) {
+        check();
+        total += bytes.length;
+        if (total > size) throw new Error('cache-integrity');
+        // Bound synchronous hashing even when a caller supplies a whole song.
+        for (let offset = 0; offset < bytes.length; offset += 65536) {
+          check();
+          const chunk = bytes.subarray(offset, offset + 65536);
+          const words = new Array(Math.ceil(chunk.length / 4)).fill(0);
+          for (let i = 0; i < chunk.length; i++) words[i >>> 2] |= chunk[i] << (24 - (i & 3) * 8);
+          digest.update(crypto.lib.WordArray.create(words, chunk.length));
+          await new Promise(resolve => setTimeout(resolve, 0));
+        }
+      }
+      check();
+      if (total !== size || digest.finalize().toString(crypto.enc.Hex).toLowerCase() !== hash)
+        throw new Error('cache-integrity');
+    }
     async snapshotSource(source, signal) {
       const hash = globalThis.GaplessAudioResources.fingerprint(source), bitrate = BITRATE[source.level];
       const size = Number(source.size ?? source.fileSize), id = String(source.songId || '');
@@ -111,17 +136,7 @@
       const partial = indexed && response.status === 206;
       if (!response.ok) { this.mounts.delete(path); throw new Error('cache-read'); }
       const seekRange = (start, end, rangeSignal) => globalThis.GaplessSeekRange.read(url.href, start, end, size, rangeSignal, true);
-      const verifyParts = async (parts, verifySignal) => {
-        const crypto = this.crypto, digest = crypto.algo.MD5.create();
-        for (const bytes of parts) {
-          if (verifySignal.aborted) throw new Error('cancelled');
-          const words = new Array(Math.ceil(bytes.length / 4)).fill(0);
-          for (let i = 0; i < bytes.length; i++) words[i >>> 2] |= bytes[i] << (24 - (i & 3) * 8);
-          digest.update(crypto.lib.WordArray.create(words, bytes.length));
-          await new Promise(resolve => setTimeout(resolve, 0));
-        }
-        if (digest.finalize().toString(crypto.enc.Hex).toLowerCase() !== hash) throw new Error('cache-integrity');
-      };
+      const verifyParts = (parts, verifySignal) => this.verifyParts(source, parts, verifySignal);
       const worker = globalThis.GaplessCacheWorker?.create(hash, size, signal);
       if (worker) return { kind: 'native-cache', response, partial, seekRange, verifyParts, worker: true,
         transform: bytes => worker.transform(bytes), dispose: () => worker.dispose(),

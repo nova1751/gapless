@@ -143,7 +143,10 @@
                 const parts = this.songCache.complete(cacheKey, Number(source.size));
                 if (!parts) return;
                 try { await input.verifyParts(parts, signal); }
-                catch (error) { if (!signal.aborted) entry.stream.error = 'cache-integrity'; throw error; }
+                catch (error) {
+                  if (!signal.aborted && error.message !== 'cancelled') entry.stream.error = 'cache-integrity';
+                  throw error;
+                }
                 finally { parts.release(); }
                 entry.stream.integrityVerified = true;
                 this.trace('indexed-integrity-verified', { id: entry.id });

@@ -37,6 +37,7 @@
           'content-range': `bytes 0-${end - 1}/${size}`, 'content-length': String(end),
         } }),
         setIndex: (points, spec) => { state.points = points; state.rate = spec.rate; },
+        verifyParts: (parts, requestSignal) => this.cache.verifyParts(source, parts, requestSignal),
         seekRange: (start, end, requestSignal) => read(start, end, requestSignal),
       };
     }
