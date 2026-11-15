@@ -1,0 +1,103 @@
+{
+  "implementation": "e74d4b1",
+  "scenario": "Paused, empty native cache, two overlapping SDK clearCache calls; native events sampled after plugin handler.",
+  "result": {
+    "events": [
+      {
+        "at": 306.1000000014901,
+        "success": true,
+        "status": {
+          "nativeSourceMode": true,
+          "clearing": true,
+          "pendingClears": 1,
+          "filling": false,
+          "fillStalls": 0,
+          "fillSuspended": false,
+          "currentComplete": false,
+          "pendingPrevious": 0,
+          "queue": {
+            "queued": 0,
+            "activePriority": null,
+            "generation": 2,
+            "closed": false
+          },
+          "session": {
+            "batches": 0,
+            "cancelled": 0,
+            "failed": 0,
+            "stopFailed": 0
+          }
+        }
+      },
+      {
+        "at": 306.6000000014901,
+        "success": true,
+        "status": {
+          "nativeSourceMode": true,
+          "clearing": false,
+          "pendingClears": 0,
+          "filling": false,
+          "fillStalls": 0,
+          "fillSuspended": false,
+          "currentComplete": false,
+          "pendingPrevious": 0,
+          "queue": {
+            "queued": 0,
+            "activePriority": null,
+            "generation": 2,
+            "closed": false
+          },
+          "session": {
+            "batches": 0,
+            "cancelled": 0,
+            "failed": 0,
+            "stopFailed": 0
+          }
+        }
+      }
+    ],
+    "settlements": [
+      {
+        "request": 1,
+        "value": true,
+        "at": 306.29999999701977
+      },
+      {
+        "request": 2,
+        "value": true,
+        "at": 306.3999999985099
+      }
+    ],
+    "status": {
+      "nativeSourceMode": true,
+      "clearing": false,
+      "pendingClears": 0,
+      "filling": false,
+      "fillStalls": 0,
+      "fillSuspended": false,
+      "currentComplete": false,
+      "pendingPrevious": 0,
+      "queue": {
+        "queued": 0,
+        "activePriority": null,
+        "generation": 2,
+        "closed": false
+      },
+      "session": {
+        "batches": 0,
+        "cancelled": 0,
+        "failed": 0,
+        "stopFailed": 0
+      }
+    }
+  },
+  "restoration": {
+    "files": 30,
+    "bytes": 216431501,
+    "allSha256Matched": true,
+    "paused": true,
+    "closeToTrayRestored": true,
+    "captureReleased": true
+  },
+  "limits": "One host run. No active helper, recording or network fault. Both SDK promises settle at first event. Duplicate or coalesced events remain unproven."
+}

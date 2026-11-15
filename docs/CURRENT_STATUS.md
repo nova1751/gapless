@@ -1,6 +1,6 @@
 # 当前交付状态（2026-11-16）
 
-目标仍未完成全部验收。Windows 当前机器已安装并保留 `71e82fc` 原生数据源候选；不是默认打包产物，也不是正式发布。安装包及 runtime 对照见 [安装记录](verification/windows-candidate-install.json)。Mac 保持原有 0.2.5 候选，未移植本轮 Windows 原生缓存协议。
+目标仍未完成全部验收。Windows 当前机器已安装并保留 `e74d4b1` 原生数据源候选；不是默认打包产物，也不是正式发布。安装包及 runtime 对照见 [安装记录](verification/windows-candidate-install.json)。Mac 保持原有 0.2.5 候选，未移植本轮 Windows 原生缓存协议。
 
 ## 当前实现
 
@@ -34,9 +34,9 @@ Windows 受支持的在线 FLAC：网易云提供授权音源、音质、队列�
 
 `374da7e` 实机在已切到 Open Hearts、Baptized In Fear 后台补齐优先级 10 时调用原生 SDK 清理，约 593 ms 返回成功。旧曲任务取消、待补齐列表归零，Web 所有权保留，没有观察到播放回退。但旧曲 `.uc` 消失后仍有 70 字节 `.idx` 和 695 字节 `.info`；修改时间在清理请求后约 154 ms、完成通知之前。怀疑辅助原生 Stop 的延迟落盘与删除重叠，尚未追踪到具体写入者，不能宣布完整清理对齐。后续源码已增加有上限的元数据稳定观察：最近两秒有辅助 Stop 时，至少等 500 ms，且 `.idx`/`.info` 连续 250 ms 不变，再转发原生清理；最多两秒，异常仍转发原生请求。这是基于已观察竞态的候选缓解，不是原生 flush 确认。`71e82fc` 已安装，runtime 与包一致；同样在旧曲辅助 Seek 活跃、优先级 10 时清理，稳定观察 520 ms、总耗时约 704 ms，旧曲 `.uc/.idx/.info` 均消失，仅当前及下一首六文件重新生成；Web 所有权保留，无回退记录。[修复复测](verification/windows-retired-fill-clear-fixed.json)。此场景通过，超过观察窗口的延迟落盘仍不能排除；不由插件直接删除原生缓存来掩盖竞态。30 个原缓存已按哈希全部恢复。[本轮记录](verification/windows-retired-fill-clear.json)。
 
-## 并发清理候选（尚未安装）
+## 并发清理实机验证
 
-源码检查复现连续两次默认清理后，第一次完成通知会提前解除第二次的取数屏障。候选加入待完成数量，协议检查确认第一条通知只减少一次，失败通知也结束本次等待。当前仍安装 `71e82fc`；必须先验证宿主重叠请求是否逐次发回通知，若会合并或重复通知则计数不足，需要改为串行/合并转发，不能仅凭模拟检查安装。[候选记录](verification/windows-concurrent-clear-candidate.json)。
+`e74d4b1` 已安装且 runtime 匹配。两次重叠 SDK 清理返回两条原生通知：第一条后 pendingClears=1、clearing=true，第二条后归零并解除保护（306.1 / 306.6 ms）。两个 SDK Promise 都在第一条通知后返回，不能据此判断全部清理完成。本轮暂停、空缓存，无活跃辅助取数；合并/重复通知、并发写入及极端延迟仍未充分验证。[实机记录](verification/windows-concurrent-clear-host.json)。测试后正常退出，恢复 30 个原缓存共 216431501 字节，全部 SHA256 匹配；重启保持暂停，恢复关闭至托盘并释放截图会话。
 
 ## 剩余收尾
 

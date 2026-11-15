@@ -9,16 +9,11 @@
   "nativeCacheBatchesObserved": 0,
   "status": "candidate installed, enabled, paused; not production release",
   "latestInstallation": {
-    "implementation": "71e82fc",
-    "installedSha256": "266329868FE056A58325646B01E1C56ADA45611B32175FD8C58148A78A972921",
+    "implementation": "e74d4b1",
+    "installedSha256": "09847FCD1172B23D4BB3EB590A54EF026A5904D7AB79AD76B46DB3235EB2EB15",
     "runtimeMatches": true,
-    "settleWaitMs": 520,
-    "totalClearMs": 704,
-    "oldSongFilesRemaining": 0,
-    "fallbackObserved": false,
-    "finalState": "Latest candidate retained; player restarted and paused, close-to-tray restored, capture released.",
-    "limits": "One real SDK clear while a retired-song helper seek was active at priority 10. Index-only partial fixture; not a cold network test. No audio recording or all-process network trace. Bounded metadata observation is not an atomic native flush guarantee.",
-    "verification": "windows-retired-fill-clear-fixed.json"
+    "verification": "windows-concurrent-clear-host.json",
+    "finalState": "Restarted paused; 30 cache files restored with matching SHA256; close-to-tray restored; capture released."
   },
   "previousInstallation": {
     "implementation": "687e1b0",
@@ -123,6 +118,18 @@
           "scheduledGapFrames": 0
         }
       ]
+    },
+    {
+      "implementation": "71e82fc",
+      "installedSha256": "266329868FE056A58325646B01E1C56ADA45611B32175FD8C58148A78A972921",
+      "runtimeMatches": true,
+      "settleWaitMs": 520,
+      "totalClearMs": 704,
+      "oldSongFilesRemaining": 0,
+      "fallbackObserved": false,
+      "finalState": "Latest candidate retained; player restarted and paused, close-to-tray restored, capture released.",
+      "limits": "One real SDK clear while a retired-song helper seek was active at priority 10. Index-only partial fixture; not a cold network test. No audio recording or all-process network trace. Bounded metadata observation is not an atomic native flush guarantee.",
+      "verification": "windows-retired-fill-clear-fixed.json"
     }
   ]
 }
