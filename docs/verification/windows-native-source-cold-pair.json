@@ -1,0 +1,34 @@
+{
+  "captureRate": 48000,
+  "callbackErrors": 0,
+  "boundaryInsideCapture": true,
+  "alignment": [
+    {
+      "relativeMs": -400.0,
+      "correlation": 0.6399246111357684,
+      "timelineErrorMs": -137.14583333333331
+    },
+    {
+      "relativeMs": -100.0,
+      "correlation": 0.7094839494164271,
+      "timelineErrorMs": 19.916666666666583
+    },
+    {
+      "relativeMs": 100.0,
+      "correlation": 0.8615428780343102,
+      "timelineErrorMs": -137.12500000000017
+    },
+    {
+      "relativeMs": 400.0,
+      "correlation": 0.9004635555074334,
+      "timelineErrorMs": -137.16666666666643
+    }
+  ],
+  "alignmentSpanMs": 157.083333333333,
+  "longestNearZeroRunWithin100msAligned": 0.0,
+  "seekWaitMs": 1297,
+  "previousTrackCacheMissingBytes": 6231523,
+  "limits": "One native-disk-cache-miss trial. Local downloads and OS caches not excluded. Previous track middle remained incomplete after transition; not a whole-cache guarantee.",
+  "verdict": "inconclusive audio continuity; whole-track cache completion failed after early transition",
+  "implementation": "da59f91 native-source trial"
+}
