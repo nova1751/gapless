@@ -1,0 +1,10 @@
+{
+  "timeoutMs": 8009,
+  "oldNativeStopped": true,
+  "queueReleased": true,
+  "cacheHitAfterTimeout": true,
+  "foregroundPreemptsBackground": true,
+  "oldStopBeforeNewLoad": true,
+  "nativePlayCalls": 0,
+  "scope": "Actual source/session/queue classes; simulated unresponsive bridge. Not real network or client output."
+}
