@@ -19,11 +19,20 @@
       return [...new Set(roots)];
     }
     wait(promise, signal) {
-      if (signal.aborted) return Promise.reject(new Error('cancelled'));
       return new Promise((resolve, reject) => {
-        const abort = () => reject(new Error('cancelled'));
-        signal.addEventListener('abort', abort, { once: true });
-        Promise.resolve(promise).then(resolve, reject).finally(() => signal.removeEventListener('abort', abort));
+        let settled = false;
+        const finish = (error, value) => {
+          if (settled) return;
+          settled = true;
+          signal.removeEventListener('abort', abort);
+          if (error) reject(value); else resolve(value);
+        };
+        const abort = () => finish(true, new Error('cancelled'));
+        // The native operation was already started by the caller. Observe its
+        // rejection even when cancellation preceded entry into this wrapper.
+        Promise.resolve(promise).then(value => finish(false, value), error => finish(true, error));
+        if (signal.aborted) abort();
+        else signal.addEventListener('abort', abort, { once: true });
       });
     }
     async nativeFs(method, args, signal) {

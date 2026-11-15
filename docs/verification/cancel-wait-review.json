@@ -1,0 +1,36 @@
+{
+  "scope": "Bounded review of cancellation wrappers, playback/seek identity guards, cache clear barrier, and source-matched output; not full release certification",
+  "reproducedBefore": "Already-aborted cache.wait rejected cancellation without observing an already-started native promise; later native rejection emitted unhandledRejection",
+  "changes": [
+    "Windows and Mac cache waits observe the native promise even when already cancelled",
+    "Waits detach abort listeners immediately upon settlement and ignore late results",
+    "Windows native session observes obsolete RPC rejection and releases wake callback on cancellation"
+  ],
+  "checks": {
+    "windowsAndMacCacheWait": [
+      "pre-cancelled rejected promise",
+      "cancel then late rejection",
+      "success value preserved",
+      "native failure preserved",
+      "pre-cancelled successful promise remains cancelled",
+      "abort listener removed at cancellation"
+    ],
+    "windowsSession": [
+      "obsolete job consumes RPC rejection",
+      "cancel clears wake callback",
+      "normal success preserved"
+    ],
+    "unhandledRejectionsAfter": 0,
+    "syntax": "three changed JS files passed node --check",
+    "packaging": [
+      "Windows native-source-trial diagnostics ZIP",
+      "Mac ZIP"
+    ]
+  },
+  "deployment": "Source and packages updated only; existing Windows runtime remains d4e7c87; Mac runtime not tested",
+  "remainingLimits": [
+    "whole-client offline/weak-network and duplicate-download audit incomplete",
+    "Mac runtime parity not verified",
+    "native delayed cache commits are bounded mitigation, not atomic flush acknowledgement"
+  ]
+}

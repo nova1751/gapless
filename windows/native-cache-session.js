@@ -58,13 +58,19 @@
       this.check(job);
     }
     async pending(job, promise) {
-      this.check(job);
       return await new Promise((resolve, reject) => {
-        const abort = () => reject(new Error('native-cache-cancelled'));
-        job.wake = abort;
-        Promise.resolve(promise).then(resolve, reject).finally(() => {
+        let settled = false;
+        const finish = (error, value) => {
+          if (settled) return;
+          settled = true;
           if (job.wake === abort) job.wake = null;
-        });
+          if (error) reject(value); else resolve(value);
+        };
+        const abort = () => finish(true, new Error('native-cache-cancelled'));
+        // Observe an already-issued RPC even if its job is now obsolete.
+        Promise.resolve(promise).then(value => finish(false, value), error => finish(true, error));
+        try { this.check(job); job.wake = abort; }
+        catch (error) { finish(true, error); }
       });
     }
     async batch({ source, position, signal, budgetMs = 2000 }) {
