@@ -9,18 +9,34 @@
   "nativeCacheBatchesObserved": 0,
   "status": "candidate installed, enabled, paused; not production release",
   "latestInstallation": {
-    "implementation": "aae1d55",
-    "installedSha256": "6CCE4B28B7A7701A2EB3B4F39646CC372A8B70F74447FBCA98DE524F30456A3A",
-    "mainRuntimeMatches": true,
-    "startupRuntimeMatches": true,
-    "webLoadMs": 963,
-    "sourceRate": 44100,
-    "tailSeekBoundaryCount": 1,
-    "claimDelayMs": 340.3,
-    "scheduledGapFrames": 0,
-    "disableRestoreMs": 113,
-    "finalState": "Enabled, paused; current native playback retained until next selection; close-to-tray restored; screenshot session released",
-    "limits": "Ordinary UI/log smoke check; no new acoustic capture, no extreme-condition testing"
+    "implementation": "95e57ff",
+    "version": "0.4.9",
+    "nativeSourceMode": true,
+    "installedSha256": "2DD8A69927A688E94D28B4BB56B836EE2B31E2BB1A8C951DFD1CA5C1C2287539",
+    "runtimeMatchesInstalled": true,
+    "diskCacheLoad": {
+      "resourceMs": 655,
+      "bufferMs": 65,
+      "contextMs": 192,
+      "gateMs": 42,
+      "loadToEstimatedOutputMs": 1080
+    },
+    "warmManualNext": {
+      "stopToLoadMs": 344,
+      "loadToEstimatedOutputMs": 108
+    },
+    "warmManualPrevious": {
+      "stopToLoadMs": 163,
+      "loadToEstimatedOutputMs": 117
+    },
+    "tailSeek": {
+      "targetSeconds": 227.128,
+      "readyMs": 604,
+      "scheduledGapFrames": 0,
+      "claimDelayMs": 421.9
+    },
+    "finalState": "Paused; close-to-tray retained; screenshot session released",
+    "scope": "Installed Windows UI/log smoke check. Output timestamps are estimates, not recorded sound or an A/B against native. No Mac code change or new Mac runtime check."
   },
   "previousInstallation": {
     "implementation": "687e1b0",
@@ -33,6 +49,20 @@
     "finalState": "enabled and paused, close-to-tray restored"
   },
   "installationHistory": [
+    {
+      "implementation": "aae1d55",
+      "installedSha256": "6CCE4B28B7A7701A2EB3B4F39646CC372A8B70F74447FBCA98DE524F30456A3A",
+      "mainRuntimeMatches": true,
+      "startupRuntimeMatches": true,
+      "webLoadMs": 963,
+      "sourceRate": 44100,
+      "tailSeekBoundaryCount": 1,
+      "claimDelayMs": 340.3,
+      "scheduledGapFrames": 0,
+      "disableRestoreMs": 113,
+      "finalState": "Enabled, paused; current native playback retained until next selection; close-to-tray restored; screenshot session released",
+      "limits": "Ordinary UI/log smoke check; no new acoustic capture, no extreme-condition testing"
+    },
     {
       "implementation": "6c98ad3",
       "installedSha256": "C77D74B6F0461A617BF7E5999B23D5F0F360ABEB2573494CC4F325A32C691BDF",
