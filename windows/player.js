@@ -60,7 +60,7 @@ plugin.onLoad(async () => {
     const gateKey = "gapless-windows-native-gain-v1";
     let revision = 0, serial = 0, customOutput = bridge.customOutput;
     let reportedSettings;
-    const getSnapshot = () => source.snapshot(native, current);
+    const getSnapshot = () => source.snapshot(native, current, enabled());
     const makeRef = (info, snap) => ({
       id: source.trackId(info), account: snap.account, level: snap.quality,
       duration: Number(info.songDuration) / 1000,
@@ -1137,10 +1137,10 @@ plugin.onLoad(async () => {
         return false;
       }
       if (!c || !name.startsWith('audioplayer.')) return false;
-      if (name === 'audioplayer.setPlaybackRate' && Number(args[0]) !== 1) {
-        revision++;
-        if (c.owns) void recover(c, 'speed-changed');
-        return false;
+      if (name === 'audioplayer.setPlaybackRate' && enabled() && c.owns && !restoring && !handback) {
+        reply(callback);
+        trace('native-audio-setting-bypassed', { setting: 'speed', effectiveRate: 1 });
+        return true;
       }
       if (name === 'audioplayer.stop' && (!args[0] || String(args[0]) === c.id)) {
         if (claim?.previous === c) {
@@ -1413,6 +1413,8 @@ plugin.onLoad(async () => {
         currentComplete: !!current?.cacheComplete, pendingPrevious: retiredFills.length, queue: cacheQueue?.status() || null,
         session: cacheSession ? { ...cacheSession.stats } : null }),
       status: () => ({ version: gaplessWindowsBuild.version, nativeSourceMode, enabled: enabled(), savingConfig, owns: !!current?.owns, loading: !!current?.loading,
+        nativeAudioPolicy: enabled() ? 'gapless-priority' : 'native',
+        suppressedNativeAudioSettings: enabled() && current?.owns ? getSnapshot()?.nativeAudioPreferences || [] : [],
         waitingForNextLoad: nativeSourceMode && enabled() && !!current && !current.owns && !current.loading,
         directWebLoad: !temporaryBridge, startupPolicy: 'stream-flac-native-fallback', nativePrepared: !!current?.nativeReady, handingBack: !!handback || !!restoring, nativeMuted: !!nativeGate, mode: temporaryBridge ? 'temporary-trial' : 'streaming-gapless', bridgeSide: current?.bridgeSide || null, visual: visual.status(), visualHooks: [...visualRenderHooks.keys()], clock: clock.status(), resources: resources.status(), nativeTransport: { ...bridge.nativeTransport }, nativePreload: { ...bridge.nativePreload } }),
       diagnostics: () => events.slice(),

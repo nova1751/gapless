@@ -1,0 +1,223 @@
+{
+  "date": "2026-11-16",
+  "baseCommit": "61f837f",
+  "macVersion": "0.3.5",
+  "windowsSourceVersion": "0.4.7",
+  "policy": "gapless-priority; native-only processing bypassed without changing saved preferences",
+  "live": {
+    "version": "0.3.5",
+    "enabled": true,
+    "id": "2670863152",
+    "position": 152.7518785395872,
+    "playing": true,
+    "owns": true,
+    "phase": "owned",
+    "policy": "gapless-priority",
+    "suppressed": [
+      "fade"
+    ],
+    "sourceRate": 44100,
+    "sourceBits": 16,
+    "activeNodes": 2,
+    "gated": true,
+    "playFade": true,
+    "quality": 1999,
+    "trace": [
+      {
+        "at": 37534,
+        "event": "web-loaded",
+        "id": "2670863152",
+        "origin": "native-source",
+        "rate": 44100,
+        "loadMs": 150
+      },
+      {
+        "at": 39196,
+        "event": "web-loaded",
+        "id": "1994361206",
+        "origin": "native-source",
+        "rate": 44100,
+        "loadMs": 82
+      },
+      {
+        "at": 56244,
+        "event": "web-loaded",
+        "id": "2670863151",
+        "origin": "native-source",
+        "rate": 44100,
+        "loadMs": 4
+      },
+      {
+        "at": 57603,
+        "event": "web-loaded",
+        "id": "2670863319",
+        "origin": "native-source",
+        "rate": 44100,
+        "loadMs": 4
+      },
+      {
+        "at": 81744,
+        "event": "transition",
+        "from": "2670863319",
+        "to": "2670863152",
+        "scheduledGapFrames": 0
+      },
+      {
+        "at": 81899,
+        "event": "claimed",
+        "id": "2670863152",
+        "position": 0.1558730158729773,
+        "claimDelayMs": 155.80000019073486
+      },
+      {
+        "at": 153307,
+        "event": "restore-start",
+        "id": "2670863152",
+        "reason": "disabled",
+        "position": 71.56013605442173
+      },
+      {
+        "at": 153342,
+        "event": "restored-native",
+        "id": "2670863152",
+        "reason": "disabled",
+        "position": 71.56013605442173,
+        "playing": true,
+        "confirmed": true
+      },
+      {
+        "at": 153343,
+        "event": "disabled"
+      },
+      {
+        "at": 153399,
+        "event": "enabled-changed",
+        "enabled": false
+      },
+      {
+        "at": 195580,
+        "event": "enabled-changed",
+        "enabled": true
+      },
+      {
+        "at": 196206,
+        "event": "takeover",
+        "id": "2670863152",
+        "position": 114.37937066657132,
+        "remainingSeconds": 120.54450688444909,
+        "alignmentErrorMs": -10.499000095393285,
+        "outputDelayMs": 35.93141496598639,
+        "pauseAcknowledged": true,
+        "nativeOutputControlLeadMs": 24.019954362423782,
+        "pauseAcknowledgementMs": 0.5999999046325684,
+        "switchTimingErrorMs": -19.562079174356768
+      }
+    ]
+  },
+  "settings": {
+    "version": "0.3.5",
+    "observations": [
+      {
+        "playFade": false,
+        "owns": true,
+        "playing": true,
+        "policy": "gapless-priority"
+      },
+      {
+        "playFade": true,
+        "owns": true,
+        "playing": true,
+        "policy": "gapless-priority"
+      },
+      {
+        "nativeRateRequest": 2,
+        "handled": true,
+        "owns": true,
+        "playing": true
+      }
+    ],
+    "qualityUnchanged": true,
+    "sameTrack": true,
+    "nativeSettingsRestoreSinceProbe": 0
+  },
+  "windowsSourceCheck": {
+    "sourceVersion": "0.4.7",
+    "scope": "temporary execution of actual source snapshot; no Windows device or installation",
+    "allSevenNativeSettingsOn": {
+      "gaplessCapable": true,
+      "blockers": [],
+      "preferences": [
+        "audioEffects",
+        "loudness",
+        "spatial",
+        "enhancement",
+        "fade",
+        "dolby",
+        "speed"
+      ],
+      "quality": "1999"
+    },
+    "disabled": {
+      "gaplessCapable": false,
+      "blockers": [
+        "audioEffects",
+        "loudness",
+        "spatial",
+        "enhancement",
+        "fade",
+        "dolby",
+        "speed"
+      ]
+    },
+    "preferencesUnchanged": true,
+    "rightsAndVideoGuardRetained": true
+  },
+  "macPackage": {
+    "file": "gapless-player-mac-0.3.5.plugin",
+    "sha256": "7f68e043359a54af14a2232899eb6174bd0860af0af692f1273456ff61f6a85f",
+    "zipIntegrity": true,
+    "installedRuntimeByteMatch": true
+  },
+  "ui": {
+    "nativeHostToggleOffAndOnObserved": true,
+    "finalToggleEnabled": true,
+    "originalPlaylistAndPlayerStyleObserved": true,
+    "lastReloadDidNotHydratePlayer": true,
+    "normalAppRestartRestoredPlayer": true,
+    "latestPreReloadTrack": "1938192798",
+    "restoredPosition": 131.8231030293831,
+    "originalPlaylistRestored": true
+  },
+  "scope": {
+    "newRepositoryTests": false,
+    "fullStaticChecks": false,
+    "applicationBuild": false,
+    "deviceAudioCapturedThisTurn": false,
+    "windowsInstalledThisTurn": false,
+    "changedJavaScriptSyntax": "passed"
+  },
+  "limits": [
+    "Source/rights/version/device failures still recover native; native-only processing is not a blocker",
+    "Output is source-rate PCM at 1x with native user volume; no EQ, Dolby, fade or spatial DSP added",
+    "Control handoff after toggling is not promised to be zero-time",
+    "System media progress rollback and final-device bit-perfect limitations remain",
+    "Last host hot reload failed to hydrate playback model; normal app restart and original queue restore were required"
+  ],
+  "finalAfterReloadRecovery": {
+    "version": "0.3.5",
+    "enabled": true,
+    "compatible": true,
+    "id": "431811451",
+    "position": 51.245306122448994,
+    "playing": true,
+    "owns": true,
+    "phase": "owned",
+    "policy": "gapless-priority",
+    "suppressed": [
+      "fade"
+    ],
+    "quality": 1999,
+    "playFade": true,
+    "queueLength": 374
+  }
+}

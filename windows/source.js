@@ -109,7 +109,7 @@ const WindowsSource = (() => {
     const module = { exports: {} };
     return factory(module, module.exports, require);
   }
-  function snapshot(native, current) {
+  function snapshot(native, current, gaplessEnabled = false) {
     const state = native.read();
     const { playing, playingList, setting, host } = state;
     if (!playing || !setting?.quantity || !host) return null;
@@ -121,12 +121,18 @@ const WindowsSource = (() => {
     const quality = String(host.isAnonymous ? setting.quantity.listenAnon : setting.quantity.listenReg);
     const audioEffects = state.audioEffect?.setting?.isOn || state.assignedAudioEffect?.isOn
       || state.assignedAudioEffect?.setting?.isOn || playing.audioEffect?.isOpen;
-    const blockers = Object.entries({
-      account: !account, audioEffects, loudness: setting.loudnessBalance,
+    const nativeAudioPreferences = Object.entries({
+      audioEffects, loudness: setting.loudnessBalance,
       spatial: setting.systemSpatialSound, enhancement: setting.systemAudioEnhance, fade: setting.playFade,
-      dolby: setting.listenDolby, trial: playing.resourceIsTryType, video: playing.isPlayingVideo,
+      dolby: setting.listenDolby,
       speed: Number(playing.playingSpeed || 1) !== 1 || Number(playing.playingSpeedTrack || 1) !== 1,
     }).filter(([, blocked]) => blocked).map(([name]) => name);
+    // Native-only effects are bypassed by gapless output. Preserve their saved
+    // values for disabling gapless instead of making the enabled switch a no-op.
+    const blockers = Object.entries({ account: !account,
+      trial: playing.resourceIsTryType, video: playing.isPlayingVideo,
+    }).filter(([, blocked]) => blocked).map(([name]) => name);
+    if (!gaplessEnabled) blockers.push(...nativeAudioPreferences);
     const capable = !blockers.length;
     const volume = Number(playing.playingVolume);
     const sameTrack = current && id === current.id && sourceId === trackId(current.info);
@@ -143,7 +149,8 @@ const WindowsSource = (() => {
     const nextKnown = matchingRows.length === 1 && (mode === 'playCycle' || mode === 'playOneCycle' || random
       || (ordered && !terminal));
     return { mode, id, sourceId, queue, currentRow: playing.curPlaying, account, quality, volume, capable, nextKnown, terminal,
-      blockers, playing: playing.playingState === 2, playFade: !!setting.playFade };
+      blockers, nativeAudioPreferences, nativeAudioPolicy: gaplessEnabled ? 'gapless-priority' : 'native',
+      playing: playing.playingState === 2, playFade: !!setting.playFade };
   }
   function acceptsCandidate(preload, snap, current) {
     if (!snap.nextKnown || preload?.code !== 1 || !valid(preload.info) || !snap.queue.includes(preload.row)) return false;
