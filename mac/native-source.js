@@ -116,6 +116,7 @@
         if (requestSignal.aborted) abort();
         requestSignal.addEventListener('abort', abort, { once: true });
         const timeout = setTimeout(abort, 8000), inputSignal = controller.signal;
+        let changedReads = 0;
         try {
           for (;;) {
             if (inputSignal.aborted || !this.valid(source)) throw new Error('cancelled');
@@ -124,6 +125,12 @@
             let coverage = committed?.generation === this.cache.generation ? committed
               : await this.cache.snapshotSource(source, inputSignal);
             let gaps = coverage ? globalThis.GaplessCacheCoverage.missing(coverage, start, end) : [[start, end]];
+            if (gaps.length && committed && coverage === committed) {
+              // Another reader or background fill may already have committed
+              // this interval. Refresh before starting another native batch.
+              coverage = await this.cache.snapshotSource(source, inputSignal);
+              gaps = coverage ? globalThis.GaplessCacheCoverage.missing(coverage, start, end) : [[start, end]];
+            }
             if (gaps.length) {
               const position = points ? globalThis.GaplessCacheCoverage.seekBefore(gaps[0][0], points, rate) : 0;
               try {
@@ -137,7 +144,17 @@
               if (gaps.length) continue;
             } else this.stats.hits++;
             committed = coverage;
-            const bytes = await this.cache.readReadyRange(source, start, end, inputSignal, coverage);
+            let bytes;
+            try { bytes = await this.cache.readReadyRange(source, start, end, inputSignal, coverage); }
+            catch (error) {
+              // Native writes can advance file properties during a read. Retry
+              // with a newly verified index, inside the existing deadline.
+              if (error.message === 'native-only-cache-changed' && changedReads++ < 1) {
+                committed = null; continue;
+              }
+              throw error;
+            }
+            if (inputSignal.aborted || !this.valid(source)) throw new Error('cancelled');
             this.stats.reads++;
             return bytes;
           }

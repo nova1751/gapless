@@ -112,15 +112,18 @@ plugin.onLoad(async () => {
       c.cacheFillRetryAt = performance.now() + Math.min(30000, 1000 * 2 ** (c.cacheFillStalls - 1));
       trace('native-cache-fill-wait', { attempts: c.cacheFillStalls, suspended: c.cacheFillStalls >= 6 });
     }
-    function maybeFill(c) {
-      if (!cacheQueue) return;
+    function fillSafe(c) {
       const position = clock.position(c), entry = c.entry;
-      const safe = sourceLeaseValid() && c.playing && !c.loading && !c.pendingStreamSeek && !c.claimed
+      return current === c && sourceLeaseValid() && c.playing && !c.loading && !c.pendingStreamSeek && !c.claimed
         && entry?.origin === 'native-source' && Array.isArray(entry.stream?.seekPoints)
         && globalThis.GaplessSeekRange.until(entry, Math.floor(position * entry.spec.rate))
           >= Math.min(entry.buffer.length, Math.ceil((position + 6) * entry.spec.rate))
         && (c.duration - position > 15 || !!selected?.entry);
-      if (!safe) { cancelFill(); return; }
+    }
+    function maybeFill(c) {
+      if (!cacheQueue) return;
+      if (!fillSafe(c)) { cancelFill(); return; }
+      const entry = c.entry;
       for (let i = retiredFills.length - 1; i >= 0; i--) {
         const item = retiredFills[i];
         if (item.cacheComplete || item.generation !== nativeCache.generation || item.expires < performance.now()
@@ -142,7 +145,7 @@ plugin.onLoad(async () => {
       const job = fillJob = { controller: new AbortController(), c: owner };
       const signal = job.controller.signal;
       const generation = nativeCache.generation;
-      const valid = () => !signal.aborted && current === c && sourceLeaseValid()
+      const valid = () => !signal.aborted && fillSafe(c)
         && generation === nativeCache.generation && (owner === c || retiredFills.includes(owner));
       const timer = setTimeout(() => { if (valid()) deferFill(owner); job.controller.abort(); }, 8000);
       void (async () => {
@@ -317,8 +320,8 @@ plugin.onLoad(async () => {
         return result[1];
       } finally { waiter.dispose(); }
     }
-    function completeSeek(c, callback, mark, target, failed = false, requestRevision = revision) {
-      seekReplies.push({ c, callback, mark, target, revision: requestRevision, failed });
+    function completeSeek(c, callback, mark, target, failed = false, requestRevision = revision, nativeResult = false) {
+      seekReplies.push({ c, callback, mark, target, revision: requestRevision, failed, nativeResult });
       if (seekReplies.length === 1) deliverSeek();
     }
     function startSeekRange(c, target) {
@@ -328,7 +331,12 @@ plugin.onLoad(async () => {
       entry.stream.priorityTarget = target;
       const controller = c.seekRangeController = new AbortController();
       void globalThis.GaplessSeekRange.prepare(resources, entry, target, controller.signal)
-        .catch(() => { if (!controller.signal.aborted) trace('seek-range-unavailable'); })
+        .catch(error => {
+          if (!controller.signal.aborted) {
+            controller.failure = error;
+            trace('seek-range-unavailable', { reason: error.message });
+          }
+        })
         .finally(() => { if (c.seekRangeController === controller) entry.stream.priorityTarget = null; });
     }
     function cancelPendingSeek(c) {
@@ -352,6 +360,7 @@ plugin.onLoad(async () => {
         while (!entry.stream.done && globalThis.GaplessSeekRange.until(entry, Math.floor(target * entry.spec.rate)) < required) {
           if (!valid()) throw new Error('cancelled');
           if (entry.stream.error) throw new Error('stream-seek-source-failed');
+          if (c.seekRangeController?.failure) throw c.seekRangeController.failure;
           if (performance.now() - began > 10000) throw new Error('stream-seek-timeout');
           await new Promise(resolve => setTimeout(resolve, 30));
         }
@@ -369,12 +378,18 @@ plugin.onLoad(async () => {
         trace('stream-seek-ready', { id: source.trackId(c.info), target, waitMs: Math.round(performance.now() - began) });
       } catch (error) {
         if (!request.finished) {
-          const recoverResume = resume && valid() && c.intent === true;
+          const recoverRequest = valid() && (!resume || c.intent === true);
           request.finished = true;
           if (c.pendingStreamSeek === request) c.pendingStreamSeek = null;
-          if (!resume) completeSeek(c, callback, mark, target, true, request.revision);
           trace('stream-seek-cancel', { reason: error.message });
-          if (recoverResume) void recover(c, 'resume-buffer-unavailable', true);
+          if (recoverRequest) {
+            try {
+              await recover(c, resume ? 'resume-buffer-unavailable' : 'seek-buffer-unavailable',
+                c.intent ?? c.playing, target);
+            } catch (failure) { trace('seek-recovery-failed', { reason: failure.message }); }
+          }
+          if (!resume) completeSeek(c, callback, mark, target,
+            !recoverRequest || !c.recoverySucceeded, request.revision, recoverRequest);
         }
       }
     }
@@ -391,9 +406,9 @@ plugin.onLoad(async () => {
       // The Windows SDK attaches a temporary Seek listener after the RPC resolves.
       setTimeout(() => {
         try {
-          const same = current === c && c.owns;
+          const same = current === c && (c.owns || item.nativeResult && c.recoverySucceeded && !restoring);
           const valid = !item.failed && same && revision === item.revision;
-          event('Seek', [c.id, item.mark, valid ? 0 : -1, same && !valid ? clock.position(c) : item.target]);
+          event('Seek', [c.id, item.mark, valid ? 0 : -1, same && !valid ? currentPosition(c) : item.target]);
           if (valid) progress(c);
         } finally {
           seekReplies.shift();
@@ -447,7 +462,12 @@ plugin.onLoad(async () => {
       const result = clearMemoryCache();
       if (nativeSourceMode && !args[0]) {
         const stops = cacheSession.recentStops.filter(item => performance.now() - item.at < 2000);
-        return nativeCache.settleStoppedWrites(stops).catch(error => {
+        const settleStarted = performance.now();
+        return nativeCache.settleStoppedWrites(stops).catch(async error => {
+          // An unavailable property API must not remove the observation's
+          // minimum grace period after a recent auxiliary Stop.
+          const remaining = 500 - (performance.now() - settleStarted);
+          if (stops.length && remaining > 0) await new Promise(resolve => setTimeout(resolve, remaining));
           trace('native-cache-settle-failed', { reason: error.message });
           // Still forward the user's native clear. Keep acquisition blocked
           // until its real completion event, including on observation failure.
@@ -793,7 +813,7 @@ plugin.onLoad(async () => {
       await tx.promise;
     }
 
-    async function recover(c, reason, playIntent) {
+    async function recover(c, reason, playIntent, seekTarget) {
       if (current !== c) return;
       clearRetiredFills();
       cacheQueue?.clear();
@@ -803,11 +823,12 @@ plugin.onLoad(async () => {
       if (handback?.c === c) {
         const pending = handback; pending.cancelled = true; revision++;
         await pending.promise;
-        if (current === c && c.owns) return recover(c, reason, playIntent);
+        if (current === c && c.owns) return recover(c, reason, playIntent, seekTarget);
         return;
       }
       if (restoring || current !== c || !c.owns) return;
       restoring = c;
+      c.recoverySucceeded = false;
       const valid = () => current === c && restoring === c;
       // Controls may arrive during native preparation or gain restoration.
       // Install their queues before the first await and never overwrite them.
@@ -817,8 +838,8 @@ plugin.onLoad(async () => {
       if (!valid()) { if (restoring === c) restoring = null; return; }
       await releaseNativeGate().catch(bridge.report);
       if (!valid()) { if (restoring === c) restoring = null; return; }
-      const position = c.playing && clock.ctx?.state === 'running'
-        ? clock.outputPosition(c) : currentPosition(c);
+      const position = Number.isFinite(seekTarget) ? Math.max(0, Math.min(c.duration - 0.001, seekTarget))
+        : c.playing && clock.ctx?.state === 'running' ? clock.outputPosition(c) : currentPosition(c);
       const desired = playIntent ?? c.playing;
       const heardBefore = currentPlayed(c);
       const audioHeardBefore = c.nativeAudioHeard + clock.heard(c);
@@ -878,6 +899,7 @@ plugin.onLoad(async () => {
           if (c.queuedTransport === transport && !c.recoverySeeks.length) break;
         }
         if (!valid()) return;
+        c.recoverySucceeded = true;
         if (!play) stateEvent(c, token(c.id, 'pause'), 2);
         c.bridgeSide = null;
         if (temporaryBridge && /^bridge-/.test(reason)) {
@@ -979,6 +1001,7 @@ plugin.onLoad(async () => {
         if (target !== c.offset) { target = c.offset; startSeekRange(c, target); }
         if (globalThis.GaplessSeekRange.until(entry, Math.floor(target * entry.spec.rate))
           >= Math.min(entry.buffer.length, Math.ceil((target + seekBufferSeconds(entry)) * entry.spec.rate))) return;
+        if (c.seekRangeController?.failure) throw c.seekRangeController.failure;
         if (performance.now() - began > 10000) throw new Error('native-only-seek-buffer');
         await new Promise(resolve => setTimeout(resolve, 30));
       }

@@ -1,4 +1,6 @@
-# Windows 无缝播放 0.4.8 源码候选
+# Windows 无缝播放 0.4.9 源码候选
+
+0.4.9 补修原生取数抢占重试、IDX 候选校验、补齐提交前缓冲复核、真实 Seek 失败按目标位置回原生及清理观察失败的最短宽限。未操作 Windows 实机；实际函数隔离与 Mac 0.3.7 证据分开记录。[缓存/Seek 缺陷及 Windows 复验](../docs/CACHE_SEEK_AUDIT_0.3.7_0.4.9.md)。
 
 0.4.8 修复暂停后 PCM 已淘汰时的恢复准备、回退等待中的控制队列及换曲竞态，并隔离下一首输出故障。共享策略与 Mac 0.3.6 对齐；本轮只有增量语法及实际函数的隔离运行，没有 Windows 安装或音频回录。[主要能力检查及限制](../docs/CORE_PLAYBACK_AUDIT_0.3.6_0.4.8.md)。
 
@@ -22,7 +24,7 @@
 python windows/package.py --client "C:\Program Files\NetEase\CloudMusic\package\orpheus.ntpk"
 ```
 
-这是 ZIP 打包，不是应用构建。产物 `dist/gapless-player-windows-0.4.8.plugin`。旧包移到插件目录之外，同 slug 仅保留一个启用版本，重启客户端。FLAC 解码库内置，不增加宿主插件、不使用运行时 CDN、不修改 CSP。
+这是 ZIP 打包，不是应用构建。产物 `dist/gapless-player-windows-0.4.9.plugin`。旧包移到插件目录之外，同 slug 仅保留一个启用版本，重启客户端。FLAC 解码库内置，不增加宿主插件、不使用运行时 CDN、不修改 CSP。
 
 默认包已选原生数据源，`--native-source-trial` 仅作为兼容别名；显式 `--web-source` 生成带该后缀的旧路径包，新歌不保证原生持久缓存。诊断 `status()` 标注版本及 `nativeSourceMode`。需实际 Windows 精确客户端归档才能生成上述包。
 

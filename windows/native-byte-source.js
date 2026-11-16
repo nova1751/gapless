@@ -32,7 +32,16 @@
             if (readSignal.aborted) throw new Error('cancelled');
             const position = state.points
               ? globalThis.GaplessCacheCoverage.seekBefore(gaps[0][0], state.points, state.rate) : 0;
-            state.coverage = await this.queue.request({ source, position, signal: readSignal, priority: priorityForRead(), budgetMs: 500 });
+            try {
+              state.coverage = await this.queue.request({ source, position, signal: readSignal,
+                priority: priorityForRead(), budgetMs: 500 });
+            } catch (error) {
+              if (['native-cache-preempted', 'native-cache-cleared'].includes(error.message)
+                && !readSignal.aborted) {
+                state.coverage = null; continue;
+              }
+              throw error;
+            }
             // A batch returns a committed index snapshot; completion alone is
             // not proof that the requested byte interval has become available.
           }

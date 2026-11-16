@@ -12,7 +12,7 @@
 
 原生缓存复核：新版受支持 FLAC 使用原生取数与提交，落盘完整性仍须读索引证明；缓存百分比不保证完整，旧 Web 取数路径不能保证原生落盘。见[缓存所有权调查](docs/NATIVE_CACHE_OWNERSHIP_AUDIT.md)。
 
-最新源码：**Windows 0.4.8 / macOS 0.3.6**。Mac 0.3.6 已安装，修复控制竞态、候选故障归属，补上有界上一首缓冲复用、原生数据源的两秒准备余量及音量变化的 5 ms 平滑。Baptized In Fear → Open Hearts 自然跨曲回录未检测到新增双声道静音；暖缓存两次加载到预计输出约 150 / 117 ms，均不代表未缓存歌曲的等待。[主要能力检查与实测](docs/CORE_PLAYBACK_AUDIT_0.3.6_0.4.8.md)，[Windows 修复与验收方案](docs/WINDOWS_REPAIR_PLAN_0.4.8.md)。Windows 新候选尚未安装复测。默认 Windows 打包已选原生数据源，旧 Web 路径须显式 `--web-source`。[功能矩阵、实测与限制](docs/PLATFORM_ALIGNMENT_0.4.6_0.3.3.md)。网易云决定授权音源、音质、队列和音量；插件负责受支持曲目的连续 Web Audio 输出，保留原生回退。不增加 EQ、交叉淡化或音质降档。
+最新源码：**Windows 0.4.9 / macOS 0.3.7**。本轮修正缓存索引复用、取数抢占、曲尾 Seek 和目标失败回退，后台补齐再次核对前台缓冲；Windows 清理观察失败保留近期 Stop 后的最短宽限。[缓存/Seek 检查、Mac 实测与限制](docs/CACHE_SEEK_AUDIT_0.3.7_0.4.9.md)。Mac 0.3.7 已更新安装，最终重载保留原曲暂停并等待真实点击；窗口工具不可用，最后补修后的声音/UI 尚未复验。Windows 新源码候选尚未安装。[既有主要播放实测](docs/CORE_PLAYBACK_AUDIT_0.3.6_0.4.8.md)，[Windows 复验方案](docs/WINDOWS_REPAIR_PLAN_0.4.8.md)。默认 Windows 打包使用原生数据源，旧 Web 路径须显式 `--web-source`。网易云决定授权音源、音质、队列和音量；插件负责受支持曲目的连续 Web Audio 输出，保留原生回退。整首持久缓存仅尽力补齐，不增加 EQ、交叉淡化或音质降档。
 
 0.3.4 修正 FLAC 整数归一化，三份 16/24-bit 源共 72,722,734 样本与校验通过的 Apple 参考 PCM 完全相同。0.3.5 已修正优先级：无缝开启时绕过冲突的原生音效，关闭时原生沿用保存值，不再要求手动关闭淡入淡出。[开关行为与验证](docs/GAPLESS_PRIORITY_0.3.5.md)。不是设备比特直通或 Windows 新候选实机结论。[音质证据与限制](docs/AUDIO_FIDELITY_0.3.4.md)。
 

@@ -82,7 +82,13 @@
           || !await this.wait(betterncm.fs.exists(indexPath), signal)) continue;
         const blob = await this.wait(betterncm.fs.readFile(indexPath), signal);
         if (!blob || blob.size > 1024 * 1024) throw new Error('native-only-cache-index');
-        const coverage = globalThis.GaplessCacheCoverage.parse(await this.wait(blob.text(), signal), size);
+        const text = await this.wait(blob.text(), signal);
+        let coverage;
+        try { coverage = globalThis.GaplessCacheCoverage.parse(text, size); }
+        catch (error) {
+          this.trace('native-cache-index-rejected', { id, reason: error.message });
+          continue;
+        }
         if (generation !== this.generation) throw new Error('cancelled');
         return { ...coverage, path, generation, key };
       }

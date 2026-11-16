@@ -356,7 +356,7 @@ plugin.onLoad(() => {
     media?.sync(force);
   }
   function boundary(c) {
-    if (S.current !== c || !c.owns || c.endSent) return;
+    if (S.current !== c || !c.owns || c.endSent || c.pendingOwnedSeek?.revision === S.revision) return;
     const candidate = S.scheduled;
     c.endSent = true;
     if (candidate && candidate.clockGeneration === clock.generation && candidate.queueVersion === S.queueVersion) {
@@ -460,7 +460,7 @@ plugin.onLoad(() => {
   function scheduleNext() {
     reconcile(); const c = S.current;
     if (!c?.owns || c.loading || !c.playing || S.claim || S.phase !== 'owned') return;
-    if (c.streamPreparation?.purpose === 'seek') { cancelScheduled(); return; }
+    if (c.pendingOwnedSeek?.revision === S.revision || c.streamPreparation?.purpose === 'seek') { cancelScheduled(); return; }
     const next = nextTrack();
     if (S.scheduled && (S.scheduled.selectionKey !== next?.key
       || S.scheduled.clockGeneration !== clock.generation
@@ -840,7 +840,8 @@ plugin.onLoad(() => {
     if (!c?.owns) return S.recovering;
     if (S.phase === 'restoring') return S.recovering;
     const pending = c.streamPreparation?.purpose === 'seek' ? c.streamPreparation.target : undefined;
-    const requested = seekTarget ?? pending;
+    const requested = seekTarget ?? pending
+      ?? (c.pendingOwnedSeek?.revision === S.revision ? c.pendingOwnedSeek.target : undefined);
     const epoch = S.epoch, target = Number.isFinite(requested)
       ? Math.max(0, Math.min(c.duration - 0.001, requested)) : clock.position(c);
     let desired = playIntent ?? c.playing;
@@ -997,38 +998,37 @@ plugin.onLoad(() => {
     if (!Number.isFinite(Number(value))) throw new Error('invalid-seek');
     const revision = ++S.revision, epoch = S.epoch;
     const offset = Math.max(0, Math.min(c.duration - 0.001, Number(value)));
-    nativeFill.cancel(); nativeFill.retry(c.entry); cancelScheduled(); S.token = token;
-    if (c.loading) {
-      c.offset = offset;
-      // Seeking changes position, not the pause intent of an unfinished Load.
-      // Keep its automatic SDK Play guard attached to the latest revision.
-      if (c.pauseAfterClaimRevision !== undefined && c.pauseAfterClaimRevision !== null && c.loadIntent === false)
-        c.pauseAfterClaimRevision = revision;
-    }
-    else {
-      const valid = () => S.current === c && c.owns && S.enabled && S.phase !== 'restoring'
-        && S.epoch === epoch && S.revision === revision;
-      try {
-        if (c.entry?.source.localKey) await localSource.validate(c.entry.source);
-        if (!valid()) throw globalThis.GaplessMacStreamControl.failure('stale');
-        await streamControl.prepare(c, offset, valid);
-        if (!valid()) throw globalThis.GaplessMacStreamControl.failure('stale');
-      } catch (error) {
-        if (error.cancelled || !valid()) throw error;
-        // A real unreadable target uses the native source at that target. A
-        // replaced/cancelled seek must never initiate this recovery.
-        await restoreNative('seek-buffer-unavailable', c.playing, offset);
-        if (!validRecovery(c, epoch) || !c.recoverySucceeded) throw error;
-        return offset;
+    const request = c.pendingOwnedSeek = { revision, target: offset, playing: c.playing };
+    try {
+      nativeFill.cancel(); nativeFill.retry(c.entry); cancelScheduled(); S.token = token;
+      if (c.pauseAfterClaimRevision != null && c.loadIntent === false) c.pauseAfterClaimRevision = revision;
+      if (c.loading) c.offset = offset;
+      else {
+        const valid = () => S.current === c && c.owns && S.enabled && S.phase !== 'restoring'
+          && S.epoch === epoch && S.revision === revision;
+        try {
+          if (c.entry?.source.localKey) await localSource.validate(c.entry.source);
+          if (!valid()) throw globalThis.GaplessMacStreamControl.failure('stale');
+          await streamControl.prepare(c, offset, valid);
+          if (!valid()) throw globalThis.GaplessMacStreamControl.failure('stale');
+        } catch (error) {
+          if (error.cancelled || !valid()) throw error;
+          await restoreNative('seek-buffer-unavailable', request.playing, offset);
+          if (!validRecovery(c, epoch) || !c.recoverySucceeded) throw error;
+          return offset;
+        }
+        // An old sounding node may end while target data is being prepared.
+        // Keep the Seek's transport intent, rather than skipping or pausing.
+        cancelScheduled();
+        if (request.playing && !c.node) clock.start(c, clock.ctx.currentTime + 0.01, offset);
+        else clock.seek(c, offset);
       }
-      // Heartbeats may have scheduled the old End while preparation awaited.
-      // Commit the replacement clock and its next reservation atomically.
-      cancelScheduled();
-      clock.seek(c, offset);
+      c.endSent = false; c.missed = false;
+      trace('seek', { id: c.id, position: offset });
+      return offset;
+    } finally {
+      if (c.pendingOwnedSeek === request) { c.pendingOwnedSeek = null; scheduleNext(); }
     }
-    c.endSent = false; c.missed = false;
-    trace('seek', { id: c.id, position: offset }); scheduleNext();
-    return offset;
   }
   function completeSeek(msg, c, token, offset, code = 0, context) {
     seekReplies.push({ msg, c, token, offset, code, epoch: context?.epoch ?? S.epoch, revision: context?.revision });
@@ -1488,7 +1488,7 @@ plugin.onLoad(() => {
     } catch (error) { trace('reload-recovery-error', { reason: error.message }); }
   }
   window.gaplessMac = {
-    version: '0.3.6', status: () => {
+    version: '0.3.7', status: () => {
       reconcile(); const c = S.current;
       return { enabled: S.enabled, compatible: S.compatible, id: c?.id, phase: S.phase,
         ownsPlayback: !!c?.owns, playing: c?.owns ? !!c.playing : S.nativePlaying,

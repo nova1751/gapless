@@ -1,0 +1,215 @@
+{
+  "complete": {
+    "version": "0.3.7",
+    "id": "864433778",
+    "seeks": [
+      {
+        "target": 190.604,
+        "actual": 190.604,
+        "waitMs": 179,
+        "playing": false
+      },
+      {
+        "target": 15,
+        "actual": 15,
+        "waitMs": 57,
+        "playing": false
+      },
+      {
+        "target": 190.604,
+        "actual": 190.604,
+        "waitMs": 12,
+        "playing": false
+      },
+      {
+        "target": 1.455102040816314,
+        "actual": 1.455102040816314,
+        "waitMs": 8,
+        "playing": false
+      }
+    ],
+    "auxiliaryBatchesDelta": 0,
+    "readDelta": 6,
+    "failuresDelta": 0,
+    "final": {
+      "id": "864433778",
+      "position": 1.455102040816314,
+      "playing": false,
+      "activeNodes": 0
+    },
+    "sampleRate": 44100
+  },
+  "partial": {
+    "id": "857905",
+    "target": 189.07655,
+    "before": {
+      "size": 24356138,
+      "ranges": [
+        [
+          0,
+          7125997
+        ]
+      ],
+      "complete": false,
+      "cachedBytes": 7125997
+    },
+    "seekReady": {
+      "position": 189.07655,
+      "waitMs": 1024,
+      "owns": true,
+      "playing": false,
+      "loading": false
+    },
+    "afterSeek": {
+      "size": 24356138,
+      "ranges": [
+        [
+          0,
+          7864320
+        ],
+        [
+          20949116,
+          24356138
+        ]
+      ],
+      "complete": false,
+      "cachedBytes": 11271342
+    },
+    "afterBackground": {
+      "size": 24356138,
+      "ranges": [
+        [
+          0,
+          7864320
+        ],
+        [
+          20949116,
+          24356138
+        ]
+      ],
+      "complete": false,
+      "cachedBytes": 11271342
+    },
+    "backgroundComplete": false,
+    "source": {
+      "batches": 3,
+      "reads": 20,
+      "hits": 19,
+      "failures": 1,
+      "queued": 0,
+      "activePriority": 10,
+      "generation": 2,
+      "closed": false,
+      "pendingClears": 0,
+      "fault": null
+    },
+    "fill": {
+      "filling": true,
+      "fillId": "857905",
+      "pendingPrevious": 0,
+      "retiredStalls": []
+    },
+    "events": [
+      {
+        "at": 462657,
+        "event": "seek",
+        "id": "864433778",
+        "position": 190.604
+      },
+      {
+        "at": 462766,
+        "event": "seek",
+        "id": "864433778",
+        "position": 15
+      },
+      {
+        "at": 462782,
+        "event": "seek",
+        "id": "864433778",
+        "position": 190.604
+      },
+      {
+        "at": 462794,
+        "event": "seek",
+        "id": "864433778",
+        "position": 1.455102040816314
+      },
+      {
+        "at": 586616,
+        "event": "seek",
+        "id": "857905",
+        "position": 189.07655
+      },
+      {
+        "at": 587385,
+        "event": "native-cache-batch",
+        "id": "857905",
+        "position": 187.9887528344671,
+        "complete": false
+      },
+      {
+        "at": 589249,
+        "event": "native-cache-batch",
+        "id": "857905",
+        "position": 73.97877551020409,
+        "complete": false
+      },
+      {
+        "at": 589249,
+        "event": "native-cache-fill-progress",
+        "id": "857905",
+        "retired": false,
+        "beforeBytes": 11271342,
+        "afterBytes": 11271342,
+        "position": 73.97877551020409
+      },
+      {
+        "at": 594034,
+        "event": "native-cache-batch",
+        "id": "857905",
+        "position": 73.97877551020409,
+        "complete": false
+      },
+      {
+        "at": 594034,
+        "event": "native-cache-fill-progress",
+        "id": "857905",
+        "retired": false,
+        "beforeBytes": 11271342,
+        "afterBytes": 11271342,
+        "position": 73.97877551020409
+      }
+    ],
+    "final": {
+      "id": "864433778",
+      "position": 1.455102040816314,
+      "playing": false,
+      "owns": true,
+      "activeNodes": 0
+    }
+  },
+  "scope": "Mac 0.3.7 initial cache fixes, before near-End Seek and invalid-index skip supplement; SDK readiness and IDX evidence, no new audio capture",
+  "finalInstalled": {
+    "version": "0.3.7",
+    "id": "864433778",
+    "position": 1.455102040816314,
+    "playing": false,
+    "loading": true,
+    "awaitingGesture": true,
+    "activeNodes": 0,
+    "rate": 44100,
+    "batches": 0,
+    "failures": 0
+  },
+  "packageSha256": "686e3879d3cb8dfe9675c110220f336bfe9ffe1556d83588ac06a4247b3f4a44",
+  "windowVerification": "Native UI window unavailable (cgWindowNotFound); final reload awaits genuine user gesture, paused track/position preserved; no fabricated activation",
+  "isolation": {
+    "macNearEndSeek": "HEAD emits End and replaces current while target waits; new guard retains current and restarts target50 after old node ends; paused and superseded requests never start",
+    "cacheIndexFallback": "both platforms reject first wrong-size IDX and accept second verified [0,50) range; all invalid returns no usable range",
+    "macCacheRead": "refresh stale committed coverage avoids redundant native batch; one file-change retry refreshes IDX within read deadline",
+    "windowsPreemption": "preempted read retries twice total; explicit cancellation terminates after one batch",
+    "windowsFillPriority": "buffer drops from8s to3s during snapshot: old enqueues fill; new enqueues none",
+    "windowsSeekRecovery": "actual function restores requested70s; newer90s and pause during recovery win; changed owner does not recover",
+    "windowsClearFailureGrace": "recent Stop + immediately failed property observation waits500ms; already650ms elapsed does not wait again; no recent Stop adds no wait; acquisition remains blocked"
+  }
+}

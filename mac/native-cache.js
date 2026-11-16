@@ -88,7 +88,12 @@
           const text = await this.nativeFs('readFileText', [indexPath], signal); check();
           const after = await this.nativeFs('getProperties', [indexPath], signal); check();
           if (!after || before.size !== after.size || before.lastModified !== after.lastModified) continue;
-          const coverage = globalThis.GaplessCacheCoverage.parse(text, size);
+          let coverage;
+          try { coverage = globalThis.GaplessCacheCoverage.parse(text, size); }
+          catch (error) {
+            this.trace('native-cache-index-rejected', { id, reason: error.message });
+            continue;
+          }
           if (coverage.ranges.some(([, end]) => end > Number(file.size))) continue;
           return { ...coverage, generation, path, indexPath };
         }
