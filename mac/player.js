@@ -1,6 +1,16 @@
 /* MIT. Mac adapter for the shared clock and bounded resource pipeline.
  * NetEase supplies quality, authorization, queue and UI. No CSS, EQ or silence trimming.
  */
+plugin.onConfig(tools => {
+  const label = document.createElement('label');
+  label.className = 'gm-gapless-setting';
+  const checkbox = tools.makeCheckbox({ checked: window.gaplessMac?.status().enabled ?? true });
+  checkbox.classList.add('bncm-plugins-switch');
+  checkbox.setAttribute('aria-label', '无缝播放');
+  checkbox.setAttribute('aria-checked', String(checkbox.checked));
+  label.append(checkbox, ' 无缝播放');
+  return label;
+});
 plugin.onLoad(() => {
   'use strict';
   const bridge = window.__gpMacBridge, Resources = globalThis.GaplessAudioResources;

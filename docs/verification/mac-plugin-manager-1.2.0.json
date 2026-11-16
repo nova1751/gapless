@@ -1,0 +1,78 @@
+{
+  "date": "2026-11-17",
+  "baseMain": "868a64e",
+  "platform": "macOS",
+  "clientVersion": "3.1.12 (3444)",
+  "hostVersion": "0.1.7",
+  "menuVersion": "1.2.0",
+  "sourceVersion": "0.3.9",
+  "installedVersion": "0.3.9",
+  "runtimeVersion": "0.3.9",
+  "checks": {
+    "singleTitlebarEntryOpensNativeManager": true,
+    "allInstalledPluginsInLeftSidebar": true,
+    "disabledAndBuiltinEntriesSelectable": true,
+    "rightPaneShowsSelectedPluginDetails": true,
+    "loadedPluginConfigurationsRetained": true,
+    "gaplessUsesHostOnConfigAndMakeCheckbox": true,
+    "gaplessRightCheckboxOff": {
+      "hostEnabled": false,
+      "runtimeEnabled": false,
+      "phase": "native",
+      "ownsPlayback": false,
+      "playing": false,
+      "activeNodes": 0,
+      "savingConfig": false
+    },
+    "gaplessRightCheckboxOn": {
+      "hostEnabled": true,
+      "runtimeEnabled": true
+    },
+    "gaplessDisabledAfterReload": {
+      "runtimeAbsent": true,
+      "loadedPluginAbsent": true,
+      "sidebarEntryPresent": true
+    },
+    "gaplessReenabledFromUnloadedSidebarEntry": true,
+    "managerAndSelectionRestoredAfterReload": true,
+    "marketEnabledShowsNativeCatalogue": true,
+    "marketDisabledRetainsManagerAndInstalledList": true,
+    "nativeHeaderBackClosesManager": true,
+    "reopenRetainsPluginSelection": true,
+    "macCompatibilityExplanationVisible": true,
+    "installedAndRunningVersionsVisible": true,
+    "escapeClose": "source review; prior manager flow UI evidence retained separately",
+    "thirdPartyPluginsDownloadedOrInstalled": false
+  },
+  "hashes": {
+    "packageSha256": "10451c1392338df5324a9682cb2fc0f64c8d80c3e915bae192621530826bca31",
+    "installedPackageMatches": true,
+    "runtimeFilesMatchPackage": [
+      "manifest.json",
+      "player.js",
+      "startup_script.js"
+    ],
+    "menuSha256": "b4431ad938a6b1cdde8b4bb3c602a41008fb7d44ca44773c52415df16b2b4195",
+    "installedMenuMatches": true
+  },
+  "rollback": {
+    "previousPackage": "0.3.8",
+    "savedOutsideActivePluginDirectory": true
+  },
+  "final": {
+    "gaplessEnabled": true,
+    "marketEnabled": false,
+    "lyricsWindowEnabled": false,
+    "trackTitle": "Open Hearts",
+    "playing": false,
+    "ownsPlayback": false,
+    "activeNodes": 0,
+    "managerShowingGaplessConfig": true
+  },
+  "scope": [
+    "Mac native UI interactions and authenticated host/runtime diagnostics",
+    "Only configuration callback added to player; audio algorithm unchanged",
+    "No audio recording, new playback fidelity claim, arbitrary plugin installation, new test cases, full static checks or application build",
+    "Windows 0.4.14 source and upstream evidence retained; no Windows device operated"
+  ]
+}

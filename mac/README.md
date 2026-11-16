@@ -1,30 +1,30 @@
-# macOS 无缝播放 0.3.8
+# macOS 无缝播放 0.3.9
 
-当前源码、安装包和运行版本均为 **0.3.8**。实测宿主 **BetterNCM-mac 0.1.7**、网易云音乐 **3.1.12（3444）**；独立菜单扩展版本 **1.1.1**。宿主版本、菜单版本与无缝插件版本分别显示／记录，不能混用。[版本与哈希](../docs/versions.json)，[本轮菜单／市场验证](../docs/verification/mac-menu-click-1.1.1.json)。
+当前源码、安装包和运行版本均为 **0.3.9**。实测宿主 **BetterNCM-mac 0.1.7**、网易云音乐 **3.1.12（3444）**；独立管理入口版本 **1.2.0**。[版本与哈希](../docs/versions.json)，[本轮管理页验证](../docs/verification/mac-plugin-manager-1.2.0.json)。
 
 ## 本次更新
 
-菜单 1.1.1 修复市场左侧「无缝播放」无响应，点击后打开右上角现有开关与状态；不另建设置页，不改变播放意图。市场顶部和菜单统一明确提示：市场主要面向 Windows，很多插件在 macOS 不能直接使用。
+右上角插件按钮直接打开宿主原 BetterNCM 管理页，左侧列出全部已安装插件，右侧展示所选插件详情、启停及其原有配置。无缝插件通过 BetterNCM `onConfig(tools)` 和 `tools.makeCheckbox` 提供「无缝播放」；勾选开启，取消勾选关闭并交回原生。移除外部快捷开关和菜单弹层，保留原页面、侧栏和卸载行为。
 
-- 右上角原插件按钮默认打开「无缝播放」开关、状态和「管理已安装插件」。保留原生按钮、宿主开关及认证 API，新增样式限定在菜单弹层、重复入口隐藏及市场说明内。
-- 管理页列出本机已安装插件及宿主内置项，展示版本和宿主兼容说明；本机已开启宿主原 PluginMarket 0.8.0，可从右上角「插件市场」浏览。下载和安装由用户选择；依赖 Windows DLL／桥接口的插件不代表兼容 Mac。
-- 版本标签来自宿主安装清单，悬停显示安装与运行版本；不一致时提示重启更新。无缝运行版本由打包时的 manifest 自动注入。
-- 修复页面恢复后首次关闭、同曲尚无原生 Load 时的恢复失败：使用已验证的原生 SDK 重建同曲实例，保留授权音源，再 Seek 并恢复最新暂停或播放意图，避免完整选曲的迟到状态更新。开关保存串行执行，管理视图切换期间不能重复提交。
+- 无缝启停沿用播放器已有串行保存／原生恢复流程，实时状态和保存值同步。插件没有加载时，启用后通过宿主刷新加载，并自动回到管理页。
+- 插件市场是 PluginMarket 0.8.0 插件；开启后显示市场目录，关闭后管理入口与无缝控制保留。其他插件启停需要页面刷新，管理页会自动重新打开。
+- 管理页显示安装版本，悬停显示可用的运行版本。0.3.9 注册原生 `onConfig` 回调，让已加载的无缝插件侧栏可点击，右侧展示插件自己的无缝复选框。
+- 显示「市场主要面向 Windows，很多插件在 macOS 不能直接使用」，下载和安装由用户选择。没有自动下载／安装其他插件。
 
-未修改音源选择、解码、音量曲线、采样率策略、音乐排程、歌词或频谱算法。未知客户端版本保持原生。
+未修改音源选择、解码、音量曲线、采样率策略、音乐排程、歌词或频谱算法。0.3.8 的同曲原生恢复修复继续保留。
 
 ## 安装与回退
 
 ```sh
 python3 mac/package.py
-python3 mac/install-menu.py --market
+python3 mac/install-menu.py
 ```
 
-1. 生成 `dist/gapless-player-mac-0.3.8.plugin`，交付副本见 [0.3.8 包](../releases/gapless-player-mac-0.3.8.plugin)。复制到 `~/Library/Application Support/BetterNCM-mac/plugins/`；同 slug 只留一个活动版本，旧包移到目录之外。
+1. 生成 `dist/gapless-player-mac-0.3.9.plugin`，交付副本见 [0.3.9 包](../releases/gapless-player-mac-0.3.9.plugin)。复制到 `~/Library/Application Support/BetterNCM-mac/plugins/`；同 slug 只留一个活动版本，旧包移到目录之外。
 2. 菜单安装脚本只写 `/Applications/BetterNCM.app/Contents/Resources/app/src/prelude/gapless-plugin-menu.js`，不改宿主原文件，不修改 CSP。`--market` 仅将指定 profile 的 `mac.pluginManager` 保存为 `true`，复用已内置的 PluginMarket，其他配置不变；不加该参数仅更新菜单，保留市场原有设置。宿主 API／自动发现接口不匹配时退出，保留原菜单。非默认安装位置可加 `--app /path/to/BetterNCM.app`；自定义 profile 加 `--profile /path/to/profile`。
 3. 由宿主重载插件并刷新页面，或正常退出后重新打开。核对菜单安装版本、`gaplessMac.version` 和 [当前状态](../docs/CURRENT_STATUS.md)。初次真实输入之前 Web Audio 可以等待授权，不主动发声。
 
-移除菜单扩展：`python3 mac/install-menu.py --remove`，下次重载恢复宿主原菜单；已保存的市场启用设置保留，无缝播放包与其独立。播放器回退可关闭无缝开关，或正常退出后换回插件目录之外备份的 0.3.7 包。本机已保留旧包。宿主升级可能移除独立 prelude；升级后需重新检查接口并安装。
+移除菜单扩展：`python3 mac/install-menu.py --remove`，下次重载恢复宿主原菜单；已保存的市场启用设置保留，无缝播放包与其独立。播放器回退可关闭无缝开关，或正常退出后换回插件目录之外备份的 0.3.8 包。本机已保留旧包。宿主升级可能移除独立 prelude；升级后需重新检查接口并安装。
 
 宿主原管理页标题的 **1.3.4** 是模拟的 BetterNCM 兼容接口版本；新增说明显示实际 Mac 宿主 **0.1.7**。无缝插件、菜单和宿主分别版本化，市场中的第三方插件另有各自版本。
 
@@ -38,6 +38,6 @@ python3 mac/install-menu.py --market
 
 ## 证据
 
-本轮只更新独立菜单和市场入口，完成真实市场列表、详情／下载按钮、兼容及版本说明、返回／重新打开、原暂停意图保留和安装哈希核对；无缝包仍为 0.3.8。见 [市场记录](../docs/MAC_PLUGIN_MENU_1.1.1.md)。首次原生恢复及开关验证保留在 [上一轮记录](../docs/PLUGIN_MENU_ALIGNMENT_0.3.8_0.4.12.md)。没有新增音频回录、全市场插件或全客户端兼容验收。
+本轮验证直接进入管理页、复选框启停、关闭后原生恢复、保存值重载、插件未加载时重新启用、市场开启／关闭后同页管理和原暂停意图保留。见 [管理记录](../docs/MAC_PLUGIN_MANAGER_1.2.0.md)。既有播放验证保留在 [0.3.8 记录](../docs/PLUGIN_MENU_ALIGNMENT_0.3.8_0.4.12.md)。没有新增音频回录、全市场插件或全客户端兼容验收。
 
-历史音频／缓存证据保留原版本：[0.3.7 应用输出 A/B](../docs/MAC_NATIVE_WEB_OUTPUT_AB_0.3.7.md)、[0.3.7 缓存/Seek](../docs/CACHE_SEEK_AUDIT_0.3.7_0.4.9.md)、[0.3.6 真实跨曲回录](../docs/CORE_PLAYBACK_AUDIT_0.3.6_0.4.8.md)、[0.3.4 PCM 保真](../docs/AUDIO_FIDELITY_0.3.4.md)、[0.3.3 本地及后台缓存](../docs/PLATFORM_ALIGNMENT_0.4.6_0.3.3.md)、[0.2.3 频谱修复](../docs/VISUAL_TIMING_0.2.3.md)。不能把历史证据改写为 0.3.8 全量验收；不承诺所有输出 bit-perfect。
+历史音频／缓存证据保留原版本：[0.3.7 应用输出 A/B](../docs/MAC_NATIVE_WEB_OUTPUT_AB_0.3.7.md)、[0.3.7 缓存/Seek](../docs/CACHE_SEEK_AUDIT_0.3.7_0.4.9.md)、[0.3.6 真实跨曲回录](../docs/CORE_PLAYBACK_AUDIT_0.3.6_0.4.8.md)、[0.3.4 PCM 保真](../docs/AUDIO_FIDELITY_0.3.4.md)、[0.3.3 本地及后台缓存](../docs/PLATFORM_ALIGNMENT_0.4.6_0.3.3.md)、[0.2.3 频谱修复](../docs/VISUAL_TIMING_0.2.3.md)。不能把历史证据改写为 0.3.9 全量验收；不承诺所有输出 bit-perfect。

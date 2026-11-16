@@ -1,21 +1,23 @@
 {
   "date": "2026-11-17",
-  "baseMain": "590734e",
+  "baseMain": "868a64e",
   "mac": {
-    "sourceVersion": "0.3.8",
-    "installedVersion": "0.3.8",
-    "runtimeVersion": "0.3.8",
-    "package": "releases/gapless-player-mac-0.3.8.plugin",
-    "packageSha256": "88113d90ed85ac7538d6a76128a043f6e204d025c4fa9605f34f00ccc23f2abe",
+    "sourceVersion": "0.3.9",
+    "installedVersion": "0.3.9",
+    "runtimeVersion": "0.3.9",
+    "package": "releases/gapless-player-mac-0.3.9.plugin",
+    "packageSha256": "10451c1392338df5324a9682cb2fc0f64c8d80c3e915bae192621530826bca31",
     "runtimeMatchesPackage": true,
     "clientVersion": "3.1.12 (3444)",
     "hostVersion": "0.1.7",
-    "menuVersion": "1.1.1",
-    "menuSha256": "3538e57db297e8cb1d1c48b2b5b60a54e9a58d65f7bfb6784558fdab8edb55cb",
-    "evidence": "docs/verification/mac-menu-0.3.8.json",
-    "menuEvidence": "docs/verification/mac-menu-click-1.1.1.json",
+    "menuVersion": "1.2.0",
+    "menuSha256": "b4431ad938a6b1cdde8b4bb3c602a41008fb7d44ca44773c52415df16b2b4195",
+    "evidence": "docs/verification/mac-plugin-manager-1.2.0.json",
+    "menuEvidence": "docs/verification/mac-plugin-manager-1.2.0.json",
     "marketPluginVersion": "0.8.0",
-    "marketExposed": true
+    "marketExposed": false,
+    "marketPluginEnabled": false,
+    "managerAvailable": true
   },
   "windows": {
     "sourceVersion": "0.4.14",
@@ -40,7 +42,7 @@
     },
     "clientVersion": "3.1.43.205627 x64",
     "hostVersion": "1.3.4",
-    "verificationScope": "Installed package and runtime match. Verified native back, menu return, and the PluginMarket list on Windows."
+    "verificationScope": "Upstream 868a64e reports installed package/runtime match and native back, menu return, PluginMarket verification. Windows not operated in this Mac turn."
   },
   "historicalAudioEvidence": {
     "macOutputABVersion": "0.3.7",
@@ -52,6 +54,6 @@
     "Mac menu uses installed host API data; runtime player version is generated from Mac manifest at packaging.",
     "Historical hashes and audio evidence keep their original versions.",
     "Windows 0.4.14 runtime verification covers manager navigation and PluginMarket.",
-    "Mac menu 1.1.1 opens the live gapless settings from the market entry and clarifies Mac compatibility; audio package stays 0.3.8."
+    "Mac manager 1.2.0 lists installed plugins on the left and retains plugin configuration on the right; gapless 0.3.9 supplies its own host checkbox. Market can be disabled independently."
   ]
 }
