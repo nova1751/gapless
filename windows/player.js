@@ -1564,6 +1564,10 @@ plugin.onLoad(async () => {
       return label;
     }
     plugin.onConfig(tools => settingsControl(options => tools.makeCheckbox(options)));
+    function openGaplessSettings(manager) {
+      manager.classList.add('gp-manager');
+      manager.querySelector('[data-plugin-slug="gapless-player-windows"]')?.click();
+    }
     function pluginManager(toggle = false) {
       const manager = document.querySelector('section.better-ncm-manager');
       const main = document.querySelector('.right-container, section.g-mn:not(.better-ncm-manager)');
@@ -1576,7 +1580,10 @@ plugin.onLoad(async () => {
         .find(node => !manager.contains(node));
       if (shortcut) {
         shortcut.click();
-        if (manager.classList.contains('ncmm-show') !== isOpen) return { isOpen: !isOpen };
+        if (manager.classList.contains('ncmm-show') !== isOpen) {
+          if (!isOpen) openGaplessSettings(manager);
+          return { isOpen: !isOpen };
+        }
       }
       if (isOpen) {
         manager.classList.remove('ncmm-show');
@@ -1585,6 +1592,7 @@ plugin.onLoad(async () => {
         if (manager.parentElement !== main.parentElement) main.after(manager);
         manager.classList.add('ncmm-show');
         main.style.setProperty('display', 'none', 'important');
+        openGaplessSettings(manager);
       }
       return { isOpen: !isOpen };
     }
