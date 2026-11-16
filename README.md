@@ -12,7 +12,7 @@
 
 原生缓存复核：新版受支持 FLAC 使用原生取数与提交，落盘完整性仍须读索引证明；缓存百分比不保证完整，旧 Web 取数路径不能保证原生落盘。见[缓存所有权调查](docs/NATIVE_CACHE_OWNERSHIP_AUDIT.md)。
 
-最新源码：**Windows 0.4.10 / macOS 0.3.7**；已安装记录为 **Windows 0.4.10 / Mac 0.3.7**。拉取至 `c71294a` 后确认 Windows 已安装分段计时并完成日常 UI/日志回归；0.4.10 修正两首位深/声道/采样率不同而取消预取的多余门槛，已安装并完成日常播放回归。同率继续预约，异率保留预取并在下次 Load 重建输出。[最新功能与原文件音质复核](docs/PLATFORM_AUDIO_REVIEW_0.3.7_0.4.10.md)。Mac 本轮独立解码、真实索引 PCM 和同率离线增益检查通过，未新增原生/Web 设备输出 A/B。主要职责已有实现，整首缓存、系统控制和最终逐位一致仍有限制。[此前缓存/Seek 检查](docs/CACHE_SEEK_AUDIT_0.3.7_0.4.9.md)，[Windows 复验方案](docs/WINDOWS_REPAIR_PLAN_0.4.8.md)。默认 Windows 打包使用原生数据源，旧 Web 路径须显式 `--web-source`。网易云决定授权音源、音质、队列和音量；不增加 EQ、交叉淡化或音质降档。
+最新源码：**Windows 0.4.10 / macOS 0.3.7**；已安装记录为 **Windows 0.4.10 / Mac 0.3.7**。拉取至 `95cc978`，包含 Windows 0.4.10 安装及日常 UI/日志回归；0.4.10 修正两首位深/声道/采样率不同而取消预取的多余门槛。同率继续预约，异率保留预取并在下次 Load 重建输出。[功能与原文件音质复核](docs/PLATFORM_AUDIO_REVIEW_0.3.7_0.4.10.md)。Mac 独立解码、真实索引 PCM 和同率离线增益检查通过；现已补 [原生/Web 实际应用输出 A/B](docs/MAC_NATIVE_WEB_OUTPUT_AB_0.3.7.md)，本例响度和波形很接近，仍未证明逐位一致，没有据此证明可听降质。主要职责已有实现，整首缓存、系统控制和最终逐位一致仍有限制。[此前缓存/Seek 检查](docs/CACHE_SEEK_AUDIT_0.3.7_0.4.9.md)，[Windows 复验方案](docs/WINDOWS_REPAIR_PLAN_0.4.8.md)。默认 Windows 打包使用原生数据源，旧 Web 路径须显式 `--web-source`。网易云决定授权音源、音质、队列和音量；不增加 EQ、交叉淡化或音质降档。
 
 0.3.4 修正 FLAC 整数归一化，三份 16/24-bit 源共 72,722,734 样本与校验通过的 Apple 参考 PCM 完全相同。0.3.5 已修正优先级：无缝开启时绕过冲突的原生音效，关闭时原生沿用保存值，不再要求手动关闭淡入淡出。[开关行为与验证](docs/GAPLESS_PRIORITY_0.3.5.md)。不是设备比特直通或 Windows 新候选实机结论。[音质证据与限制](docs/AUDIO_FIDELITY_0.3.4.md)。
 
