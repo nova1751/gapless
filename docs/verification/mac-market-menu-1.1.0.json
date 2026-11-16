@@ -1,0 +1,113 @@
+{
+  "date": "2026-11-17",
+  "baseMain": "234ab6d",
+  "platform": "macOS",
+  "menu": {
+    "version": "1.1.0",
+    "sha256": "4de15f1fbf71748c40d4505a6aecc876b02a3ea20a203fef5cbabe6c234c3e50",
+    "installedMatches": true
+  },
+  "player": {
+    "version": "0.3.8",
+    "packageSha256": "88113d90ed85ac7538d6a76128a043f6e204d025c4fa9605f34f00ccc23f2abe",
+    "installedPackageMatches": true,
+    "audioSourceChanged": false
+  },
+  "runtime": {
+    "capturedAt": "2026-11-16T18:24:47.897Z",
+    "hostVersion": "0.1.7",
+    "pluginManager": true,
+    "menuVersion": "1.1.0",
+    "playerVersion": "0.3.8",
+    "installedPlugins": [
+      {
+        "slug": "@lyrics-window",
+        "version": "",
+        "enabled": false,
+        "builtin": true
+      },
+      {
+        "slug": "PluginMarket",
+        "version": "0.8.0",
+        "enabled": true,
+        "builtin": false
+      },
+      {
+        "slug": "gapless-player-mac",
+        "version": "0.3.8",
+        "enabled": true,
+        "builtin": false
+      }
+    ],
+    "loadedPlugins": [
+      {
+        "slug": "PluginMarket",
+        "version": "0.8.0",
+        "injects": [
+          {
+            "finished": true,
+            "error": null
+          }
+        ]
+      },
+      {
+        "slug": "gapless-player-mac",
+        "version": "0.3.8",
+        "injects": [
+          {
+            "finished": true,
+            "error": null
+          }
+        ]
+      }
+    ],
+    "playback": {
+      "id": "2670863152",
+      "position": 10.153351473922896,
+      "playing": false,
+      "enabled": true,
+      "ownsPlayback": true,
+      "loading": false,
+      "phase": "owned"
+    }
+  },
+  "configuration": {
+    "pluginManager": "true",
+    "allowExec": "default:false",
+    "allowFsOutsideData": "default:false",
+    "autoForceUpdate": "default:false",
+    "lyricsWindow": "false"
+  },
+  "uiChecks": {
+    "singleTitlebarEntry": true,
+    "defaultGaplessMenuAndVersion": true,
+    "marketEntry": true,
+    "hostFirstUseIntroDismissed": true,
+    "marketListVisible": true,
+    "pluginDetailsAndDownloadButtonVisible": true,
+    "compatibilityAndActualHostVersionNoteVisible": true,
+    "returnToNetEasePage": true,
+    "reopenMarket": true,
+    "nativeSidebarAndFooterPreserved": true,
+    "finalMarketLeftOpen": true,
+    "additionalPluginDownloadOrInstallPerformed": false
+  },
+  "intent": {
+    "before": {
+      "id": "2670863152",
+      "position": 10.153351473922896,
+      "playing": false,
+      "enabled": true
+    },
+    "after": {
+      "id": "2670863152",
+      "position": 10.153351473922896,
+      "playing": false,
+      "enabled": true,
+      "ownsPlayback": true,
+      "loading": false,
+      "phase": "owned"
+    }
+  },
+  "scope": "Source review against latest main, installed independent Mac menu, host API and native UI checks. Market catalogue and a plugin detail/download button were visible; no download/install or remote-source completeness validation. Audio core unchanged; no new playback, recording, output quality A/B or Windows machine run. Historical player runtime hashes and audio evidence retain their original records."
+}

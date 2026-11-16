@@ -1,6 +1,6 @@
-/* MIT. gapless-mac-menu: independent BetterNCM-mac title-bar menu, version 1.0.0.
+/* MIT. gapless-mac-menu: independent BetterNCM-mac title-bar menu, version 1.1.0.
  * Uses the host's existing button and authenticated installed-plugin API.
- * Does not enable the general market or change plugin compatibility policy.
+ * Exposes the host market when explicitly enabled; keeps its compatibility policy.
  */
 (() => {
   'use strict';
@@ -40,6 +40,8 @@
       #${id} .gm-danger { color:rgb(var(--accent)); }
       #${id} .gm-confirm { padding:8px 10px; font-size:12px; }
       #${id} .gm-confirm button { padding:6px 12px; margin:8px 8px 0 0; border-radius:12px; background:rgba(var(--fg),.08); }
+      body.gapless-mac-menu-entry [title="BetterNCM"][role="button"] { display:none !important; }
+      .better-ncm-manager .gm-market-note { margin:8px 0 0; max-width:620px; font-size:12px; line-height:1.6; opacity:.72; }
     `;
     document.head.append(style);
   }
@@ -112,6 +114,29 @@
     });
     area.append(cancel, confirm); panel.replaceChildren(area); cancel.focus();
   }
+  function market() {
+    const manager = document.querySelector('section.better-ncm-manager');
+    const shortcut = [...document.querySelectorAll('[title="BetterNCM"]')]
+      .find(button => !manager?.contains(button));
+    if (!data?.pluginManager || !shortcut || !manager) {
+      panel?.append(node('div', 'gm-note', '市场尚未就绪，请重启网易云后重试。'));
+      return;
+    }
+    // Use the host's own layout, back navigation and PluginMarket controls.
+    // Opening this view does not invoke any plugin download or install action.
+    const wasOpen = manager.classList.contains('ncmm-show');
+    if (!wasOpen) {
+      const header = manager.querySelector('.bncm-mgr-header h1')?.parentElement;
+      if (header && !header.querySelector('.gm-market-note')) {
+        header.append(node('p', 'gm-market-note', `Mac 宿主 ${data.version} · 标题数字为兼容接口版本。市场插件可能依赖 Windows，请查看 macOS 兼容说明；下载和安装由你选择。`));
+      }
+    }
+    shortcut.click();
+    if (wasOpen || manager.classList.contains('ncmm-show')) {
+      if (!wasOpen) manager.querySelector('[data-plugin-slug="PluginMarket"]')?.click();
+      close(true);
+    }
+  }
   function render() {
     if (!panel || !data) return;
     clearInterval(timer); panel.replaceChildren();
@@ -120,8 +145,13 @@
     const rows = plugins.map(pluginRow);
     for (const { row } of rows) panel.append(row);
     if (!plugins.length) panel.append(node('div', 'gm-note', managing ? '没有已安装的插件' : '尚未安装无缝播放插件'));
-    if (managing) panel.append(node('div', 'gm-note', '多数通用市场插件依赖 Windows。这里仅管理本机已安装插件，兼容性以各插件说明为准。'));
+    if (managing) panel.append(node('div', 'gm-note', '市场插件可能依赖 Windows。可浏览并自行选择下载，macOS 兼容性以插件说明为准。'));
     panel.append(action(managing ? '返回无缝设置' : '管理已安装插件', () => { managing = !managing; render(); panel.querySelector('button')?.focus(); }));
+    if (data.pluginManager) {
+      const marketOpen = document.querySelector('section.better-ncm-manager')?.classList.contains('ncmm-show');
+      panel.append(action(marketOpen ? '返回网易云' : '插件市场', market));
+      if (!managing && !marketOpen) panel.append(node('div', 'gm-note', '市场插件的 macOS 兼容性需查看各自说明。'));
+    }
     if (managing) panel.append(action('卸载 BetterNCM…', uninstall, 'gm-danger'));
     // Only while visible; no polling, FFT work or audio manipulation in the background.
     timer = setInterval(() => { for (const row of rows) row.update(); }, 200);
@@ -135,6 +165,8 @@
   async function open(button) {
     if (panel) { close(true); return; }
     installStyle(); anchor = button; managing = false; const generation = ++epoch;
+    // Keep one title-bar entry; do not touch NetEase's settings button.
+    document.body.classList.add('gapless-mac-menu-entry');
     panel = node('section', ''); panel.id = id; panel.setAttribute('role', 'dialog'); panel.setAttribute('aria-label', '插件');
     const rgb = (getComputedStyle(button).color.match(/[\d.]+/g) || []).map(Number);
     if (rgb.length >= 3 ? rgb[0] * .299 + rgb[1] * .587 + rgb[2] * .114 > 150 : matchMedia('(prefers-color-scheme:dark)').matches) panel.classList.add('dark');
@@ -170,5 +202,14 @@
     }
   }, true);
   window.addEventListener('pagehide', () => clearInterval(timer));
-  window.gaplessMacMenu = Object.freeze({ version: '1.0.0' });
+  function unifyEntry() {
+    if (!document.body || !document.head || !document.querySelector('.bncm-plugins-btn')) return false;
+    installStyle(); document.body.classList.add('gapless-mac-menu-entry'); return true;
+  }
+  if (!unifyEntry()) {
+    const observer = new MutationObserver(() => { if (unifyEntry()) observer.disconnect(); });
+    observer.observe(document.documentElement || document, { childList: true, subtree: true });
+    window.addEventListener('pagehide', () => observer.disconnect(), { once: true });
+  }
+  window.gaplessMacMenu = Object.freeze({ version: '1.1.0' });
 })();

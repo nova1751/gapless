@@ -4,20 +4,20 @@
 
 | 平台 | 源码版本 | 安装／运行记录 | 宿主 |
 |---|---|---|---|
-| macOS | **0.3.8** | 本轮安装，包与运行文件一致 | BetterNCM-mac 0.1.7；网易云 3.1.12（3444） |
-| Windows | **0.4.13** | 已安装并核对包与运行文件，实机确认标题栏悬浮与插件菜单 | BetterNCM 1.3.4；网易云 x64 3.1.43.205627 |
+| macOS | **0.3.8** | 已安装，包与运行文件一致；独立菜单 1.1.0 | BetterNCM-mac 0.1.7；网易云 3.1.12（3444） |
+| Windows | **0.4.13** | 最新上游安装记录：包与运行文件一致，已核对标题栏悬浮与菜单 | BetterNCM 1.3.4；网易云 x64 3.1.43.205627 |
 
 [当前状态](docs/CURRENT_STATUS.md)和[版本记录](docs/versions.json)区分源码、已安装、运行和历史哈希证据。两端的版本序列独立，不要求版本数字相同。
 
 ## 使用与管理
 
-右上角插件入口默认显示无缝开关、状态和管理入口。Windows 复用 BetterNCM 管理页，默认打开无缝设置；Mac 复用宿主按钮和开关，只管理本机已安装插件，保留通用市场默认隐藏。多数市场插件依赖 Windows 原生接口，菜单对齐不代表兼容性对齐。
+右上角插件入口默认显示无缝开关、状态和管理入口。Windows 复用 BetterNCM 管理页，默认打开无缝设置；Mac 菜单 **1.1.0** 复用宿主按钮和开关，管理已安装插件，并可通过「插件市场」打开宿主原市场。本机已透出，下载／安装由用户选择；其他机器用 `python3 mac/install-menu.py --market` 开启。多数市场插件依赖 Windows 原生接口，菜单对齐不代表兼容性对齐。
 
 关闭开关取消预约和工作缓存，恢复网易云原生播放及最新播放意图；重新开启时 Windows 等待下一次有效 Load，Mac 可准备当前曲。Mac 0.3.8 补修页面恢复后首次关闭时同曲 Resume 捷径导致的原生恢复失败。
 
 - [Mac 安装、菜单与本轮验证](mac/README.md)
 - [Windows 使用与打包](windows/README.md)
-- [两端菜单对齐范围](docs/PLUGIN_MENU_ALIGNMENT_0.3.8_0.4.12.md)
+- [当前 Mac 市场与两端能力](docs/MAC_PLUGIN_MARKET_1.1.0.md)
 - [跨平台实现原则](docs/CROSS_PLATFORM_BEST_PRACTICES.md)
 
 ## 打包
@@ -26,10 +26,10 @@ Mac：
 
 ```sh
 python3 mac/package.py
-python3 mac/install-menu.py
+python3 mac/install-menu.py --market
 ```
 
-第二条只安装独立的 Mac 宿主菜单扩展；无缝插件包另复制到宿主插件目录。详见 Mac 安装步骤。Windows 必须使用精确客户端归档：
+第二条安装独立 Mac 菜单扩展并开启宿主已内置的市场，不安装其他市场插件；无缝插件包另复制到宿主插件目录。详见 Mac 安装步骤。Windows 必须使用精确客户端归档：
 
 ```powershell
 python windows/package.py --client "C:\Program Files\NetEase\CloudMusic\package\orpheus.ntpk"

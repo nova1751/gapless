@@ -1,6 +1,6 @@
 {
   "date": "2026-11-17",
-  "baseMain": "a9cd8b8",
+  "baseMain": "234ab6d",
   "mac": {
     "sourceVersion": "0.3.8",
     "installedVersion": "0.3.8",
@@ -10,9 +10,12 @@
     "runtimeMatchesPackage": true,
     "clientVersion": "3.1.12 (3444)",
     "hostVersion": "0.1.7",
-    "menuVersion": "1.0.0",
-    "menuSha256": "041145f156b73a7b45fed0c821e395bb4436e5105a049f06211e396f5d93aa79",
-    "evidence": "docs/verification/mac-menu-0.3.8.json"
+    "menuVersion": "1.1.0",
+    "menuSha256": "4de15f1fbf71748c40d4505a6aecc876b02a3ea20a203fef5cbabe6c234c3e50",
+    "evidence": "docs/verification/mac-menu-0.3.8.json",
+    "menuEvidence": "docs/verification/mac-market-menu-1.1.0.json",
+    "marketPluginVersion": "0.8.0",
+    "marketExposed": true
   },
   "windows": {
     "sourceVersion": "0.4.13",
@@ -36,7 +39,8 @@
       "evidence": "docs/verification/windows-candidate-install.json"
     },
     "clientVersion": "3.1.43.205627 x64",
-    "hostVersion": "1.3.4"
+    "hostVersion": "1.3.4",
+    "verificationScope": "Upstream 234ab6d installation and menu verification; Windows not operated in this Mac turn."
   },
   "historicalAudioEvidence": {
     "macOutputABVersion": "0.3.7",
@@ -47,6 +51,7 @@
     "Platform version numbers are independent.",
     "Mac menu uses installed host API data; runtime player version is generated from Mac manifest at packaging.",
     "Historical hashes and audio evidence keep their original versions.",
-    "Windows 0.4.13 runtime verification covers the title bar and plugin menu."
+    "Windows 0.4.13 runtime verification covers the title bar and plugin menu.",
+    "Mac menu 1.1.0 exposes the existing bundled market by explicit choice; Mac audio package remains 0.3.8."
   ]
 }
