@@ -18,10 +18,10 @@
     "marketExposed": true
   },
   "windows": {
-    "sourceVersion": "0.4.13",
-    "installedVersion": "0.4.13",
-    "runtimeVersion": "0.4.13",
-    "packageSha256": "71FD34032F51489DB67BCFE08003900E0875C0A9D818A8AD2DEC3033D5F40086",
+    "sourceVersion": "0.4.14",
+    "installedVersion": "0.4.14",
+    "runtimeVersion": "0.4.14",
+    "packageSha256": "416D39CA654D8E065C27ED26A51FB657FCCC64DBA28C95A2A4F6EC814AAEE88C",
     "runtimeMatchesPackage": true,
     "evidence": "docs/CURRENT_STATUS.md",
     "previousInstallationReported": {
@@ -40,7 +40,7 @@
     },
     "clientVersion": "3.1.43.205627 x64",
     "hostVersion": "1.3.4",
-    "verificationScope": "Upstream 234ab6d installation and menu verification; Windows not operated in this Mac turn."
+    "verificationScope": "Installed package and runtime match. Verified native back, menu return, and the PluginMarket list on Windows."
   },
   "historicalAudioEvidence": {
     "macOutputABVersion": "0.3.7",
@@ -51,7 +51,7 @@
     "Platform version numbers are independent.",
     "Mac menu uses installed host API data; runtime player version is generated from Mac manifest at packaging.",
     "Historical hashes and audio evidence keep their original versions.",
-    "Windows 0.4.13 runtime verification covers the title bar and plugin menu.",
+    "Windows 0.4.14 runtime verification covers manager navigation and PluginMarket.",
     "Mac menu 1.1.1 opens the live gapless settings from the market entry and clarifies Mac compatibility; audio package stays 0.3.8."
   ]
 }

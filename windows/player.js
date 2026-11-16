@@ -1596,6 +1596,13 @@ plugin.onLoad(async () => {
       }
       return { isOpen: !isOpen };
     }
+    window.addEventListener('click', event => {
+      // The manager overlays the current page without adding a history entry.
+      if (!event.target?.closest?.('[data-testid="tid_header_back_btn"]') || !pluginManager()?.isOpen) return;
+      if (!pluginManager(true)) return;
+      event.preventDefault();
+      event.stopPropagation();
+    }, true);
     window.addEventListener('keydown', event => {
       if (event.repeat || !event.ctrlKey || !event.altKey || event.shiftKey
         || String(event.key).toLowerCase() !== 'g') return;

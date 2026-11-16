@@ -112,7 +112,9 @@ function installGaplessToggle(controller, pluginManager) {
       const reference = host.querySelector('[aria-label="setting"]')?.closest('.cmd-badge');
       if (reference?.parentElement === host) host.insertBefore(button, reference);
       else { button.style.marginRight = '16px'; host.prepend(button); }
-      button.addEventListener('click', () => {
+      button.addEventListener('click', event => {
+        // BetterNCM closes the manager on title-bar clicks that reach window.
+        event.stopPropagation();
         if (!panel.hidden && active === button) { close(); return; }
         close(); active = button; render(); panel.hidden = false;
         button.setAttribute('aria-expanded', 'true'); theme(); position(); toggle?.focus();
