@@ -138,8 +138,10 @@
               const buffer = bounded ? new globalThis.GaplessPCMCache(spec)
                 : new AudioBuffer({ length: spec.frames, numberOfChannels: spec.channels, sampleRate: spec.rate });
               const hash = fingerprint(source);
-              entry = { id: job.ref.id, requestKey: this.requestKey(job.ref), key: `${this.requestKey(job.ref)}:${job.identity}:${spec.rate}`,
-                identity: job.identity, source, hash, level: source.level, requestedLevel: job.ref.level,
+              const identity = source.localKey ? globalThis.GaplessAudioResources.localIdentity(source) : job.identity;
+              entry = { id: job.ref.id, requestKey: this.requestKey(job.ref), key: `${this.requestKey(job.ref)}:${identity}:${spec.rate}`,
+                identity,
+                source, hash, level: source.level, requestedLevel: job.ref.level,
                 spec, buffer, size, duration: spec.duration, origin: input.kind, pins: 0,
                 stream: { decodedFrames: 0, done: false, error: null, bounded: !!bounded } };
               entry.stream.seekPoints = seekPoints;
@@ -148,7 +150,7 @@
               this.entries.set(entry.key, entry);
               this.reserved -= size; job.reserve -= size;
               input.setIndex?.(entry.stream.seekPoints, spec);
-              const cacheKey = entry.requestKey + ':' + (job.identity || hash || source.localKey || source.url);
+              const cacheKey = entry.requestKey + ':' + (entry.identity || hash || source.localKey || source.url);
               entry.stream.cacheKey = cacheKey;
               const rawRead = entry.stream.readRange;
               if (input.verifyParts) entry.stream.verifyAvailable = async signal => {

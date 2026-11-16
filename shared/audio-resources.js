@@ -262,7 +262,8 @@
         const hash = fingerprint(source);
         const entry = { id: job.ref.id, requestKey: this.requestKey(job.ref),
           key: `${this.requestKey(job.ref)}:${job.identity || hash || `unverified-${performance.now()}`}:${source.level}:${spec.rate}`,
-          level: source.level, hash, identity: job.identity, source, spec, buffer, size, duration: buffer.duration,
+          level: source.level, hash, identity: source.localKey ? localIdentity(source) : job.identity,
+          source, spec, buffer, size, duration: buffer.duration,
           requestedLevel: job.ref.level, origin: input.kind, pins: 0 };
         this.entries.set(entry.key, entry);
         this.failures.delete(entry.requestKey);

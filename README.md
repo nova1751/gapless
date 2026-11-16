@@ -2,7 +2,7 @@
 
 **当前安装与验收状态见 [统一状态表](docs/CURRENT_STATUS.md)。** Windows 已安装并保留原生缓存数据源候选；尚未正式发布。下文各版本记录需按平台和构建模式区分。
 
-实验进展：[Windows 原生取数及后台整首缓存试验](docs/WINDOWS_NATIVE_SOURCE_TRIAL.md)。已跑通原生缓存供给 Web 解码、抢占取消与后台补齐；仅通过 `--native-source-trial` 启用，尚未替代正式版本。
+实验进展：[Windows 原生取数及后台整首缓存试验](docs/WINDOWS_NATIVE_SOURCE_TRIAL.md)。已跑通原生缓存供给 Web 解码、抢占取消与后台补齐；0.4.6 默认打包采用原生数据源，仍为待实机复测的候选。
 
 路线决策调研：[无缝播放与原生行为对齐方案](docs/GAPLESS_NATIVE_PARITY_PLAN.md)。比较纯原生、原生取数＋Web 输出及当前 Web 取数路线，覆盖缓存、任意位置起播、网络请求和逐项验收；原生数据源方案已在 Windows 候选实施并安装，完整发布矩阵尚未通过。
 
@@ -12,7 +12,7 @@
 
 原生缓存复核：新版受支持 FLAC 使用原生取数与提交，落盘完整性仍须读索引证明；缓存百分比不保证完整，旧 Web 取数路径不能保证原生落盘。见[缓存所有权调查](docs/NATIVE_CACHE_OWNERSHIP_AUDIT.md)。
 
-当前源码候选：**Windows 0.4.6 / macOS 0.3.2**。Mac 新包已安装；Windows 新候选尚未实机复测。默认 Windows 打包已选原生数据源，旧 Web 路径须显式 `--web-source`。[功能矩阵、修正与限制](docs/PLATFORM_ALIGNMENT_0.4.6_0.3.2.md)。网易云决定授权音源、音质、队列和音量；插件负责受支持曲目的连续 Web Audio 输出，保留原生回退。不增加 EQ、交叉淡化或音质降档。
+当前源码候选：**Windows 0.4.6 / macOS 0.3.3**。Mac 已补本地有索引 FLAC 和切歌后原生缓存补齐，并安装验证；Windows 新候选尚未实机复测。默认 Windows 打包已选原生数据源，旧 Web 路径须显式 `--web-source`。[功能矩阵、实测与限制](docs/PLATFORM_ALIGNMENT_0.4.6_0.3.3.md)。网易云决定授权音源、音质、队列和音量；插件负责受支持曲目的连续 Web Audio 输出，保留原生回退。不增加 EQ、交叉淡化或音质降档。
 
 Windows 0.4.0 对受支持的 FLAC 从第一首开始增量解码，缓冲约 0.75 秒即可准备输出；下一首可直接从原授权网络源准备，不再要求先播放两首。修复同曲重播、暂停 ID 和失败重试。[实现与验证](docs/WINDOWS_STREAMING_0.4.0.md)。只有一个插件及右上角开关，未修改窗口/歌词样式。
 

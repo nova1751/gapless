@@ -14,11 +14,11 @@ with zipfile.ZipFile(output, 'w', zipfile.ZIP_DEFLATED) as archive:
     sources = [root.parent / 'shared' / 'audio-resources.js',
                root.parent / 'shared' / 'cache-worker.js',
                root.parent / 'shared' / 'playback-clock.js', root.parent / 'shared' / 'visual-pcm.js',
-               root / 'native-cache.js', root / 'media-session.js',
+               root / 'native-cache.js', root / 'local-source.js', root / 'media-session.js',
                root.parent / 'windows/cache-coverage.js', root.parent / 'windows/native-cache-queue.js',
                root.parent / 'windows/pcm-cache.js', root.parent / 'windows/song-cache.js',
                root.parent / 'windows/seek-range.js', root.parent / 'windows/streaming.js',
-               root / 'stream-control.js', root / 'native-source.js', root / 'player.js']
+               root / 'stream-control.js', root / 'native-source.js', root.parent / 'shared/native-cache-fill.js', root / 'player.js']
     vendor = root.parent / 'vendor/crypto-js-4.2.0'
     worker = '\n'.join(path.read_text(encoding='utf-8') for path in [vendor / 'core.js', vendor / 'md5.js', root.parent / 'shared/cache-worker-runtime.js'])
     archive.writestr('player.js', 'globalThis.gaplessCacheWorkerSource = ' + json.dumps(worker) + ';\n'

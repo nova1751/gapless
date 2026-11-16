@@ -73,7 +73,8 @@ plugin.onLoad(() => {
   const quality = info => info?.soundQuality || QUALITY[state()?.playing?.resourcePlayingQuality] || info?.level;
   const allowed = info => {
     const s = state();
-    return !!(S.enabled && S.compatible && s && (!info || (!info.freeTrialInfo && info.audioType === 'track'))
+    return !!(S.enabled && S.compatible && s && (!info || (!info.freeTrialInfo
+      && (info.audioType === 'track' || localSource.path(info))))
       && !s.playing?.isPlayingVideo && !s.playing?.resourceIsTryType
       && Number(s.playing?.playingSpeed || 1) === 1 && Number(s.playing?.playingSpeedTrack || 1) === 1
       && !s.audioEffect?.setting?.isOn && !s.assignedAudioEffect?.isOn
@@ -82,7 +83,7 @@ plugin.onLoad(() => {
   };
   const rowId = row => String(row.resourceId || row.trackId || row.id);
   const rows = () => state()?.playingList?.curPlayingList || [];
-  const ref = c => c && ({ id: c.id, level: c.requestedLevel, account: c.account, duration: c.duration });
+  const ref = c => c && ({ id: c.id, level: c.requestedLevel, account: c.account, duration: c.duration, row: c.row });
   const nativePosition = () => Math.max(0, S.nativePosition + (S.nativePlaying ? (performance.now() - S.nativeAt) / 1000 : 0));
   const nativeCache = globalThis.GaplessNativeCache && new globalThis.GaplessNativeCache({ trace,
     storage: () => webpackRequire()(4).Storage, settings: () => state()?.setting,
@@ -90,12 +91,16 @@ plugin.onLoad(() => {
       const r = webpackRequire();
       return [139,257,671].map(id => r.c[id]?.exports).find(x => x?.algo?.MD5?.create);
     } });
+  const localSource = new globalThis.GaplessMacLocalSource({
+    fs: (method, args, signal) => nativeCache.nativeFs(method, args, signal),
+    mount: (path, signal) => nativeCache.wait(betterncm.fs.mountFile(path), signal) });
+  const normalizeSource = (info, row) => localSource.path(info) ? localSource.info(info, row) : Promise.resolve(info);
   const nativeSource = nativeCache && new globalThis.GaplessMacNativeSource({ bridge, cache: nativeCache, trace,
     valid: source => {
       const c = S.current;
       return !!(c?.owns && !c.transitioning && S.phase !== 'restoring' && allowed(c.info) && source._gpAccount === S.account
         && (String(source.songId) === c.id && source.md5 === (c.info?.md5 || c.entry?.hash)
-          || String(source.songId) === nextTrack()?.id));
+          || String(source.songId) === nextTrack()?.id || nativeFill.allows(source)));
     },
     ensureGate: async () => {
       const c = S.current, epoch = S.epoch;
@@ -118,6 +123,7 @@ plugin.onLoad(() => {
     priority: source => String(source.songId) !== S.current?.id ? 30
       : S.current?.streamPreparation?.purpose === 'seek' ? 100 : 60 });
   const resources = new globalThis.GaplessStreamingResources({ trace, boundedIndexed: true,
+    openLocalInput: (source, signal) => localSource.open(source, signal),
     readCache: nativeCache && (async (r, source, signal, full) => {
       if (!full && nativeSource && S.current?.owns && S.phase !== 'restoring' && allowed(S.current.info)
         && source.audioFormat === 'flac' && /^[a-f0-9]{32}$/i.test(source.md5 || ''))
@@ -132,6 +138,10 @@ plugin.onLoad(() => {
     const result = await nativeSourceResolver()({ track: r.row, requestSoundQuality: r.level, isNextTrack: true });
     if (signal.aborted) throw new Error('cancelled');
     const info = result?.playInfo;
+    if (result?.canPlay && localSource.path(info)) {
+      const normalized = await localSource.info(info, r.row, signal);
+      return { ...normalized, duration: normalized.songDuration / 1000, code: 200 };
+    }
     if (!result?.canPlay || !info?.musicurl || info.freeTrialInfo) throw new Error('native-only-rights');
     return { ...info, url: info.musicurl, size: Number(info.fileSize),
       duration: Number(info.songDuration) / 1000, code: 200 };
@@ -143,7 +153,21 @@ plugin.onLoad(() => {
   const clock = new globalThis.GaplessStreamingClock({ resources, trace,
     onState: value => { if (S.current?.owns && S.current.entry && !S.current.loading && value !== 'running') void restoreNative(`context-${value}`); },
     onEnded: c => { if (S.current === c && c.owns) boundary(c); } });
+  const fillSnapshot = () => ({ owner: S.current, entry: S.current?.entry, account: S.account,
+    quality: S.current?.requestedLevel, position: S.current?.owns ? clock.position(S.current) : 0 });
+  const nativeFill = new globalThis.GaplessNativeCacheFill({ cache: nativeCache, queue: nativeSource.queue,
+    snapshot: fillSnapshot, trace, safe: snapshot => {
+      const c = snapshot?.owner, entry = snapshot?.entry, p = snapshot?.position;
+      return !!(c?.owns && c.playing && !c.loading && !c.transitioning && !c.streamPreparation && !S.claim
+        && S.phase === 'owned' && allowed(c.info) && S.nativeGate && !S.nativeGate.releasing
+        && !nativeSource.clearTimers.length && !nativeSource.fault && entry?.origin === 'native-source'
+        && Array.isArray(entry.stream?.seekPoints)
+        && globalThis.GaplessSeekRange.until(entry, Math.floor(p * entry.spec.rate))
+          >= Math.min(entry.buffer.length, Math.ceil((p + 6) * entry.spec.rate))
+        && (c.duration - p > 15 || !!S.scheduled?.entry));
+    } });
   bridge.cacheClearRequested = async () => {
+    nativeFill.clear(); localSource.clear();
     streamControl.cancel(S.current, 'cache-clear'); cancelScheduled();
     const active = S.current?.owns ? S.current.entry : null;
     resources.retain(active ? [ref(S.current)] : []);
@@ -247,6 +271,22 @@ plugin.onLoad(() => {
       sdk[name] = wrapped; visualRenderHooks.set(name, { sdk, original, wrapped });
     }
   }
+  function checkLocalVersion(entry) {
+    if (!entry?.source?.localKey) return true;
+    if (entry.stream?.error) return false;
+    if (performance.now() - (entry.localCheckedAt || -Infinity) < 1000) return true;
+    if (!entry.localChecking) {
+      entry.localChecking = true;
+      void localSource.validate(entry.source).then(() => {
+        entry.localCheckedAt = performance.now(); scheduleNext();
+      }).catch(() => {
+        entry.stream.error = 'local-file-changed';
+        if (S.scheduled?.entry === entry) cancelScheduled();
+        if (S.current?.owns && S.current.entry === entry) void restoreNative('local-file-changed');
+      }).finally(() => { entry.localChecking = false; });
+    }
+    return false;
+  }
   function nextTrack() {
     const c = S.current, s = state(); if (!c || !allowed(c.info)) return null;
     const mode = s.playing.playingMode;
@@ -258,13 +298,15 @@ plugin.onLoad(() => {
     const index = list.indexOf(matches[0]);
     const row = mode === 'playRandom' ? nativeRandomNext(list, matches[0])
       : mode === 'playOneCycle' ? matches[0] : list[index + 1] || (mode === 'playCycle' ? list[0] : null);
-    if (!row || row.resourceType !== 'track' || list.filter(item => rowId(item) === rowId(row)).length !== 1) return null;
-    const id = rowId(row), duration = Number(row.track?.duration || row.duration) / 1000;
+    if (!row || !['track', 'localTrack', 'downloadTrack'].includes(row.resourceType)
+      || list.filter(item => rowId(item) === rowId(row)).length !== 1) return null;
+    const id = rowId(row), duration = localSource.duration(row) / 1000;
     return { id, level: c.requestedLevel, account: S.account, duration, row, queueVersion: S.queueVersion,
       occurrence: `${row.id}:${row.displayOrder}`, key: `${S.account}:${id}:${c.requestedLevel}:${row.id}:${row.displayOrder}:${row.randomOrder}` };
   }
   function cancelScheduled() { clock.stop(S.scheduled); S.scheduled = null; }
   function stopCurrent(reason = 'cancelled') {
+    nativeFill.cancel();
     streamControl.cancel(S.current, reason, reason === 'pause');
     cancelScheduled(); clock.stop(S.current);
   }
@@ -283,6 +325,7 @@ plugin.onLoad(() => {
     const candidate = S.scheduled;
     c.endSent = true;
     if (candidate && candidate.clockGeneration === clock.generation && candidate.queueVersion === S.queueVersion) {
+      nativeFill.remember(c.entry, c.account, c.requestedLevel);
       clock.stop(c); S.scheduled = null; S.current = candidate; S.claim = true;
       S.phase = 'claiming'; candidate.claimAt = performance.now();
       trace('transition', { from: c.id, to: candidate.id, scheduledGapFrames: Math.round((candidate.start - c.end) * clock.ctx.sampleRate) });
@@ -307,10 +350,11 @@ plugin.onLoad(() => {
     const account = String(s.host?.uid || s.user?.profile?.userId || 'anonymous');
     const signature = JSON.stringify([s.playing?.playingMode, rows().map(r => [r.id, rowId(r), r.displayOrder, r.randomOrder])]);
     if (signature !== S.signature) {
+      nativeFill.clear();
       S.signature = signature; S.queueVersion++; cancelScheduled(); trace('queue-changed', { queueVersion: S.queueVersion });
       if (S.claim) void restoreNative('queue-during-claim');
     }
-    if (S.account && account !== S.account) { S.epoch++; resources.resetFailures(); void restoreNative('account-changed'); }
+    if (S.account && account !== S.account) { nativeFill.clear(); S.epoch++; resources.resetFailures(); void restoreNative('account-changed'); }
     S.account = account;
     const c = S.current;
     if (c && !c.owns && !c.entry && !c.preparing && !c.blocked && allowed(c.info)) {
@@ -320,6 +364,7 @@ plugin.onLoad(() => {
     const selectionChanged = S.selection && selection !== S.selection;
     S.selection = selection;
     if (c?.owns && (selectionChanged || !allowed(c.info) || c.account !== account)) {
+      nativeFill.clear();
       if (selectionChanged) {
         c.restoreSelection = true; c.row ||= rows().find(r => rowId(r) === c.id); resources.resetFailures();
       }
@@ -385,7 +430,8 @@ plugin.onLoad(() => {
       || Math.abs(S.scheduled.start - c.end) > 1 / clock.ctx.sampleRate)) cancelScheduled();
     if (!next || S.scheduled) return;
     const entry = resources.lookup(next);
-    if (!entry?.hash || entry.stream?.error) return;
+    if ((!entry?.hash && !entry?.source?.localKey) || entry.stream?.error) return;
+    if (entry.source.localKey && !checkLocalVersion(entry)) return;
     resources.ensure?.(entry, 0);
     if (!streamControl.ready(entry, 0)) return;
     if (entry.spec.rate !== clock.ctx?.sampleRate) {
@@ -451,12 +497,17 @@ plugin.onLoad(() => {
       }
       // A native fallback may evict an unpinned entry while c still references
       // it. Reacquire through the resource owner so budget/pins stay accounted.
-      c.entry = await resources.obtain(ref(c), c.info);
-      if (!c.entry.hash || c.entry.hash !== Resources.fingerprint(c.info) || c.entry.level !== c.info.level)
+      const normalized = await normalizeSource(c.info, c.row);
+      if (!validRecovery(c, epoch)) throw new Error('cancelled');
+      c.entry = await resources.obtain(ref(c), normalized);
+      if (c.entry.source.localKey) await localSource.validate(c.entry.source);
+      else if (!c.entry.hash || c.entry.hash !== Resources.fingerprint(c.info) || c.entry.level !== c.info.level)
         throw new Error('native-only-source-identity');
       if (!validRecovery(c, epoch) || !allowed(c.info)) throw new Error('cancelled');
       c.duration = c.entry.duration; c.level = c.entry.level;
       await prepareLoadPosition(c, epoch);
+      if (c.entry.source.localKey) await localSource.validate(c.entry.source);
+      if (!validRecovery(c, epoch) || !allowed(c.info)) throw new Error('cancelled');
       await clock.open(c.entry);
       if (!validRecovery(c, epoch) || !allowed(c.info)) throw new Error('cancelled');
       // Direct Web Load/resume also parks the native output. Otherwise an
@@ -470,6 +521,8 @@ plugin.onLoad(() => {
       // A Seek can arrive while the context/gain handshake is awaiting native.
       // Recheck the latest requested offset before committing any Web output.
       await prepareLoadPosition(c, epoch);
+      if (c.entry.source.localKey) await localSource.validate(c.entry.source);
+      if (!validRecovery(c, epoch) || !allowed(c.info) || S.phase === 'restoring') throw new Error('cancelled');
       clock.setOutput(true); c.loading = false; c.transitioning = false; c.blocked = false; S.phase = 'owned';
       if (c.playing) clock.start(c, clock.ctx.currentTime + 0.01, c.offset);
       if (msg.resumeExisting) {
@@ -508,7 +561,9 @@ plugin.onLoad(() => {
     if (c.preparing || !S.enabled || c.blocked || !allowed(c.info)) return; c.preparing = true;
     const epoch = S.epoch;
     try {
-      const entry = await resources.obtain(ref(c), c.info);
+      const normalized = await normalizeSource(c.info, c.row);
+      if (!validRecovery(c, epoch)) return;
+      const entry = await resources.obtain(ref(c), normalized);
       if (S.current !== c || S.epoch !== epoch || !allowed(c.info) || c.blocked) return;
       c.entry = entry; c.duration = entry.duration; c.level = entry.level;
       await takeover(); prefetch();
@@ -725,6 +780,7 @@ plugin.onLoad(() => {
     await gate.ready;
   }
   async function restoreNative(reason, playIntent) {
+    nativeFill.clear();
     reconcile(); const c = S.current;
     if (!c?.owns) return S.recovering;
     if (S.phase === 'restoring') return S.recovering;
@@ -743,6 +799,9 @@ plugin.onLoad(() => {
         // to establish that callback before waiting for native completion.
         const needsSelection = !c.info || c.restoreSelection || !bridge.registrations['audioplayer.onLoad'];
         c.recoverySelecting = !!needsSelection;
+        // Native local Load may notify again after the reconstruction RPC has
+        // settled. Those replies still belong to recovery, not a new SDK Play.
+        c.suppressRecoveryLoad = !needsSelection;
         c.ignoreSelectionPlay = !!needsSelection;
         if (needsSelection) {
           if (!c.row || (rows().length && rows().filter(r => rowId(r) === c.id).length !== 1)) throw new Error('native-recovery-selection-unavailable');
@@ -815,6 +874,7 @@ plugin.onLoad(() => {
     const c = S.current;
     if (command === 'audioplayer.onAudioData' && c?.owns) return true;
     if (command === 'audioplayer.onVolume' && (S.nativeGate || c?.owns)) return true;
+    if (command === 'audioplayer.onLoad' && String(args?.[0]) === c?.id && c.suppressRecoveryLoad) return true;
     if (command === 'audioplayer.onLoad' && c?.owns && S.phase !== 'restoring') return true;
     // Raw recovery loads only reconstruct the parked backend. Native waiters
     // already observed this event; forwarding it re-enters the SDK auto-play
@@ -874,7 +934,7 @@ plugin.onLoad(() => {
     if (!Number.isFinite(Number(value))) throw new Error('invalid-seek');
     const revision = ++S.revision, epoch = S.epoch;
     const offset = Math.max(0, Math.min(c.duration - 0.001, Number(value)));
-    cancelScheduled(); S.token = token;
+    nativeFill.cancel(); nativeFill.retry(c.entry); cancelScheduled(); S.token = token;
     if (c.loading) {
       c.offset = offset;
       // Seeking changes position, not the pause intent of an unfinished Load.
@@ -885,6 +945,7 @@ plugin.onLoad(() => {
     else {
       const valid = () => S.current === c && c.owns && S.enabled && S.phase !== 'restoring'
         && S.epoch === epoch && S.revision === revision;
+      if (c.entry?.source.localKey) await localSource.validate(c.entry.source);
       await streamControl.prepare(c, offset, valid);
       if (!valid()) throw globalThis.GaplessMacStreamControl.failure('stale');
       // Heartbeats may have scheduled the old End while preparation awaited.
@@ -929,10 +990,33 @@ plugin.onLoad(() => {
     reconcile(); const p = msg.params || []; let c = S.current;
     if (msg.command === 'audioplayer.load') {
       const id = String(p[0]), info = p[1], level = quality(info);
+      if (c?.id === id) c.suppressRecoveryLoad = false;
       trace('native-load', { id, phase: S.phase, current: c?.id, epoch: S.epoch });
       if (S.phase === 'restoring' && c?.id === id) { c.info = info; return false; }
-      if (S.claim && c?.id === id && allowed(info) && c.requestedLevel === level && c.level === info?.level
-        && c.entry?.hash && Resources.fingerprint({ ...info, url: info?.musicurl }) === c.entry.hash && clock.matches(c.entry)) {
+      const localClaim = c?.entry?.source.localKey && localSource.matches(c.entry.source, info);
+      if (S.claim && c?.id === id && allowed(info) && c.requestedLevel === level && clock.matches(c.entry)
+        && (localClaim || c.level === info?.level && c.entry?.hash
+          && Resources.fingerprint({ ...info, url: info?.musicurl }) === c.entry.hash)) {
+        if (localClaim) {
+          const epoch = S.epoch; c.info = info;
+          void normalizeSource(info, c.row).then(normalized => {
+            if (!validRecovery(c, epoch) || !S.claim) {
+              bridge.dispatch(msg.seq, [id, { code: -1 }]); return;
+            }
+            if (Resources.localIdentity(normalized) !== c.entry.identity) throw new Error('native-only-local-changed');
+            S.claim = false; S.phase = 'owned';
+            if (!c.playing) c.pauseAfterClaimRevision = S.revision;
+            trace('claimed', { id, position: clock.position(c), claimDelayMs: performance.now() - c.claimAt, local: true });
+            answerLoad(msg, c); prefetch(); scheduleNext();
+          }).catch(() => {
+            if (validRecovery(c, epoch)) void restoreNative('local-claim-source-changed').then(() => {
+              if (validRecovery(c, epoch)) answerNativeLoad(msg, c, c.recoverySucceeded ? 0 : -1);
+              else bridge.dispatch(msg.seq, [id, { code: -1 }]);
+            });
+            else bridge.dispatch(msg.seq, [id, { code: -1 }]);
+          });
+          return true;
+        }
         c.info = info; S.claim = false; S.phase = 'owned';
         if (!c.playing) c.pauseAfterClaimRevision = S.revision;
         trace('claimed', { id, position: clock.position(c), claimDelayMs: performance.now() - c.claimAt });
@@ -945,6 +1029,7 @@ plugin.onLoad(() => {
         position: position(), heard: clock.heard(c), playing: !!c.playing,
       } : null;
       const wasPlaying = c?.owns ? !!(c.playing || c.transitioning && c.loadIntent) : S.nativePlaying;
+      if (c?.entry && c.id !== id) nativeFill.remember(c.entry, c.account, c.requestedLevel);
       settlePendingWebLoad(c);
       nativeSource?.cancel();
       S.epoch++; S.revision++; stopCurrent(); S.claim = false; S.phase = 'native';
@@ -956,7 +1041,7 @@ plugin.onLoad(() => {
       // Adopt a matching cached source synchronously. Waiting for native play
       // before the async preparation would let a store update evict both warm
       // buffers between Load and play, especially when selecting the same track.
-      const cached = allowed(info) && resources.lookup(ref(c), info);
+      const cached = allowed(info) && !localSource.path(info) && resources.lookup(ref(c), info);
       if (cached) { c.entry = cached; c.duration = cached.duration; c.level = cached.level; }
       resources.resetFailures(); resources.retain([ref(c), nextTrack()]);
       if (allowed(info) && !msg.observedNative) {
@@ -1099,11 +1184,15 @@ plugin.onLoad(() => {
       if (c.loading) { c.playing = true; c.loadIntent = true; ack(msg); return true; }
       c.transitioning = false;
       if (clock.ctx?.state !== 'running') { void restoreNative('play-context-unavailable'); return false; }
-      if (!c.playing && !streamControl.ready(c.entry, c.offset)) {
+      if (!c.playing && (c.entry?.source.localKey || !streamControl.ready(c.entry, c.offset))) {
         const revision = S.revision, epoch = S.epoch; c.loadIntent = true;
         const valid = () => S.current === c && c.owns && S.enabled && S.phase !== 'restoring'
           && S.revision === revision && S.epoch === epoch;
-        void streamControl.prepare(c, c.offset, valid, { purpose: 'resume' }).then(() => {
+        void (async () => {
+          if (c.entry?.source.localKey) await localSource.validate(c.entry.source);
+          if (!valid()) throw globalThis.GaplessMacStreamControl.failure('stale');
+          await streamControl.prepare(c, c.offset, valid, { purpose: 'resume' });
+        })().then(() => {
           if (!valid() || !c.loadIntent) throw globalThis.GaplessMacStreamControl.failure('stale');
           cancelScheduled(); clock.start(c, clock.ctx.currentTime + 0.01, c.offset);
           emitState(c, 1, token); prefetch(); scheduleNext();
@@ -1132,6 +1221,7 @@ plugin.onLoad(() => {
       return true;
     }
     if (/^audioplayer\.(stop|unload)$/.test(msg.command)) {
+      nativeFill.remember(c.entry, c.account, c.requestedLevel);
       const intent = c.playing || c.loadIntent;
       c.restoreSnapshot = false;
       settlePendingWebLoad(c);
@@ -1163,6 +1253,7 @@ plugin.onLoad(() => {
       if (S.scheduled?.entry?.stream?.error) cancelScheduled();
       if (S.current?.owns && !S.claim) progress(S.current);
       void takeover(); scheduleNext(); prefetch();
+      checkLocalVersion(S.current?.entry); checkLocalVersion(S.scheduled?.entry); nativeFill.maybe();
       media?.sync();
       try { prepareVisualClock(); visual.sync(); }
       catch (error) { visual.stop(); trace('visual-clock-error', { reason: error.message }); }
@@ -1216,6 +1307,7 @@ plugin.onLoad(() => {
   };
   window.addEventListener('pointerdown', gesture, true); window.addEventListener('keydown', gesture, true);
   async function disable() {
+    nativeFill.clear(); localSource.clear();
     S.enabled = false; visual.stop(); resources.stop(); await restoreNative('disabled');
     resources.retain([]); await clock.close(); if (S.current) S.current.entry = null; trace('disabled');
   }
@@ -1260,7 +1352,7 @@ plugin.onLoad(() => {
   }
   window.addEventListener('beforeunload', () => {
     persistRecovery(); clearInterval(timer); S.unsubscribe?.(); resources.stop();
-    nativeSource?.cancel();
+    nativeFill.clear(); nativeSource?.cancel();
     media?.release(); visual.stop();
     for (const [name, hook] of visualRenderHooks) if (hook.sdk[name] === hook.wrapped) hook.sdk[name] = hook.original;
     // The native gain is never left at the rehearsal value across navigation.
@@ -1309,7 +1401,7 @@ plugin.onLoad(() => {
     } catch (error) { trace('reload-recovery-error', { reason: error.message }); }
   }
   window.gaplessMac = {
-    version: '0.3.2', status: () => {
+    version: '0.3.3', status: () => {
       reconcile(); const c = S.current;
       return { enabled: S.enabled, compatible: S.compatible, id: c?.id, phase: S.phase,
         ownsPlayback: !!c?.owns, playing: c?.owns ? !!c.playing : S.nativePlaying,
@@ -1323,6 +1415,7 @@ plugin.onLoad(() => {
         next: nextTrack()?.id, scheduled: S.scheduled?.id, claiming: S.claim,
         memory: resources.status(), mode: state()?.playing?.playingMode, nativeAllowed: allowed(c?.info),
         nativeCacheSource: nativeSource?.status(),
+        nativeCacheFill: nativeFill.status(), localSource: !!c?.entry?.source.localKey,
         queueVersion: S.queueVersion, loadEpoch: S.epoch, controlRevision: S.revision,
         systemMedia: media?.status(), visualization: { ...visual.status(), renderClock: visualRenderHooks.size ? 'output' : 'pending',
           renderClockHooks: [...visualRenderHooks.keys()] } };

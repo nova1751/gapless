@@ -1,0 +1,464 @@
+{
+  "date": "2026-11-16",
+  "baseCommit": "9dcef8c5396403c7dce68577a0abe38f12b15b52",
+  "scope": "Mac local indexed FLAC and bounded native current/retired cache fill; preserve Windows behavior",
+  "versions": {
+    "mac": "0.3.3",
+    "windowsSource": "0.4.6",
+    "windowsNewCandidateInstalledThisTurn": false
+  },
+  "checks": {
+    "changedJavaScriptSyntaxFiles": 5,
+    "changedJavaScriptSyntax": "passed",
+    "macPackagingPythonAst": "passed",
+    "newTests": false,
+    "fullStaticChecks": false,
+    "applicationBuild": false,
+    "finalLocalStatRead": "passed against actual native filesystem API",
+    "finalLocalStatDeadlineMs": 3000,
+    "finalTimeoutAndStaleClaimBranches": "incremental review; not fault-injected or re-recorded"
+  },
+  "package": {
+    "file": "gapless-player-mac-0.3.3.plugin",
+    "sha256": "bc81ee04d68b7f880f3d45d47ef5de2fcc6945562ab99bfb52c53ad6879d8bb7",
+    "runtimeFiles": 7,
+    "runtimeMatch": true,
+    "zipIntegrity": true,
+    "oldPackageKeptOutsidePlugins": true
+  },
+  "local": {
+    "selection": "real isolated FLAC copies through original source resolver and playing queue actions; native import UI not verified",
+    "fileBytes": [
+      27081483,
+      27865486
+    ],
+    "fileMD5": [
+      "cad47df6dd03b5faa82ffc244f6a99c1",
+      "d7dc2a24ddf0ed8d488511ec49536017"
+    ],
+    "firstSubmissionMs": 113,
+    "pausedSeek": {
+      "position": 34,
+      "playing": false
+    },
+    "audio": {
+      "captureRate": 48000,
+      "captureChannels": 2,
+      "frames": 1278720,
+      "error": "",
+      "scheduledGapFrames": 0,
+      "boundaryInCapture": true,
+      "zeroRunMsAroundBoundary": 0.0,
+      "belowMinus80dBRunMsAroundBoundary": 0.0,
+      "maxPTSGapMs": 0.0,
+      "claimDelayMs": 121
+    },
+    "audioCaptureBeforeRecoveryNotificationFix": true,
+    "fixedVersionChangeRecovery": {
+      "id": "2670863319_gp_local_verify",
+      "phase": "native",
+      "ownsPlayback": false,
+      "playing": false,
+      "position": 117,
+      "resourceOrigin": "local-file",
+      "nativeOutputGated": false,
+      "nativeCacheSource": {
+        "batches": 0,
+        "reads": 0,
+        "hits": 0,
+        "failures": 0,
+        "queued": 0,
+        "activePriority": null,
+        "generation": 3,
+        "closed": false,
+        "pendingClears": 0,
+        "fault": null
+      },
+      "nativeCacheFill": {
+        "filling": false,
+        "fillId": null,
+        "pendingPrevious": 0,
+        "retiredStalls": []
+      },
+      "systemMedia": {
+        "supported": true,
+        "active": false,
+        "failed": true,
+        "seekPending": false
+      },
+      "visualization": {
+        "active": false,
+        "failed": false,
+        "frames": 0,
+        "lastPosition": 0,
+        "maxWorkMs": 0,
+        "averageWorkMs": 0,
+        "visualRate": 48000,
+        "visualChannels": 2,
+        "packetFrames": 400,
+        "packetBytes": 1600,
+        "maxPacketsPerTick": 6,
+        "resets": 0,
+        "skippedFrames": 0,
+        "affectsAudioOutput": false,
+        "renderClock": "output",
+        "renderClockHooks": [
+          "_AEWebSetPlaybackPosition",
+          "_AERenderMV"
+        ]
+      }
+    },
+    "nativeDuplicateLoadNotifications": 2,
+    "recoveryTrace": [
+      {
+        "at": 144000,
+        "event": "restore-start",
+        "id": "2670863319_gp_local_verify",
+        "reason": "local-file-changed",
+        "position": 117
+      },
+      {
+        "at": 144026,
+        "event": "restored-native",
+        "id": "2670863319_gp_local_verify",
+        "reason": "local-file-changed",
+        "position": 117,
+        "playing": false,
+        "confirmed": true
+      }
+    ],
+    "manualNativeResumeAfterRecovery": {
+      "playing": true,
+      "ownsPlayback": false,
+      "positionAtResume": 117.0002000002861
+    }
+  },
+  "nativeCache": {
+    "songId": "1994361206",
+    "coldSubmissionMs": 902,
+    "switchAt": 638312.8000001907,
+    "committedAtSwitch": {
+      "ranges": [
+        [
+          0,
+          43489915
+        ]
+      ],
+      "size": 51532448
+    },
+    "retiredFillTrace": [
+      {
+        "at": 639773,
+        "event": "native-cache-fill-progress",
+        "id": "1994361206",
+        "retired": true,
+        "beforeBytes": 43489915,
+        "afterBytes": 48880089,
+        "position": 207.98113378684806
+      },
+      {
+        "at": 641554,
+        "event": "native-cache-complete",
+        "id": "1994361206",
+        "retired": true
+      }
+    ],
+    "committed": {
+      "id": "1994361206",
+      "bytes": 51532448,
+      "md5": "4a48297106172b59759d2ef618c37c7c",
+      "expectedMD5": "4a48297106172b59759d2ef618c37c7c",
+      "md5Match": true,
+      "committedIndex": {
+        "size": 51532448,
+        "zone": [
+          "0 51532447"
+        ]
+      }
+    },
+    "currentAfterFill": {
+      "id": "2670863152",
+      "phase": "owned",
+      "ownsPlayback": true,
+      "playing": true,
+      "position": 21.67968253968254,
+      "resourceOrigin": "native-source",
+      "nativeOutputGated": true,
+      "nativeCacheSource": {
+        "batches": 9,
+        "reads": 43,
+        "hits": 42,
+        "failures": 0,
+        "queued": 0,
+        "activePriority": null,
+        "generation": 8,
+        "closed": false,
+        "pendingClears": 0,
+        "fault": null
+      },
+      "nativeCacheFill": {
+        "filling": false,
+        "fillId": null,
+        "pendingPrevious": 0,
+        "retiredStalls": []
+      },
+      "systemMedia": {
+        "supported": true,
+        "active": true,
+        "failed": false,
+        "seekPending": false
+      },
+      "visualization": {
+        "active": false,
+        "failed": false,
+        "frames": 0,
+        "lastPosition": 0,
+        "maxWorkMs": 0,
+        "averageWorkMs": 0,
+        "visualRate": 48000,
+        "visualChannels": 2,
+        "packetFrames": 400,
+        "packetBytes": 1600,
+        "maxPacketsPerTick": 6,
+        "resets": 0,
+        "skippedFrames": 0,
+        "affectsAudioOutput": false,
+        "renderClock": "output",
+        "renderClockHooks": [
+          "_AERenderMV",
+          "_AEWebSetPlaybackPosition"
+        ]
+      }
+    },
+    "nativePlayCountAtFirstColdOutput": 2,
+    "nativePlayCountAfterFill": 2,
+    "restartSubmissionMs": 88,
+    "restart": {
+      "id": "1994361206",
+      "phase": "owned",
+      "ownsPlayback": true,
+      "playing": true,
+      "position": 72.83614512471655,
+      "resourceOrigin": "native-source",
+      "nativeOutputGated": true,
+      "nativeCacheSource": {
+        "batches": 0,
+        "reads": 89,
+        "hits": 89,
+        "failures": 0,
+        "queued": 0,
+        "activePriority": null,
+        "generation": 1,
+        "closed": false,
+        "pendingClears": 0,
+        "fault": null
+      },
+      "nativeCacheFill": {
+        "filling": false,
+        "fillId": null,
+        "pendingPrevious": 0,
+        "retiredStalls": []
+      },
+      "systemMedia": {
+        "supported": true,
+        "active": true,
+        "failed": false,
+        "seekPending": false
+      },
+      "visualization": {
+        "active": true,
+        "failed": false,
+        "frames": 3603,
+        "lastPosition": 72.75833333333334,
+        "maxWorkMs": 1.0999999046325684,
+        "averageWorkMs": 0.1922009444521296,
+        "visualRate": 48000,
+        "visualChannels": 2,
+        "packetFrames": 400,
+        "packetBytes": 1600,
+        "maxPacketsPerTick": 6,
+        "resets": 1,
+        "skippedFrames": 0,
+        "affectsAudioOutput": false,
+        "renderClock": "output",
+        "renderClockHooks": [
+          "_AERenderMV",
+          "_AEWebSetPlaybackPosition"
+        ]
+      }
+    },
+    "disabledNativePlayback": {
+      "id": "1994361206",
+      "phase": "native",
+      "ownsPlayback": false,
+      "playing": true,
+      "position": 1.2552000002861023,
+      "resourceOrigin": null,
+      "nativeOutputGated": false,
+      "nativeCacheSource": {
+        "batches": 0,
+        "reads": 145,
+        "hits": 146,
+        "failures": 0,
+        "queued": 0,
+        "activePriority": null,
+        "generation": 5,
+        "closed": false,
+        "pendingClears": 0,
+        "fault": null
+      },
+      "nativeCacheFill": {
+        "filling": false,
+        "fillId": null,
+        "pendingPrevious": 0,
+        "retiredStalls": []
+      },
+      "systemMedia": {
+        "supported": true,
+        "active": true,
+        "failed": false,
+        "seekPending": false
+      },
+      "visualization": {
+        "active": false,
+        "failed": false,
+        "frames": 9653,
+        "lastPosition": 23.133333333333333,
+        "maxWorkMs": 3.5,
+        "averageWorkMs": 0.19208536569928675,
+        "visualRate": 48000,
+        "visualChannels": 2,
+        "packetFrames": 400,
+        "packetBytes": 1600,
+        "maxPacketsPerTick": 6,
+        "resets": 4,
+        "skippedFrames": 0,
+        "affectsAudioOutput": false,
+        "renderClock": "output",
+        "renderClockHooks": [
+          "_AERenderMV",
+          "_AEWebSetPlaybackPosition"
+        ]
+      }
+    },
+    "nativeFileReuse": {
+      "contentUnchanged": true,
+      "sizeUnchanged": true,
+      "mtimeUnchanged": false,
+      "size": 51532448,
+      "note": "native may touch cache metadata; this does not prove zero network requests"
+    },
+    "newPermanentPluginCache": false,
+    "allProcessNetworkAudited": false,
+    "wholeUserCacheClearedThisTurn": false
+  },
+  "installedOnlinePair": {
+    "state": {
+      "id": "2670863152",
+      "phase": "owned",
+      "ownsPlayback": true,
+      "playing": true,
+      "position": 22.003854875283466,
+      "resourceOrigin": "native-source",
+      "nativeOutputGated": true,
+      "nativeCacheSource": {
+        "batches": 0,
+        "reads": 136,
+        "hits": 137,
+        "failures": 0,
+        "queued": 0,
+        "activePriority": null,
+        "generation": 3,
+        "closed": false,
+        "pendingClears": 0,
+        "fault": null
+      },
+      "nativeCacheFill": {
+        "filling": false,
+        "fillId": null,
+        "pendingPrevious": 0,
+        "retiredStalls": []
+      },
+      "systemMedia": {
+        "supported": true,
+        "active": true,
+        "failed": false,
+        "seekPending": false
+      },
+      "visualization": {
+        "active": true,
+        "failed": false,
+        "frames": 9508,
+        "lastPosition": 21.916666666666668,
+        "maxWorkMs": 1.799999713897705,
+        "averageWorkMs": 0.19171224570244264,
+        "visualRate": 48000,
+        "visualChannels": 2,
+        "packetFrames": 400,
+        "packetBytes": 1600,
+        "maxPacketsPerTick": 6,
+        "resets": 3,
+        "skippedFrames": 0,
+        "affectsAudioOutput": false,
+        "renderClock": "output",
+        "renderClockHooks": [
+          "_AERenderMV",
+          "_AEWebSetPlaybackPosition"
+        ]
+      }
+    },
+    "trace": [
+      {
+        "at": 148553,
+        "event": "transition",
+        "from": "2670863319",
+        "to": "2670863152",
+        "scheduledGapFrames": 0
+      },
+      {
+        "at": 148714,
+        "event": "claimed",
+        "id": "2670863152",
+        "position": 0.15968253968256363,
+        "claimDelayMs": 160.19999980926514
+      }
+    ],
+    "newAudioCapture": false
+  },
+  "finalState": {
+    "version": "0.3.3",
+    "id": "22764863",
+    "playing": false,
+    "position": 1.911451247165533,
+    "enabled": true,
+    "queueLength": 374,
+    "nativeCacheFill": {
+      "filling": false,
+      "fillId": null,
+      "pendingPrevious": 0,
+      "retiredStalls": []
+    },
+    "requestedLevel": "hires",
+    "actualLevel": "lossless",
+    "systemMedia": {
+      "supported": true,
+      "active": false,
+      "failed": false,
+      "seekPending": false
+    },
+    "resourcePlayingQuality": 1999,
+    "qualityPreference": 1999
+  },
+  "limits": [
+    "Mac native import UI not verified",
+    "system progress UI rollback remains",
+    "native SDK default post-Load Seek race remains",
+    "mixed sample rates rebuild output",
+    "local metadata cannot prove content unchanged when size/mtime preserved",
+    "encrypted/CUE and unknown formats remain native",
+    "background fill is bounded and may not complete before exit",
+    "Windows 0.4.6 new candidate not installed or rechecked on Windows"
+  ],
+  "privateArtifactsCommitted": false,
+  "taskCreatedLocalAudioCopiesRemoved": true
+}
