@@ -9,34 +9,20 @@
   "nativeCacheBatchesObserved": 0,
   "status": "candidate installed, enabled, paused; not production release",
   "latestInstallation": {
-    "implementation": "95e57ff",
-    "version": "0.4.9",
+    "implementation": "8685675",
+    "version": "0.4.10",
     "nativeSourceMode": true,
-    "installedSha256": "2DD8A69927A688E94D28B4BB56B836EE2B31E2BB1A8C951DFD1CA5C1C2287539",
+    "installedSha256": "D2F2DA921AEED8BD2CA17EC497788363C8079AE7605CF47E4FB929972A94D998",
     "runtimeMatchesInstalled": true,
-    "diskCacheLoad": {
-      "resourceMs": 655,
-      "bufferMs": 65,
-      "contextMs": 192,
-      "gateMs": 42,
-      "loadToEstimatedOutputMs": 1080
-    },
-    "warmManualNext": {
-      "stopToLoadMs": 344,
-      "loadToEstimatedOutputMs": 108
-    },
-    "warmManualPrevious": {
-      "stopToLoadMs": 163,
-      "loadToEstimatedOutputMs": 117
-    },
+    "diskCacheLoadToEstimatedOutputMs": 1096,
     "tailSeek": {
       "targetSeconds": 227.128,
-      "readyMs": 604,
+      "readyMs": 305,
       "scheduledGapFrames": 0,
-      "claimDelayMs": 421.9
+      "claimDelayMs": 741
     },
-    "finalState": "Paused; close-to-tray retained; screenshot session released",
-    "scope": "Installed Windows UI/log smoke check. Output timestamps are estimates, not recorded sound or an A/B against native. No Mac code change or new Mac runtime check."
+    "finalState": "Paused; original close-to-tray setting verified; UI capture released; 0.4.9 backed up",
+    "scope": "Installed Windows UI and log smoke check on the usual FLAC pair. No new audio capture or installed mixed-spec matrix. Existing mixed-spec checks cover isolated prepare and schedule logic."
   },
   "previousInstallation": {
     "implementation": "687e1b0",
@@ -49,6 +35,36 @@
     "finalState": "enabled and paused, close-to-tray restored"
   },
   "installationHistory": [
+    {
+      "implementation": "95e57ff",
+      "version": "0.4.9",
+      "nativeSourceMode": true,
+      "installedSha256": "2DD8A69927A688E94D28B4BB56B836EE2B31E2BB1A8C951DFD1CA5C1C2287539",
+      "runtimeMatchesInstalled": true,
+      "diskCacheLoad": {
+        "resourceMs": 655,
+        "bufferMs": 65,
+        "contextMs": 192,
+        "gateMs": 42,
+        "loadToEstimatedOutputMs": 1080
+      },
+      "warmManualNext": {
+        "stopToLoadMs": 344,
+        "loadToEstimatedOutputMs": 108
+      },
+      "warmManualPrevious": {
+        "stopToLoadMs": 163,
+        "loadToEstimatedOutputMs": 117
+      },
+      "tailSeek": {
+        "targetSeconds": 227.128,
+        "readyMs": 604,
+        "scheduledGapFrames": 0,
+        "claimDelayMs": 421.9
+      },
+      "finalState": "Paused; close-to-tray retained; screenshot session released",
+      "scope": "Installed Windows UI/log smoke check. Output timestamps are estimates, not recorded sound or an A/B against native. No Mac code change or new Mac runtime check."
+    },
     {
       "implementation": "aae1d55",
       "installedSha256": "6CCE4B28B7A7701A2EB3B4F39646CC372A8B70F74447FBCA98DE524F30456A3A",
