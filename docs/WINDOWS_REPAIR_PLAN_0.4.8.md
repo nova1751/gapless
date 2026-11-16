@@ -1,5 +1,7 @@
 # Windows 0.4.8 修复与验收方案
 
+**0.4.10 更新：** 0.4.9 已安装并有起播/前后切歌/曲尾 Seek 跨曲 UI/日志记录。新源码修正混合规格预取门槛；同率不同位深或声道不再丢弃候选，异率保留预取但不在旧时钟排程。0.4.10 尚未安装，默认 ZIP 产物改为 0.4.10。[最新两端及音质复核](PLATFORM_AUDIO_REVIEW_0.3.7_0.4.10.md)。复验补上同率 16→24-bit、单/双声道，以及 44.1→48 kHz：保持各首源规格，前两类及时准备时连续预约，异率不改旧曲/不降率，下一次 Load 重建输出并复用预取。设备声道映射与最终输出需单独记录，隔离排程检查不代替 Windows 音频回录。
+
 **0.4.9 更新：** 第 2 项最短清理宽限、第 3 项真实 Seek 故障按目标回原生已纳入源码；仅有实际函数隔离验证，仍须 Windows 实机复验。另补取数抢占重试、无效索引候选及补齐前缓冲复核，见 [0.4.9 缓存/Seek 检查与复验](CACHE_SEEK_AUDIT_0.3.7_0.4.9.md)。下面两项描述的是 0.4.8 的原缺陷。第 1 项分段计时也已接入 Windows，见下文。第 4 项保留宿主现有控制，SMTC 未验证支持的时间线/Seek 不由插件发布。
 
 2026-11-16。对应 Mac 0.3.6。本轮不操作 Windows 机器，也不把 Mac 的播放结果写成 Windows 已验收。目标是完善既有实现：网易云负责授权、音源、原生持久缓存与队列，Web Audio 用同一时钟连续输出，插件只保留有界工作缓冲。[两端检查及 Mac 实测](CORE_PLAYBACK_AUDIT_0.3.6_0.4.8.md)。
@@ -32,7 +34,7 @@
 python windows/package.py --client "C:\Program Files\NetEase\CloudMusic\package\orpheus.ntpk"
 ```
 
-默认产物 `dist/gapless-player-windows-0.4.9.plugin`；保持默认原生数据源，不使用旧 `--web-source` 替代。仅启用一个 slug，重启后核对 manifest、运行文件 hash 和 status 版本/nativeSourceMode。
+默认产物 `dist/gapless-player-windows-0.4.10.plugin`；保持默认原生数据源，不使用旧 `--web-source` 替代。仅启用一个 slug，重启后核对 manifest、运行文件 hash 和 status 版本/nativeSourceMode。
 
 | 日常场景 | 通过条件与证据 |
 |---|---|

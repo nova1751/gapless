@@ -188,8 +188,6 @@ plugin.onLoad(async () => {
       resolve: async () => { throw new Error('native-only-source'); }, acceptRate: () => true,
     });
     const preparedPairs = new Map();
-    const sameSpec = (a, b) => !!a && !!b && a.rate === b.rate && a.channels === b.channels
-      && a.codec === b.codec && (a.codec === 'mp3' || (a.bits !== null && a.bits === b.bits));
     function readyForWeb(info, snap) {
       if (!allowsWeb(info, snap)) return false;
       try {
@@ -610,7 +608,10 @@ plugin.onLoad(async () => {
           }
         }
         if (!stillCurrent()) return;
-        if (!temporaryBridge && !sameSpec(c.entry.spec, candidate.entry.spec)) throw new Error('native-only-sample-spec');
+        // Each entry has already passed its own decode/spec validation. Keep
+        // different-rate candidates warm for the next Load; schedule() only
+        // joins a matching output rate. Source bit depth/channels need not match
+        // the preceding file after each has been decoded faithfully to PCM.
         if ((firstRef.duration > 0 && Math.abs(c.entry.duration - firstRef.duration) > 0.15)
           || (nextRef.duration > 0 && Math.abs(candidate.entry.duration - nextRef.duration) > 0.15)) throw new Error('native-only-duration');
         if (temporaryBridge && c.entry.spec.rate !== candidate.entry.spec.rate) throw new Error('native-only-sample-rate');

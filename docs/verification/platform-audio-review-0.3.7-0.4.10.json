@@ -1,0 +1,185 @@
+{
+  "date": "2026-11-16",
+  "pulledMain": "c71294a",
+  "macInstalled": "0.3.7",
+  "windowsInstalledRecord": {
+    "implementation": "95e57ff",
+    "version": "0.4.9",
+    "nativeSourceMode": true,
+    "installedSha256": "2DD8A69927A688E94D28B4BB56B836EE2B31E2BB1A8C951DFD1CA5C1C2287539",
+    "runtimeMatchesInstalled": true,
+    "diskCacheLoad": {
+      "resourceMs": 655,
+      "bufferMs": 65,
+      "contextMs": 192,
+      "gateMs": 42,
+      "loadToEstimatedOutputMs": 1080
+    },
+    "warmManualNext": {
+      "stopToLoadMs": 344,
+      "loadToEstimatedOutputMs": 108
+    },
+    "warmManualPrevious": {
+      "stopToLoadMs": 163,
+      "loadToEstimatedOutputMs": 117
+    },
+    "tailSeek": {
+      "targetSeconds": 227.128,
+      "readyMs": 604,
+      "scheduledGapFrames": 0,
+      "claimDelayMs": 421.9
+    },
+    "finalState": "Paused; close-to-tray retained; screenshot session released",
+    "scope": "Installed Windows UI/log smoke check. Output timestamps are estimates, not recorded sound or an A/B against native. No Mac code change or new Mac runtime check."
+  },
+  "windowsNewSource": "0.4.10",
+  "windowsNewSourceInstalled": false,
+  "newFullPCM": {
+    "commit": "c71294a",
+    "file": "same complete native cached FLAC, read-only",
+    "bits": 16,
+    "rate": 44100,
+    "channels": 2,
+    "frames": 10238980,
+    "samples": 20477960,
+    "floatMismatches": 0,
+    "maxAbsoluteDifference": 0,
+    "embeddedPCMMD5Matched": true,
+    "reference": "Apple AVAudioFile at source rate",
+    "decoder": "repository pinned FLACDecoder + current normalizeFlacPCM",
+    "scope": "Shared Mac/Windows decoder isolated in Node; not current NCM native engine or Windows device output"
+  },
+  "macHostIndexedAndOffline": {
+    "hostVersion": "0.3.7",
+    "indexed": true,
+    "bounded": true,
+    "results": [
+      {
+        "target": 0,
+        "samples": 88200,
+        "indexedPCMReferenceMismatches": 0,
+        "offline": [
+          {
+            "gain": 1,
+            "mismatches": 0,
+            "maxAbsoluteDifference": 0
+          },
+          {
+            "gain": 0.5,
+            "mismatches": 0,
+            "maxAbsoluteDifference": 0
+          },
+          {
+            "gain": 0.73,
+            "mismatches": 0,
+            "maxAbsoluteDifference": 0
+          }
+        ]
+      },
+      {
+        "target": 100,
+        "samples": 88200,
+        "indexedPCMReferenceMismatches": 0,
+        "offline": [
+          {
+            "gain": 1,
+            "mismatches": 0,
+            "maxAbsoluteDifference": 0
+          },
+          {
+            "gain": 0.5,
+            "mismatches": 0,
+            "maxAbsoluteDifference": 0
+          },
+          {
+            "gain": 0.73,
+            "mismatches": 0,
+            "maxAbsoluteDifference": 0
+          }
+        ]
+      },
+      {
+        "target": 230,
+        "samples": 88200,
+        "indexedPCMReferenceMismatches": 0,
+        "offline": [
+          {
+            "gain": 1,
+            "mismatches": 0,
+            "maxAbsoluteDifference": 0
+          },
+          {
+            "gain": 0.5,
+            "mismatches": 0,
+            "maxAbsoluteDifference": 0
+          },
+          {
+            "gain": 0.73,
+            "mismatches": 0,
+            "maxAbsoluteDifference": 0
+          }
+        ]
+      }
+    ],
+    "pcmBytes": 3588128,
+    "pcmLimit": 33554432,
+    "audibleNodesCreated": false,
+    "before": {
+      "id": "2670863319",
+      "position": 229.47745124716525,
+      "playing": false,
+      "activeNodes": 0
+    },
+    "after": {
+      "id": "2670863319",
+      "position": 229.47745124716525,
+      "playing": false,
+      "activeNodes": 0
+    }
+  },
+  "device": {
+    "channels": 2,
+    "deviceNominalRate": 48000,
+    "frames": 10238980,
+    "rate": 44100,
+    "reference": "AVAudioFile at source sample rate; not NCM native engine output"
+  },
+  "sourceCacheContentUnchanged": true,
+  "newWindowsPrepareIsolation": {
+    "sameRateDifferentBits": {
+      "oldCandidate": false,
+      "newCandidate": true,
+      "newScheduled": true
+    },
+    "sameRateDifferentChannels": {
+      "oldCandidate": false,
+      "newCandidate": true,
+      "newScheduled": true
+    },
+    "differentRate": {
+      "oldCandidate": false,
+      "newCandidate": true,
+      "newScheduled": false
+    },
+    "invalidDecode": {
+      "oldCandidate": false,
+      "newCandidate": false
+    }
+  },
+  "sourceHashes": {
+    "shared/audio-resources.js": "70039751fd868aadfd633aa5f8bc9e5c9826c7f423b2bd71078a42a49524304c",
+    "shared/playback-clock.js": "bc1c6fea0a66107254bf9b77246a01ff908dbb0a13dd718ba7933032c5253189",
+    "windows/seek-range.js": "6869a6bc49ec6cecedbd74a4a252224cb50e049c8710a8c20780c79c965f94d7",
+    "windows/pcm-cache.js": "e26979a9db2091b5f40131f22307ae35cb5b58c48128068787cbeec8f9b164c2",
+    "windows/streaming.js": "8df93fa7f26d03b85fa10b17867dcdede640e94f07d1ecf3f940c54bbdf001a0",
+    "vendor/flac-decoder-0.2.11/flac-decoder.min.js": "c7c5e35a1b633f0057e6d4e5f21c6c7fcfdaf521689ac1a51b393a2fe58e6f83"
+  },
+  "limits": [
+    "Apple reference is not original NCM engine output",
+    "Same-rate offline graph does not include CoreAudio/WASAPI/device resampling",
+    "Original native and Web final output waveforms not captured in this turn",
+    "No new Windows physical device check or installation",
+    "Prior 16/24-bit verification remains scoped to tested sources; actual new source is 16-bit 44.1kHz",
+    "No new repository tests, full static checks or application build; temporary validation scripts and music not committed"
+  ]
+}
