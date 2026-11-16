@@ -134,7 +134,7 @@
               entry = { id: job.ref.id, requestKey: this.requestKey(job.ref), key: `${this.requestKey(job.ref)}:${identity}:${spec.rate}`,
                 identity,
                 source, hash, level: source.level, requestedLevel: job.ref.level,
-                spec, buffer, size, duration: spec.duration, origin: input.kind, pins: 0,
+                spec, buffer, size, duration: spec.duration, origin: input.kind, acquisition: input.acquisition, pins: 0,
                 stream: { decodedFrames: 0, done: false, error: null, bounded: !!bounded } };
               entry.stream.seekPoints = seekPoints;
               entry.stream.readRange = input.seekRange || (input.kind === 'network'

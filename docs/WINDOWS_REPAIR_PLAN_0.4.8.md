@@ -1,6 +1,6 @@
 # Windows 0.4.8 修复与验收方案
 
-**0.4.9 更新：** 第 2 项最短清理宽限、第 3 项真实 Seek 故障按目标回原生已纳入源码；仅有实际函数隔离验证，仍须 Windows 实机复验。另补取数抢占重试、无效索引候选及补齐前缓冲复核，见 [0.4.9 缓存/Seek 检查与复验](CACHE_SEEK_AUDIT_0.3.7_0.4.9.md)。下面两项描述的是 0.4.8 的原缺陷。第 1 项分段计时和第 4 项系统控制仍按实际平台能力评估。
+**0.4.9 更新：** 第 2 项最短清理宽限、第 3 项真实 Seek 故障按目标回原生已纳入源码；仅有实际函数隔离验证，仍须 Windows 实机复验。另补取数抢占重试、无效索引候选及补齐前缓冲复核，见 [0.4.9 缓存/Seek 检查与复验](CACHE_SEEK_AUDIT_0.3.7_0.4.9.md)。下面两项描述的是 0.4.8 的原缺陷。第 1 项分段计时也已接入 Windows，见下文。第 4 项保留宿主现有控制，SMTC 未验证支持的时间线/Seek 不由插件发布。
 
 2026-11-16。对应 Mac 0.3.6。本轮不操作 Windows 机器，也不把 Mac 的播放结果写成 Windows 已验收。目标是完善既有实现：网易云负责授权、音源、原生持久缓存与队列，Web Audio 用同一时钟连续输出，插件只保留有界工作缓冲。[两端检查及 Mac 实测](CORE_PLAYBACK_AUDIT_0.3.6_0.4.8.md)。
 
@@ -17,7 +17,7 @@
 
 ## 还需在 Windows 落地的有限改进
 
-1. **分段计时。** 在 loadOwned 记录源解析/缓存命中、目标 PCM、上下文、原生输出门的耗时；跟首次 clock.start 记录 outputWallTime(start)−loadStart。通过 player.js 的健康诊断白名单仅导出必要字段；首次出声后清理计时值，加载中主动暂停不算入性能样本。另记宿主 Stop、Load 收到时间，以单独暴露手动选曲 Stop→Load 等待。不把它算为自然曲间空隙。
+1. **分段计时已接入。** `load-timing` 分别记录源信息校验、资源获取、目标 PCM、上下文和原生输出门的耗时。音源分类区分原生有效缓存、发起了辅助取数请求和本地/旧 Web 输入，另记 `memoryHit`（找到内存条目，仍可能缺目标 PCM）。`first-output-scheduled` 只记本次 Load 后首次排程，暂停或回退会清除样本；输出时间基于设备时间戳估算。宿主 Stop→Load 单列，不包含在自然跨曲或插件装载耗时里。曾发起辅助取数不等于测得网络正文下载，预计出声时间也不等于回录测量。
 2. **清缓存失败仍保留最短等待。** 当前 windows/native-cache.js / settleStoppedWrites 正常路径已有 500 ms 总等待、250 ms 稳定窗口和两秒截止，观察原生 .idx/.info。player.js / cacheClearRequested 对异常直接继续转发：捕获开始时间，失败后补足 500 ms，再按现有流程转交原生清理；继续阻止辅助取数直到真实 onclearcache 或既有超时。无需照搬 Mac 的文件命名，不新增 .info 写入、永久缓存或 flush 伪确认。
 3. **真实 Seek 故障归类。** seekWhenReady 目前 resume 故障可回原生，普通 Seek 失败主要回复失败。若 Windows 实测发现目标位置失败后声音滞留，增加 request.failureKind，区分主动取消/替代/换曲和超时/源错误。仅当前请求的真实故障进入 recover，明确携带 target，初始化 recoverySeeks 时保留目标；后续用户 Seek/暂停优先。取消不回退、不发旧 PlayState，SDK 接受的每个 Seek 只完成一次。先确认宿主原生目标 Seek 能完成再启用此分支。
 4. **系统控制保持平台适配。** 继续沿用已验证的网易云/BetterNCM Windows 媒体键与状态桥。Mac 静音 MediaSession 载体不能直接复制到 Windows：已有宿主 SMTC 曾不提供 timeline/Seek。先实测 play/pause、前后切歌及实际 Seek 能力；没有宿主接口则明确禁用/说明能力，不伪造可拖时间线，不引入第二个竞争状态发布者。

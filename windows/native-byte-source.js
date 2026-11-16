@@ -9,6 +9,7 @@
       const size = Number(source.size ?? source.fileSize);
       if (source.audioFormat !== 'flac' || !Number.isSafeInteger(size) || size < 4)
         throw new Error('native-only-byte-source-format');
+      const acquisition = { nativeRequests: 0 };
       const state = { points: null, rate: null, coverage: null };
       const read = async (start, end, requestSignal) => {
         const controller = new AbortController(), readSignal = controller.signal;
@@ -33,6 +34,7 @@
             const position = state.points
               ? globalThis.GaplessCacheCoverage.seekBefore(gaps[0][0], state.points, state.rate) : 0;
             try {
+              acquisition.nativeRequests++;
               state.coverage = await this.queue.request({ source, position, signal: readSignal,
                 priority: priorityForRead(), budgetMs: 500 });
             } catch (error) {
@@ -51,7 +53,7 @@
         } finally { clearTimeout(timer); requestSignal.removeEventListener('abort', abort); }
       };
       const end = Math.min(size, 32768), head = await read(0, end, signal);
-      return { kind: 'native-source', partial: true,
+      return { kind: 'native-source', partial: true, acquisition,
         response: new Response(head, { status: 206, headers: {
           'content-range': `bytes 0-${end - 1}/${size}`, 'content-length': String(end),
         } }),
