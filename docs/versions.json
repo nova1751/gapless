@@ -15,8 +15,13 @@
     "evidence": "docs/verification/mac-menu-0.3.8.json"
   },
   "windows": {
-    "sourceVersion": "0.4.12",
-    "installationReported": {
+    "sourceVersion": "0.4.13",
+    "installedVersion": "0.4.13",
+    "runtimeVersion": "0.4.13",
+    "packageSha256": "71FD34032F51489DB67BCFE08003900E0875C0A9D818A8AD2DEC3033D5F40086",
+    "runtimeMatchesPackage": true,
+    "evidence": "docs/CURRENT_STATUS.md",
+    "previousInstallationReported": {
       "version": "0.4.12",
       "runtimeFilesChecked": true,
       "evidence": "docs/HISTORY_STATUS_2026-11-17.md",
@@ -24,7 +29,7 @@
       "packageSha256": null,
       "verificationScope": "Upstream installation narrative; Windows not operated in this Mac turn."
     },
-    "lastHashedInstallation": {
+    "lastHashedPlaybackInstallation": {
       "version": "0.4.10",
       "sourceCommit": "8685675",
       "packageSha256": "D2F2DA921AEED8BD2CA17EC497788363C8079AE7605CF47E4FB929972A94D998",
@@ -42,6 +47,6 @@
     "Platform version numbers are independent.",
     "Mac menu uses installed host API data; runtime player version is generated from Mac manifest at packaging.",
     "Historical hashes and audio evidence keep their original versions.",
-    "Windows 0.4.12 package hash was not supplied upstream; no new Windows runtime claim is made."
+    "Windows 0.4.13 runtime verification covers the title bar and plugin menu."
   ]
 }

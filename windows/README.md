@@ -1,8 +1,8 @@
-# Windows 无缝播放 0.4.12
+# Windows 无缝播放 0.4.13
 
-当前 manifest 版本 **0.4.12**，支持网易云 x64 **3.1.43.205627** ＋ BetterNCM **1.3.4**。main `a9cd8b8` 的安装记录报告已安装、核对运行文件，完成右上角入口、管理页、常用 FLAC 起播／曲尾 Seek／自动接续、关闭和重新开启。本轮只读取上游源码与记录，没有再次操作 Windows 实机。
+当前 manifest 版本 **0.4.13**，支持网易云 x64 **3.1.43.205627** ＋ BetterNCM **1.3.4**。插件按钮使用标题栏主题色，鼠标悬浮于设置图标时保持默认色。已安装、重启并实机核对悬浮状态及插件菜单。
 
-最近带完整包哈希的机器安装记录仍是 **0.4.10**：[原安装 JSON](../docs/verification/windows-candidate-install.json)。0.4.12 的包哈希未随上游记录提供，不能把 0.4.10 哈希改写为 0.4.12。[统一版本记录](../docs/versions.json)，[当前状态](../docs/CURRENT_STATUS.md)。
+本轮安装哈希见[统一版本记录](../docs/versions.json)。历史播放验证见 [0.4.10 安装记录](../docs/verification/windows-candidate-install.json)与[当前状态](../docs/CURRENT_STATUS.md)。
 
 ## 插件入口
 
@@ -16,7 +16,7 @@
 python windows/package.py --client "C:\Program Files\NetEase\CloudMusic\package\orpheus.ntpk"
 ```
 
-产物为 `dist/gapless-player-windows-0.4.12.plugin`。必须使用精确客户端归档，不能安装 Mac 包。同 slug 活动目录只保留一个版本；旧包备份到目录之外，重启后核对 manifest、main、startup 及运行诊断版本。这里只做 ZIP 打包，不是应用构建；FLAC 解码库内置，无运行时 CDN 或 CSP 改动。
+产物为 `dist/gapless-player-windows-0.4.13.plugin`。必须使用精确客户端归档，不能安装 Mac 包。同 slug 活动目录只保留一个版本；旧包备份到目录之外，重启后核对 manifest、main、startup 及运行诊断版本。这里只做 ZIP 打包，不是应用构建；FLAC 解码库内置，无运行时 CDN 或 CSP 改动。
 
 默认原生数据源，`--native-source-trial` 为兼容别名；显式 `--web-source` 生成旧路径包，新歌不保证原生持久缓存。无需 LibEAPIRequest 作为本无缝插件依赖；其他插件依赖应按各自说明处理。
 

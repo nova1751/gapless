@@ -4,8 +4,8 @@ function installGaplessToggle(controller, pluginManager) {
   if (document.getElementById(id)) return;
   const style = document.createElement('style');
   style.textContent = `
-    .gp-host-entry { appearance:none; display:inline-flex; align-items:center; justify-content:center; flex:0 0 20px; width:20px; height:22px; padding:0; margin:0; border:0; border-radius:4px; background:transparent; color:inherit; cursor:pointer; -webkit-app-region:no-drag; }
-    .gp-host-entry:hover { background:rgba(128,128,128,.15); }
+    .gp-host-entry { appearance:none; display:inline-flex; align-items:center; justify-content:center; flex:0 0 20px; width:20px; height:22px; padding:0; margin:0; border:0; border-radius:4px; background:transparent; color:var(--colorSidebar3,inherit); cursor:pointer; -webkit-app-region:no-drag; }
+    .gp-host-entry:hover { color:var(--colorSidebar1,inherit); background:rgba(128,128,128,.15); }
     .gp-host-entry:focus-visible, #${id} button:focus-visible { outline:2px solid currentColor; outline-offset:3px; }
     .gp-host-entry svg { width:20px; height:20px; pointer-events:none; }
     #${id} { position:fixed; z-index:10000; width:300px; max-width:calc(100vw - 16px); box-sizing:border-box; padding:8px; border:1px solid var(--gp-border); border-radius:12px; background:var(--gp-bg); color:var(--gp-fg); font-family:inherit; font-size:13px; box-shadow:0 12px 36px #0004; backdrop-filter:blur(28px) saturate(180%); -webkit-app-region:no-drag; overflow:auto; animation:gp-menu-in .16s ease-out; }
@@ -90,9 +90,9 @@ function installGaplessToggle(controller, pluginManager) {
     panel.style.top = `${r.bottom + 8}px`; panel.style.maxHeight = `${Math.max(0, innerHeight - r.bottom - 24)}px`;
   }
   function theme() {
-    const reference = document.querySelector('[aria-label="setting"]');
-    const color = reference ? getComputedStyle(reference).color : getComputedStyle(document.body).color;
-    for (const button of entries.values()) button.style.color = color;
+    if (panel.hidden || !active) return;
+    const hostStyle = getComputedStyle(active.parentElement || document.body);
+    const color = hostStyle.getPropertyValue('--colorSidebar3').trim() || hostStyle.color;
     const rgb = color.match(/[\d.]+/g)?.map(Number) || [255,255,255];
     const dark = rgb[0] * .2126 + rgb[1] * .7152 + rgb[2] * .0722 > 150;
     panel.style.setProperty('--gp-bg', dark ? 'rgba(28,29,33,.96)' : 'rgba(255,255,255,.96)');
