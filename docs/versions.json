@@ -1,6 +1,6 @@
 {
   "date": "2026-11-17",
-  "baseMain": "234ab6d",
+  "baseMain": "590734e",
   "mac": {
     "sourceVersion": "0.3.8",
     "installedVersion": "0.3.8",
@@ -10,10 +10,10 @@
     "runtimeMatchesPackage": true,
     "clientVersion": "3.1.12 (3444)",
     "hostVersion": "0.1.7",
-    "menuVersion": "1.1.0",
-    "menuSha256": "4de15f1fbf71748c40d4505a6aecc876b02a3ea20a203fef5cbabe6c234c3e50",
+    "menuVersion": "1.1.1",
+    "menuSha256": "3538e57db297e8cb1d1c48b2b5b60a54e9a58d65f7bfb6784558fdab8edb55cb",
     "evidence": "docs/verification/mac-menu-0.3.8.json",
-    "menuEvidence": "docs/verification/mac-market-menu-1.1.0.json",
+    "menuEvidence": "docs/verification/mac-menu-click-1.1.1.json",
     "marketPluginVersion": "0.8.0",
     "marketExposed": true
   },
@@ -52,6 +52,6 @@
     "Mac menu uses installed host API data; runtime player version is generated from Mac manifest at packaging.",
     "Historical hashes and audio evidence keep their original versions.",
     "Windows 0.4.13 runtime verification covers the title bar and plugin menu.",
-    "Mac menu 1.1.0 exposes the existing bundled market by explicit choice; Mac audio package remains 0.3.8."
+    "Mac menu 1.1.1 opens the live gapless settings from the market entry and clarifies Mac compatibility; audio package stays 0.3.8."
   ]
 }

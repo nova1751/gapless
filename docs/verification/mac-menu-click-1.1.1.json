@@ -1,0 +1,35 @@
+{
+  "date": "2026-11-17",
+  "baseMain": "590734e",
+  "menuVersion": "1.1.1",
+  "menuSha256": "3538e57db297e8cb1d1c48b2b5b60a54e9a58d65f7bfb6784558fdab8edb55cb",
+  "installedMatchesSource": true,
+  "playerVersion": "0.3.8",
+  "playerPackageSha256": "88113d90ed85ac7538d6a76128a043f6e204d025c4fa9605f34f00ccc23f2abe",
+  "audioSourceChanged": false,
+  "runtime": {
+    "capturedAt": "2026-11-16T18:33:02.940Z",
+    "menuVersion": "1.1.1",
+    "playerVersion": "0.3.8",
+    "playback": {
+      "id": "2670863152",
+      "position": 10.153351473922896,
+      "playing": false,
+      "enabled": true,
+      "phase": "owned",
+      "ownsPlayback": true,
+      "loading": false
+    }
+  },
+  "uiChecks": {
+    "beforeFixClickHadNoEffect": true,
+    "afterFixInstalledGaplessEntryOpensLiveSwitch": true,
+    "compatibilityNoteVisibleInMenu": true,
+    "compatibilityNoteVisibleInMarket": true,
+    "escapeClosesSettingsPopover": true,
+    "marketStillVisible": true,
+    "noOtherPluginDownloadOrInstall": true
+  },
+  "compatibilityText": "市场主要面向 Windows，很多插件在 macOS 不能直接使用，尤其是依赖 DLL／原生接口的插件。请查看兼容说明；下载和安装由你选择。",
+  "scope": "Native UI click and scoped syntax review; keyboard Enter/Space routing and host uninstall exclusion reviewed in code, not executed. Player remains paused at its previous position; no audio-core changes, output capture, plugin install or Windows run."
+}

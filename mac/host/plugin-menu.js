@@ -1,4 +1,4 @@
-/* MIT. gapless-mac-menu: independent BetterNCM-mac title-bar menu, version 1.1.0.
+/* MIT. gapless-mac-menu: independent BetterNCM-mac title-bar menu, version 1.1.1.
  * Uses the host's existing button and authenticated installed-plugin API.
  * Exposes the host market when explicitly enabled; keeps its compatibility policy.
  */
@@ -6,6 +6,7 @@
   'use strict';
   if (window.gaplessMacMenu || typeof BETTERNCM_API_PATH !== 'string') return;
   const id = 'gapless-mac-menu', slug = 'gapless-player-mac';
+  const compatibility = '市场主要面向 Windows，很多插件在 macOS 不能直接使用，尤其是依赖 DLL／原生接口的插件。请查看兼容说明；下载和安装由你选择。';
   const hostFetch = window.fetch.bind(window);
   const api = (route, options = {}) => hostFetch(BETTERNCM_API_PATH + route, {
     ...options, headers: { BETTERNCM_API_KEY, 'Content-Type': 'application/json' },
@@ -42,6 +43,8 @@
       #${id} .gm-confirm button { padding:6px 12px; margin:8px 8px 0 0; border-radius:12px; background:rgba(var(--fg),.08); }
       body.gapless-mac-menu-entry [title="BetterNCM"][role="button"] { display:none !important; }
       .better-ncm-manager .gm-market-note { margin:8px 0 0; max-width:620px; font-size:12px; line-height:1.6; opacity:.72; }
+      .better-ncm-manager .plugin-btn[data-plugin-slug="${slug}"] { cursor:pointer; opacity:1; }
+      .better-ncm-manager .plugin-btn[data-plugin-slug="${slug}"]:focus-visible { outline:2px solid #ec4141; outline-offset:2px; }
     `;
     document.head.append(style);
   }
@@ -128,10 +131,11 @@
     if (!wasOpen) {
       const header = manager.querySelector('.bncm-mgr-header h1')?.parentElement;
       if (header && !header.querySelector('.gm-market-note')) {
-        header.append(node('p', 'gm-market-note', `Mac 宿主 ${data.version} · 标题数字为兼容接口版本。市场插件可能依赖 Windows，请查看 macOS 兼容说明；下载和安装由你选择。`));
+        header.append(node('p', 'gm-market-note', `Mac 宿主 ${data.version} · 标题数字为兼容接口版本。${compatibility}`));
       }
     }
     shortcut.click();
+    decorateSettingsEntry();
     if (wasOpen || manager.classList.contains('ncmm-show')) {
       if (!wasOpen) manager.querySelector('[data-plugin-slug="PluginMarket"]')?.click();
       close(true);
@@ -145,12 +149,12 @@
     const rows = plugins.map(pluginRow);
     for (const { row } of rows) panel.append(row);
     if (!plugins.length) panel.append(node('div', 'gm-note', managing ? '没有已安装的插件' : '尚未安装无缝播放插件'));
-    if (managing) panel.append(node('div', 'gm-note', '市场插件可能依赖 Windows。可浏览并自行选择下载，macOS 兼容性以插件说明为准。'));
+    if (managing) panel.append(node('div', 'gm-note', compatibility));
     panel.append(action(managing ? '返回无缝设置' : '管理已安装插件', () => { managing = !managing; render(); panel.querySelector('button')?.focus(); }));
     if (data.pluginManager) {
       const marketOpen = document.querySelector('section.better-ncm-manager')?.classList.contains('ncmm-show');
       panel.append(action(marketOpen ? '返回网易云' : '插件市场', market));
-      if (!managing && !marketOpen) panel.append(node('div', 'gm-note', '市场插件的 macOS 兼容性需查看各自说明。'));
+      if (!managing && !marketOpen) panel.append(node('div', 'gm-note', compatibility));
     }
     if (managing) panel.append(action('卸载 BetterNCM…', uninstall, 'gm-danger'));
     // Only while visible; no polling, FFT work or audio manipulation in the background.
@@ -184,7 +188,24 @@
       panel.replaceChildren(node('div', 'gm-note', '读取失败，请重试'), action('重新读取', () => { close(); void open(button); }));
     }
   }
+  function decorateSettingsEntry() {
+    const entry = document.querySelector(`section.better-ncm-manager .plugin-btn[data-plugin-slug="${slug}"]`);
+    if (!entry) return;
+    entry.setAttribute('role', 'button'); entry.tabIndex = 0;
+    entry.title = '打开无缝播放开关和状态';
+  }
+  function settingsFromManager(event) {
+    const entry = event.target.closest?.(`section.better-ncm-manager .plugin-btn[data-plugin-slug="${slug}"]`);
+    if (!entry || event.target.closest?.('.plugin-uninstall-btn')) return false;
+    const button = document.querySelector('.bncm-plugins-btn');
+    if (!button) return false;
+    // No separate config page: route this installed entry to the existing live switch.
+    // Leave the host's uninstall control and audio handlers in charge of their actions.
+    event.preventDefault(); event.stopImmediatePropagation(); void open(button); return true;
+  }
   document.addEventListener('click', event => {
+    if (settingsFromManager(event)) return;
+    if (event.target.closest?.('section.better-ncm-manager')) queueMicrotask(decorateSettingsEntry);
     const button = event.target.closest?.('.bncm-plugins-btn');
     if (!button) return;
     event.preventDefault(); event.stopImmediatePropagation(); void open(button);
@@ -193,6 +214,7 @@
     if (panel && !panel.contains(event.target) && !event.target.closest?.('.bncm-plugins-btn')) close();
   }, true);
   document.addEventListener('keydown', event => {
+    if ((event.key === 'Enter' || event.key === ' ') && settingsFromManager(event)) return;
     if (event.key === 'Escape' && panel) { event.preventDefault(); close(true); }
     else if (panel && event.key === 'Tab') {
       const buttons = [...panel.querySelectorAll('button:not(:disabled)')];
@@ -211,5 +233,5 @@
     observer.observe(document.documentElement || document, { childList: true, subtree: true });
     window.addEventListener('pagehide', () => observer.disconnect(), { once: true });
   }
-  window.gaplessMacMenu = Object.freeze({ version: '1.1.0' });
+  window.gaplessMacMenu = Object.freeze({ version: '1.1.1' });
 })();

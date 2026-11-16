@@ -1,6 +1,6 @@
 # 跨平台无缝播放实现原则
 
-源码、安装与实测版本统一见 [当前状态](CURRENT_STATUS.md)及[版本记录](versions.json)。历史矩阵 [Windows 0.4.6／Mac 0.3.3](PLATFORM_ALIGNMENT_0.4.6_0.3.3.md)保留当轮证据，不表示当前版本或完整验收。[最新菜单／市场范围](MAC_PLUGIN_MARKET_1.1.0.md)。
+源码、安装与实测版本统一见 [当前状态](CURRENT_STATUS.md)及[版本记录](versions.json)。历史矩阵 [Windows 0.4.6／Mac 0.3.3](PLATFORM_ALIGNMENT_0.4.6_0.3.3.md)保留当轮证据，不表示当前版本或完整验收。[最新菜单／市场范围](MAC_PLUGIN_MENU_1.1.1.md)。
 
 ## 职责与不变量
 
