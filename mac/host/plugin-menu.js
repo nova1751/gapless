@@ -1,4 +1,4 @@
-/* MIT. gapless-mac-menu: BetterNCM-mac manager integration, version 1.2.0.
+/* MIT. gapless-mac-menu: BetterNCM-mac manager integration, version 1.2.1.
  * Preserve the host sidebar/configuration page and authenticated plugin API.
  * Playback remains controlled by the existing live adapter.
  */
@@ -25,6 +25,9 @@
   const name = p => p.slug === marketSlug ? '插件市场' : p.name;
   let data, selected = slug, saving = false, generation = 0, timer, observer, frame;
   let detail, detailSlug, stateLabel, checkbox, saveError = '';
+  const quickId = 'gapless-mac-quick-menu';
+  let quick, quickControl, quickLabel, quickAnchor, quickTimer, quickGeneration = 0;
+  let quickLoading = false, quickError = '';
   function stopWatching() {
     clearInterval(timer); timer = null; observer?.disconnect(); observer = null;
     cancelAnimationFrame(frame); frame = null;
@@ -47,10 +50,16 @@
       .better-ncm-manager .plugin-btn[data-gm-selected="true"] { background-color:#8882; border-radius:8px; }
       .better-ncm-manager .plugin-btn.selected:not([data-gm-selected="true"]) { background-color:transparent; }
       .better-ncm-manager .gm-plugin-row:focus-visible { outline:2px solid currentColor; outline-offset:-2px; }
+      #${quickId} { width:260px; padding-top:6px; }
+      #${quickId} .bncm-plugins-foot { margin-top:4px; }
+      #${quickId} .gm-manage { display:block; width:100%; padding:9px 8px; border:0; border-radius:8px; background:transparent; color:inherit; font:inherit; text-align:left; cursor:pointer; }
+      #${quickId} .gm-manage:hover { background:rgba(var(--fg),.06); }
+      #${quickId} button:focus-visible { outline:2px solid currentColor; outline-offset:2px; }
     `;
     document.head.append(style);
   }
   function sync() {
+    syncQuick();
     if (!isOpen()) { stopWatching(); return; }
     const p = data?.plugins.find(p => p.slug === selected), s = runtime();
     if (!p) return;
@@ -173,10 +182,70 @@
     if (!isOpen()) button.click();
     void refresh(); return true;
   }
+  function syncQuick() {
+    if (!quick) return;
+    const p = data?.plugins.find(p => p.slug === slug), s = runtime();
+    const busy = !!(saving || s?.savingConfig || s?.phase === 'restoring');
+    const enabled = s ? !!s.enabled : !!p?.enabled;
+    quickControl.disabled = quickLoading || !!quickError || !p || !!p.dev || busy;
+    quickControl.setAttribute('aria-checked', String(enabled));
+    const message = quickError || saveError || (quickLoading ? '正在读取插件…' : busy ? '正在切换…' : p ? `版本 ${p.version || '未知'} · ${enabled ? '已开启' : '已关闭'}` : data ? '未安装无缝播放插件' : '正在读取插件…');
+    if (quickLabel.textContent !== message) quickLabel.textContent = message;
+  }
+  function closeQuick(returnFocus = false) {
+    quickGeneration++; clearInterval(quickTimer); quickTimer = null;
+    quick?.remove(); quick = null;
+    quickAnchor?.setAttribute('aria-expanded', 'false');
+    if (returnFocus) quickAnchor?.focus();
+    quickControl = null; quickLabel = null; quickAnchor = null;
+    quickLoading = false; quickError = '';
+  }
+  async function openQuick(anchor) {
+    closeQuick(); saveError = ''; quickLoading = true; quickAnchor = anchor;
+    anchor.setAttribute('aria-haspopup', 'dialog'); anchor.setAttribute('aria-expanded', 'true');
+    quick = node('div', 'bncm-plugins open'); quick.id = quickId;
+    quick.setAttribute('role', 'dialog'); quick.setAttribute('aria-label', 'BetterNCM');
+    const color = /rgba?\((\d+),\s*(\d+),\s*(\d+)/.exec(getComputedStyle(anchor).color || '');
+    const dark = color ? .2126 * +color[1] + .7152 * +color[2] + .0722 * +color[3] > 150 : matchMedia('(prefers-color-scheme: dark)').matches;
+    quick.classList.toggle('dark', dark);
+    const list = node('div', 'bncm-plugins-list'), row = node('div', 'bncm-plugins-row');
+    const text = node('div', 'bncm-plugins-text');
+    quickLabel = node('div', 'bncm-plugins-sub');
+    text.append(node('div', 'bncm-plugins-name', '无缝播放'), quickLabel);
+    quickControl = node('button', 'bncm-plugins-switch'); quickControl.type = 'button';
+    quickControl.setAttribute('role', 'switch'); quickControl.setAttribute('aria-label', '无缝播放');
+    quickControl.addEventListener('click', event => {
+      // A loaded player handles this exact host switch in its capture listener.
+      if (window.gaplessMac?.disable) return;
+      event.preventDefault();
+      const p = data?.plugins.find(p => p.slug === slug);
+      if (p) void savePlugin(p, quickControl);
+    });
+    row.append(text, quickControl); list.append(row);
+    const foot = node('div', 'bncm-plugins-foot'), manage = node('button', 'gm-manage', '管理插件');
+    manage.type = 'button'; manage.addEventListener('click', () => { closeQuick(); openManager(); });
+    foot.append(manage); quick.append(list, foot); document.body.append(quick);
+    const rect = anchor.getBoundingClientRect();
+    quick.style.left = `${Math.max(8, Math.min(rect.right - 260, innerWidth - 268))}px`;
+    quick.style.top = `${Math.max(8, Math.min(rect.bottom + 8, innerHeight - quick.offsetHeight - 8))}px`;
+    const revision = quickGeneration;
+    syncQuick(); quickTimer = setInterval(syncQuick, 200); manage.focus();
+    try {
+      const response = await api('/internal/plugins'); if (!response.ok) throw new Error('list-failed');
+      const value = await response.json(); if (!Array.isArray(value.plugins)) throw new Error('list-failed');
+      if (revision !== quickGeneration || !quick) return;
+      data = value; quickLoading = false; syncQuick();
+    } catch {
+      if (revision !== quickGeneration || !quick) return;
+      clearInterval(quickTimer); quickTimer = null; quickLoading = false;
+      quickError = '插件读取失败，请重新打开'; syncQuick();
+    }
+  }
   document.addEventListener('click', event => {
-    if (event.target.closest?.('.bncm-plugins-btn') && shortcut() && manager()) {
+    const anchor = event.target.closest?.('.bncm-plugins-btn');
+    if (anchor && shortcut() && manager()) {
       event.preventDefault(); event.stopImmediatePropagation();
-      if (isOpen()) closeManager(); else openManager(); return;
+      if (quick) closeQuick(true); else void openQuick(anchor); return;
     }
     if (!isOpen()) return;
     if (event.target.closest?.('[data-testid="tid_header_back_btn"]')) { event.preventDefault(); event.stopImmediatePropagation(); closeManager(); return; }
@@ -187,11 +256,16 @@
     if (!window.loadedPlugins?.[selected]?.haveConfigElement?.()) { event.preventDefault(); event.stopImmediatePropagation(); renderDetails(); }
     else queueMicrotask(renderDetails);
   }, true);
+  document.addEventListener('pointerdown', event => {
+    if (quick && !quick.contains(event.target) && !quickAnchor?.contains(event.target)) closeQuick();
+  }, true);
   document.addEventListener('keydown', event => {
+    if (event.key === 'Escape' && quick) { event.preventDefault(); event.stopImmediatePropagation(); closeQuick(true); return; }
     if (event.key === 'Escape' && isOpen()) { event.preventDefault(); closeManager(); }
   }, true);
-  window.addEventListener('pagehide', stopWatching);
-  window.gaplessMacMenu = Object.freeze({ version: '1.2.0' });
+  window.addEventListener('resize', () => closeQuick());
+  window.addEventListener('pagehide', () => { closeQuick(); stopWatching(); });
+  window.gaplessMacMenu = Object.freeze({ version: '1.2.1' });
   function setup() {
     if (!document.body || !document.head || !document.querySelector('.bncm-plugins-btn') || !manager()) return false;
     installStyle(); document.body.classList.add('gapless-mac-menu-entry');

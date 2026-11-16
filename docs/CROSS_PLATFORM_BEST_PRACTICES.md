@@ -1,6 +1,6 @@
 # 跨平台无缝播放实现原则
 
-源码、安装与实测版本统一见 [当前状态](CURRENT_STATUS.md)及[版本记录](versions.json)。历史矩阵 [Windows 0.4.6／Mac 0.3.3](PLATFORM_ALIGNMENT_0.4.6_0.3.3.md)保留当轮证据，不表示当前版本或完整验收。[最新菜单／市场范围](MAC_PLUGIN_MANAGER_1.2.0.md)。
+源码、安装与实测版本统一见 [当前状态](CURRENT_STATUS.md)及[版本记录](versions.json)。历史矩阵 [Windows 0.4.6／Mac 0.3.3](PLATFORM_ALIGNMENT_0.4.6_0.3.3.md)保留当轮证据，不表示当前版本或完整验收。[最新菜单／市场范围](MAC_PLUGIN_QUICK_MENU_1.2.1.md)。
 
 ## 职责与不变量
 
@@ -29,7 +29,7 @@
 
 ## UI 与兼容
 
-Mac 右上角直接打开 BetterNCM 管理页，左侧选择插件，右侧显示详情、启停及原有配置，不提供外部快捷开关或独立设置页；复用宿主认证 API、页面、`onConfig` ／`tools.makeCheckbox` 与原有无缝启停事务。市场关闭后管理入口仍保留。兼容说明可见，下载和安装由用户决定。Windows 复用 BetterNCM 管理页及其兼容规则。大部分 Windows 原生插件不能直接迁移 Mac；一个兼容提示不构成运行验收。菜单扩展与播放器独立安装／回退，不增加音频控制链路。
+Mac 右上角快捷菜单上方是「无缝播放」开关，下方「管理插件」进入 BetterNCM 管理页，左侧选择插件，右侧显示详情、启停及原有配置；快捷开关与配置复选框复用宿主认证 API、`onConfig` ／`tools.makeCheckbox` 与原有无缝启停事务，同步保存和运行状态。市场关闭后管理入口仍保留。兼容说明可见，下载和安装由用户决定。Windows 复用 BetterNCM 管理页及其兼容规则。大部分 Windows 原生插件不能直接迁移 Mac；一个兼容提示不构成运行验收。菜单扩展与播放器独立安装／回退，不增加音频控制链路。
 
 ## 验证口径
 

@@ -1,0 +1,74 @@
+{
+  "date": "2026-11-17",
+  "baseMain": "d82634d",
+  "platform": "macOS",
+  "clientVersion": "3.1.12 (3444)",
+  "hostVersion": "0.1.7",
+  "menuVersion": "1.2.1",
+  "sourceVersion": "0.3.9",
+  "installedVersion": "0.3.9",
+  "runtimeVersion": "0.3.9",
+  "checks": {
+    "titlebarQuickMenuWithGaplessAboveManagePlugins": true,
+    "usesExistingHostPopoverAndSwitchStyles": "Native dark UI observed; light color variables reused in source, not separately operated",
+    "manageOpensExistingSidebarAndPluginConfiguration": true,
+    "quickOffReflectedInManagerCheckbox": true,
+    "managerCheckboxOnReflectedInQuickSwitch": true,
+    "quickOff": {
+      "hostEnabled": false,
+      "runtimeEnabled": false,
+      "phase": "native",
+      "ownsPlayback": false,
+      "playing": false,
+      "activeNodes": 0,
+      "savingConfig": false
+    },
+    "disabledReload": {
+      "playerLoaded": false,
+      "quickMenuAvailable": true,
+      "quickSwitchOff": true
+    },
+    "quickSwitchReenablesUnloadedPlugin": {
+      "hostEnabled": true,
+      "runtimeVersion": "0.3.9",
+      "pageReloaded": true,
+      "pausedTrackPreserved": true
+    },
+    "escapeClosesQuickOnlyWhileManagerRemainsOpen": true,
+    "nativeHeaderBackClosesManager": true,
+    "outsidePointerClosesQuickMenu": true,
+    "samePlayerCaptureListenerAndSerialSaveTransaction": "Source review plus host/runtime values observed",
+    "staleQuickFetchAndPageHideCleanup": "Source review; no fault injection",
+    "macCompatibilityExplanationVisibleInManager": true,
+    "thirdPartyPluginsDownloadedOrInstalled": false,
+    "loadingOrReadFailureKeepsQuickSwitchDisabled": "Source review; manager polling cannot clear the quick-menu loading/error guard"
+  },
+  "hashes": {
+    "menuSha256": "cf966fbefd0b8f2cdf50c8276c9f1bdbe729d33f5d73d7f6ffb6ce1c22329a9f",
+    "installedMenuMatches": true,
+    "packageSha256": "10451c1392338df5324a9682cb2fc0f64c8d80c3e915bae192621530826bca31",
+    "installedPackageMatches": true,
+    "runtimeFilesMatchPackage": [
+      "manifest.json",
+      "player.js",
+      "startup_script.js"
+    ],
+    "playerPackageUnchanged": true
+  },
+  "final": {
+    "gaplessEnabled": true,
+    "marketEnabled": true,
+    "lyricsWindowEnabled": false,
+    "trackTitle": "Open Hearts",
+    "playing": false,
+    "ownsPlayback": false,
+    "activeNodes": 0,
+    "quickMenuVisible": true
+  },
+  "scope": [
+    "Mac native UI and authenticated host/runtime diagnostics",
+    "Only menu prelude changed; audio algorithm and player package unchanged",
+    "No new audio recordings, playback fidelity claims, arbitrary plugin installation, test cases, full static checks or application build",
+    "Windows 0.4.14 unchanged; no Windows device operated"
+  ]
+}
