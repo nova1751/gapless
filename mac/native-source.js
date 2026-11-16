@@ -9,6 +9,7 @@
       this.active = null; this.retired = new Set(); this.serial = 0; this.fault = null;
       this.prefix = Date.now().toString(36);
       this.clearTimers = [];
+      this.recentStops = [];
       this.stats = { batches: 0, reads: 0, hits: 0, failures: 0 };
     }
     observe(name, args) {
@@ -21,9 +22,29 @@
       }, 10000);
       this.clearTimers.push(timer);
       await this.quiesce();
-      // Leave a bounded settling window before native deletion, after Stop's
-      // RPC. This is conservative ordering, not proof of an atomic native flush.
-      await delay(500);
+      // Observe recently written indexes without rewriting native cache. A
+      // stable window is a bounded mitigation, never an atomic flush claim.
+      const sources = this.recentStops.filter(item => performance.now() - item.at < 2000).map(item => item.source);
+      if (!sources.length) { await delay(500); return; }
+      const controller = new AbortController(), started = performance.now();
+      const deadline = setTimeout(() => controller.abort(), 2000);
+      let previous, stableAt = started;
+      try {
+        while (!controller.signal.aborted) {
+          const stamp = await this.cache.indexStamp(sources, controller.signal), now = performance.now();
+          if (stamp !== previous) { previous = stamp; stableAt = now; }
+          if (now - started >= 500 && now - stableAt >= 250) {
+            this.trace('native-cache-settled', { waitMs: Math.round(now - started) }); return;
+          }
+          await delay(50);
+        }
+        this.trace('native-cache-settle-timeout');
+      } catch { this.trace('native-cache-settle-unavailable'); }
+      finally {
+        clearTimeout(deadline);
+        const remaining = 500 - (performance.now() - started);
+        if (remaining > 0) await delay(remaining);
+      }
     }
     finishClear() { const timer = this.clearTimers.shift(); if (timer) clearTimeout(timer); }
     async quiesce() {
@@ -67,7 +88,11 @@
         this.retired.add(job.id);
         if (this.retired.size > 256) this.retired.delete(this.retired.values().next().value);
         try {
-          if (loaded) await this.bridge.raw('audioplayer.stop', [job.id], 1500);
+          if (loaded) {
+            this.recentStops = this.recentStops.filter(item => performance.now() - item.at < 2000);
+            this.recentStops.push({ source: { songId: source.songId, md5: source.md5, level: source.level }, at: performance.now() });
+            await this.bridge.raw('audioplayer.stop', [job.id], 1500);
+          }
         } catch (error) {
           this.fault = 'native-only-cache-stop-failed';
           throw new Error(this.fault);

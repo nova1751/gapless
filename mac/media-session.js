@@ -87,7 +87,7 @@
       } catch (error) {
         this.pendingSeek = null; this.trace('system-media-seek-error', { reason: error.message });
         this.sync(true);
-      } finally { this.seeking = false; }
+      } finally { this.seeking = false; this.sync(true); }
     }
     sync(force = false) {
       if (!this.supported || this.failed) return;
@@ -115,7 +115,7 @@
             });
           } else this.audio.pause();
         }
-        if (!this.pendingSeek && (force || s.revision !== this.revision || this.positionAt === -Infinity
+        if (!this.pendingSeek && !this.seeking && (force || s.revision !== this.revision || this.positionAt === -Infinity
           || (s.playing && performance.now() - this.positionAt >= 1000))) {
           this.media.setPositionState({ duration: s.duration, playbackRate: 1,
             position: Math.max(0, Math.min(s.duration, s.position)) });

@@ -1,4 +1,8 @@
-# Windows 无缝播放 0.4.7 源码候选
+# Windows 无缝播放 0.4.8 源码候选
+
+0.4.8 修复暂停后 PCM 已淘汰时的恢复准备、回退等待中的控制队列及换曲竞态，并隔离下一首输出故障。共享策略与 Mac 0.3.6 对齐；本轮只有增量语法及实际函数的隔离运行，没有 Windows 安装或音频回录。[主要能力检查及限制](../docs/CORE_PLAYBACK_AUDIT_0.3.6_0.4.8.md)。
+
+共享时钟增加用户音量变化的 5 ms 平滑，固定音量曲线、曲间预约和输出门时刻不变。已有上一首缓冲与原生源两秒准备余量继续复用；安装、性能记录及系统控制的后续操作见 [Windows 0.4.8 修复与验收方案](../docs/WINDOWS_REPAIR_PLAN_0.4.8.md)。Mac 的回录/离线渲染证据不代表 Windows 设备输出验收。
 
 共享 FLAC 顺序/Seek 转换已修正为精确的整数 PCM 比例，并增加音频增强设置保护。Mac 上对实际共享管线的逐样本验证见 [保真记录](../docs/AUDIO_FIDELITY_0.3.4.md)，不冒充 Windows 新候选实机复测。0.4.7 改为无缝优先：原生专属处理在无缝输出期间不执行，不再阻断开关；关闭后原生沿用保存设置。[策略及验证边界](../docs/GAPLESS_PRIORITY_0.3.5.md)。
 
@@ -18,7 +22,7 @@
 python windows/package.py --client "C:\Program Files\NetEase\CloudMusic\package\orpheus.ntpk"
 ```
 
-这是 ZIP 打包，不是应用构建。产物 `dist/gapless-player-windows-0.4.6.plugin`。旧包移到插件目录之外，同 slug 仅保留一个启用版本，重启客户端。FLAC 解码库内置，不增加宿主插件、不使用运行时 CDN、不修改 CSP。
+这是 ZIP 打包，不是应用构建。产物 `dist/gapless-player-windows-0.4.8.plugin`。旧包移到插件目录之外，同 slug 仅保留一个启用版本，重启客户端。FLAC 解码库内置，不增加宿主插件、不使用运行时 CDN、不修改 CSP。
 
 默认包已选原生数据源，`--native-source-trial` 仅作为兼容别名；显式 `--web-source` 生成带该后缀的旧路径包，新歌不保证原生持久缓存。诊断 `status()` 标注版本及 `nativeSourceMode`。需实际 Windows 精确客户端归档才能生成上述包。
 

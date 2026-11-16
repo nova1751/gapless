@@ -298,7 +298,7 @@
           this.trace('stream-output-fallback', { reason: error.message, position: this.position(track),
             decodedSeconds: stream.decodedFrames / rate, cursorSeconds: cursor / rate });
           // Player owns restoration and current intent; do not fake an End.
-          this.onState('stream-failed');
+          this.onState('stream-failed', track);
         }
       };
       timer = setInterval(pump, 20); pump();

@@ -8,7 +8,7 @@
       error.cancelled = ['cancelled', 'superseded', 'pause', 'cache-clear', 'stale'].includes(kind);
       return error;
     }
-    ready(entry, target, ahead = 0.5) {
+    ready(entry, target, ahead = entry?.origin === 'native-source' ? 2 : 0.5) {
       if (!entry || entry.stream?.error) return false;
       if (!entry.stream || entry.stream.done) return true;
       const start = Math.floor(target * entry.spec.rate);
@@ -23,11 +23,14 @@
         if (controller?.entry?.stream) controller.entry.stream.priorityTarget = null;
       }
     }
-    async prepare(track, target, valid, { purpose = 'seek', ahead = 0.5 } = {}) {
+    async prepare(track, target, valid, { purpose = 'seek', ahead = track?.entry?.origin === 'native-source' ? 2 : 0.5 } = {}) {
+      // An older file/intent check can finish after a newer preparation starts.
+      // Reject that caller before it can abort the current controller.
+      if (!valid() || !this.resources.enabled) throw StreamControl.failure('stale');
       this.cancel(track, 'superseded');
       const controller = track.streamPreparation = new AbortController();
       const entry = track.entry, signal = controller.signal;
-      controller.purpose = purpose; controller.entry = entry;
+      controller.purpose = purpose; controller.entry = entry; controller.target = target;
       const timer = setTimeout(() => controller.abort(StreamControl.failure('timeout')), 10000);
       const check = () => {
         if (signal.aborted) throw signal.reason;

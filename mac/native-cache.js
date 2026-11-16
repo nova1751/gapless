@@ -42,6 +42,23 @@
       });
       const data = await result.json(); return data.ok ? data.value : null;
     }
+    async indexStamp(sources, signal) {
+      const paths = new Set();
+      for (const source of sources) {
+        const id = String(source.songId), hash = String(source.md5 || '').toLowerCase(), bitrate = BITRATE[source.level];
+        if (!/^\d+$/.test(id) || !/^[a-f0-9]{32}$/.test(hash) || !bitrate) continue;
+        for (const root of this.roots()) for (const suffix of ['!', ''])
+          paths.add(`${root}/${id}-_-_${bitrate}-_-_${hash}.idx${suffix}`);
+      }
+      if (!paths.size) throw new Error('native-only-cache-index-path');
+      const values = [];
+      for (const path of paths) {
+        if (signal.aborted) throw new Error('cancelled');
+        const stat = await this.nativeFs('getProperties', [path], signal);
+        values.push([path, stat?.type || null, stat?.size ?? null, stat?.lastModified ?? null]);
+      }
+      return JSON.stringify(values);
+    }
     async snapshotSource(source, signal) {
       const generation = this.generation, id = String(source.songId), size = Number(source.size ?? source.fileSize);
       const hash = String(source.md5 || '').toLowerCase(), bitrate = BITRATE[source.level];

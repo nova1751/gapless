@@ -199,8 +199,14 @@ plugin.onLoad(async () => {
     }
     const clock = new globalThis.GaplessStreamingClock({
       resources, trace,
-      onState: state => {
+      onState: (state, failedTrack) => {
         if (state === 'running') return;
+        if (failedTrack && failedTrack !== current) {
+          if (selected?.track === failedTrack) cancelCandidate();
+          if (claim?.track === failedTrack) clearClaim();
+          trace('candidate-output-cancelled', { reason: state });
+          return;
+        }
         clearClaim();
         if (current?.owns && !current.loading) void recover(current, 'output-' + state);
       },
@@ -331,14 +337,15 @@ plugin.onLoad(async () => {
       const request = c?.pendingStreamSeek;
       if (!request || request.finished) return;
       request.finished = true; c.pendingStreamSeek = null;
-      completeSeek(c, request.callback, request.mark, request.target, true, request.revision);
+      if (!request.resume) completeSeek(c, request.callback, request.mark, request.target, true, request.revision);
     }
-    async function seekWhenReady(c, callback, mark, target) {
+    async function seekWhenReady(c, callback, mark, target, resume = false) {
       cancelPendingSeek(c);
-      const request = c.pendingStreamSeek = { callback, mark, target, revision, finished: false };
+      const request = c.pendingStreamSeek = { callback, mark, target, revision, finished: false, resume };
       const began = performance.now(), entry = c.entry;
       startSeekRange(c, target);
-      const valid = () => current === c && c.owns && enabled() && c.pendingStreamSeek === request;
+      const valid = () => current === c && c.owns && enabled() && !restoring
+        && c.entry === entry && c.pendingStreamSeek === request;
       const required = Math.min(entry.buffer.length, Math.ceil((target + seekBufferSeconds(entry)) * entry.spec.rate));
       trace('stream-seek-wait', { id: source.trackId(c.info), target });
       try {
@@ -349,21 +356,25 @@ plugin.onLoad(async () => {
           await new Promise(resolve => setTimeout(resolve, 30));
         }
         if (!valid() || entry.stream.error) throw new Error('cancelled');
-        c.pendingStreamSeek = null;
         if (c.playing) clock.seek(c, target);
         else {
           clock.stop(c); c.offset = target;
           if (c.intent === true) clock.start(c, clock.ctx.currentTime + 0.01, target);
         }
+        c.pendingStreamSeek = null;
         request.finished = true;
-        completeSeek(c, callback, mark, target, false, request.revision);
+        if (resume) {
+          if (c.playing && c.intent === true) { stateEvent(c, mark, 1); progress(c, true); }
+        } else completeSeek(c, callback, mark, target, false, request.revision);
         trace('stream-seek-ready', { id: source.trackId(c.info), target, waitMs: Math.round(performance.now() - began) });
       } catch (error) {
         if (!request.finished) {
+          const recoverResume = resume && valid() && c.intent === true;
           request.finished = true;
           if (c.pendingStreamSeek === request) c.pendingStreamSeek = null;
-          completeSeek(c, callback, mark, target, true, request.revision);
+          if (!resume) completeSeek(c, callback, mark, target, true, request.revision);
           trace('stream-seek-cancel', { reason: error.message });
+          if (recoverResume) void recover(c, 'resume-buffer-unavailable', true);
         }
       }
     }
@@ -782,7 +793,8 @@ plugin.onLoad(async () => {
       await tx.promise;
     }
 
-    async function recover(c, reason) {
+    async function recover(c, reason, playIntent) {
+      if (current !== c) return;
       clearRetiredFills();
       cacheQueue?.clear();
       cancelPendingSeek(c);
@@ -791,21 +803,25 @@ plugin.onLoad(async () => {
       if (handback?.c === c) {
         const pending = handback; pending.cancelled = true; revision++;
         await pending.promise;
-        if (current === c && c.owns) return recover(c, reason);
+        if (current === c && c.owns) return recover(c, reason, playIntent);
         return;
       }
       if (restoring || current !== c || !c.owns) return;
       restoring = c;
-      if (c.nativePreparing) { try { await c.nativePreparing; } catch {} }
-      if (current !== c) { if (restoring === c) restoring = null; return; }
-      await releaseNativeGate().catch(bridge.report);
-      const position = c.playing && clock.ctx?.state === 'running'
-        ? clock.outputPosition(c) : currentPosition(c);
-      const desired = c.playing;
-      const heardBefore = currentPlayed(c);
-      const audioHeardBefore = c.nativeAudioHeard + clock.heard(c);
+      const valid = () => current === c && restoring === c;
+      // Controls may arrive during native preparation or gain restoration.
+      // Install their queues before the first await and never overwrite them.
       c.recoverySeeks = [];
       c.queuedTransport = null;
+      if (c.nativePreparing) { try { await c.nativePreparing; } catch {} }
+      if (!valid()) { if (restoring === c) restoring = null; return; }
+      await releaseNativeGate().catch(bridge.report);
+      if (!valid()) { if (restoring === c) restoring = null; return; }
+      const position = c.playing && clock.ctx?.state === 'running'
+        ? clock.outputPosition(c) : currentPosition(c);
+      const desired = playIntent ?? c.playing;
+      const heardBefore = currentPlayed(c);
+      const audioHeardBefore = c.nativeAudioHeard + clock.heard(c);
       cancelCandidate();
       visual.stop();
       clock.stop(c);
@@ -816,7 +832,6 @@ plugin.onLoad(async () => {
       c.owns = false;
       c.blocked = true;
       trace('restore', { reason, position, desired });
-      const valid = () => current === c && restoring === c;
       try {
         if (!c.nativeLoaded) {
           const loaded = await requestEvent('load', [c.id, c.info], 'Load',
@@ -1262,6 +1277,15 @@ plugin.onLoad(async () => {
       if (play || pause || seek) {
         const mark = args[1];
         if (play) {
+          if (!c.playing && !c.pendingStreamSeek && c.entry?.stream && !c.entry.stream.done
+            && globalThis.GaplessSeekRange.until(c.entry, Math.floor(c.offset * c.entry.spec.rate))
+              < Math.min(c.entry.buffer.length, Math.ceil((c.offset + seekBufferSeconds(c.entry)) * c.entry.spec.rate))) {
+            // A paused position may have been evicted from bounded PCM. Refill
+            // before opening its output, while retaining subsequent pause/seek.
+            reply(callback);
+            void seekWhenReady(c, null, mark, c.offset, true);
+            return true;
+          }
           if (!c.playing && !c.pendingStreamSeek) {
             progress(c, true); clock.start(c, clock.ctx.currentTime);
             trace('web-start', { id: source.trackId(c.info), offset: c.offset });

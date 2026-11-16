@@ -90,6 +90,29 @@ plugin.onLoad(() => {
   const rows = () => state()?.playingList?.curPlayingList || [];
   const ref = c => c && ({ id: c.id, level: c.requestedLevel, account: c.account, duration: c.duration, row: c.row });
   const nativePosition = () => Math.max(0, S.nativePosition + (S.nativePlaying ? (performance.now() - S.nativeAt) / 1000 : 0));
+  let recent = null;
+  function clearRecent() {
+    if (recent) resources.unpin(recent.entry);
+    recent = null;
+  }
+  function rememberRecent(c) {
+    const entry = c?.entry;
+    if (!entry || entry.stream?.error || entry.size > 128 * 1024 * 1024
+      || entry.stream && !entry.stream.done && !entry.stream.indexed) return;
+    clearRecent(); recent = { entry, ref: ref(c) }; resources.pin(entry);
+  }
+  async function obtain(request, info) {
+    const owner = S.current, epoch = S.epoch;
+    try { return await resources.obtain(request, info); }
+    catch (error) {
+      if (error.message !== 'native-only-memory' || !recent) throw error;
+      if (S.current !== owner || S.epoch !== epoch) throw new Error('cancelled');
+      clearRecent(); resources.resetFailures();
+      // Drop the unpinned old entry before retrying inside the same budget.
+      resources.retain([request, ref(S.current), nextTrack(), ref(S.scheduled)]);
+      return resources.obtain(request, info);
+    }
+  }
   const nativeCache = globalThis.GaplessNativeCache && new globalThis.GaplessNativeCache({ trace,
     storage: () => webpackRequire()(4).Storage, settings: () => state()?.setting,
     crypto: () => {
@@ -156,7 +179,14 @@ plugin.onLoad(() => {
   } });
   const streamControl = new globalThis.GaplessMacStreamControl(resources);
   const clock = new globalThis.GaplessStreamingClock({ resources, trace,
-    onState: value => { if (S.current?.owns && S.current.entry && !S.current.loading && value !== 'running') void restoreNative(`context-${value}`); },
+    onState: (value, failedTrack) => {
+      if (failedTrack && failedTrack !== S.current) {
+        if (S.scheduled === failedTrack) cancelScheduled();
+        trace('candidate-output-cancelled', { reason: value });
+        return;
+      }
+      if (S.current?.owns && S.current.entry && !S.current.loading && value !== 'running') void restoreNative(`context-${value}`);
+    },
     onEnded: c => { if (S.current === c && c.owns) boundary(c); } });
   const fillSnapshot = () => ({ owner: S.current, entry: S.current?.entry, account: S.account,
     quality: S.current?.requestedLevel, position: S.current?.owns ? clock.position(S.current) : 0 });
@@ -172,7 +202,7 @@ plugin.onLoad(() => {
         && (c.duration - p > 15 || !!S.scheduled?.entry));
     } });
   bridge.cacheClearRequested = async () => {
-    nativeFill.clear(); localSource.clear();
+    clearRecent(); nativeFill.clear(); localSource.clear();
     streamControl.cancel(S.current, 'cache-clear'); cancelScheduled();
     const active = S.current?.owns ? S.current.entry : null;
     resources.retain(active ? [ref(S.current)] : []);
@@ -330,6 +360,7 @@ plugin.onLoad(() => {
     const candidate = S.scheduled;
     c.endSent = true;
     if (candidate && candidate.clockGeneration === clock.generation && candidate.queueVersion === S.queueVersion) {
+      rememberRecent(c);
       nativeFill.remember(c.entry, c.account, c.requestedLevel);
       clock.stop(c); S.scheduled = null; S.current = candidate; S.claim = true;
       S.phase = 'claiming'; candidate.claimAt = performance.now();
@@ -368,6 +399,7 @@ plugin.onLoad(() => {
     const selection = JSON.stringify(s.setting?.quantity || null);
     const selectionChanged = S.selection && selection !== S.selection;
     S.selection = selection;
+    if (recent && (recent.ref.account !== account || recent.ref.level !== c?.requestedLevel || selectionChanged)) clearRecent();
     if (c?.owns && (selectionChanged || !allowed(c.info) || c.account !== account)) {
       nativeFill.clear();
       if (selectionChanged) {
@@ -461,13 +493,13 @@ plugin.onLoad(() => {
     const c = S.current;
     const next = c && !c.blocked
       && ['native', 'owned', 'warming', 'pausing', 'loading'].includes(S.phase) ? nextTrack() : null;
-    resources.retain([S.current?.blocked && !S.current.owns ? null : ref(S.current), next, ref(S.scheduled)]);
+    resources.retain([S.current?.blocked && !S.current.owns ? null : ref(S.current), next, ref(S.scheduled), recent?.ref]);
     // Prepare a trusted next source while paused too. Scheduling/output remain
     // gated by playback intent; cancellation still checks epoch and queue.
     if (!S.enabled || !c?.entry || !next || ['restoring', 'warming', 'pausing'].includes(S.phase)
       || resources.lookup(next) || resources.jobs.has(resources.requestKey(next))) return;
     const epoch = S.epoch, queueVersion = S.queueVersion;
-    resources.obtain(next).then(() => {
+    obtain(next).then(() => {
       if (S.epoch === epoch && S.queueVersion === queueVersion) { void takeover(); scheduleNext(); }
     }).catch(error => {
       const key = resources.requestKey(next), failure = resources.failures.get(key);
@@ -490,10 +522,19 @@ plugin.onLoad(() => {
       if (target === (c.offset || 0)) return;
     }
   }
+  function recordLoadOutput(c) {
+    if (!Number.isFinite(c.loadAt)) return;
+    const loadAt = c.loadAt; c.loadAt = null;
+    try {
+      trace('web-start', { id: c.id,
+        loadToScheduledOutputMs: Math.round(clock.outputWallTime(c.start) - loadAt) });
+    } catch { trace('web-start-timing-unavailable', { id: c.id }); }
+  }
   async function loadOwned(msg, c) {
     if (c.webLoadRunning) return;
     c.webLoadRunning = true;
-    const epoch = S.epoch, loadAt = performance.now();
+    const epoch = S.epoch, loadAt = performance.now(), timings = {};
+    c.loadAt = c.pauseAfterClaimRevision != null || msg.resumeExisting && !c.playing ? null : loadAt;
     try {
       if (msg.resumeExisting) {
         const [count] = await bridge.raw('audioplayer.getPlayedTime', [{ playId: c.id }]);
@@ -504,38 +545,47 @@ plugin.onLoad(() => {
       // it. Reacquire through the resource owner so budget/pins stay accounted.
       const normalized = await normalizeSource(c.info, c.row);
       if (!validRecovery(c, epoch)) throw new Error('cancelled');
-      c.entry = await resources.obtain(ref(c), normalized);
+      const memoryHit = !!resources.lookup(ref(c), normalized);
+      let stageAt = performance.now();
+      c.entry = await obtain(ref(c), normalized);
+      timings.sourceMs = Math.round(performance.now() - stageAt);
       if (c.entry.source.localKey) await localSource.validate(c.entry.source);
       else if (!c.entry.hash || c.entry.hash !== Resources.fingerprint(c.info) || c.entry.level !== c.info.level)
         throw new Error('native-only-source-identity');
       if (!validRecovery(c, epoch) || !allowed(c.info)) throw new Error('cancelled');
       c.duration = c.entry.duration; c.level = c.entry.level;
+      stageAt = performance.now();
       await prepareLoadPosition(c, epoch);
       if (c.entry.source.localKey) await localSource.validate(c.entry.source);
       if (!validRecovery(c, epoch) || !allowed(c.info)) throw new Error('cancelled');
+      timings.bufferMs = Math.round(performance.now() - stageAt); stageAt = performance.now();
       await clock.open(c.entry);
+      timings.contextMs = Math.round(performance.now() - stageAt); stageAt = performance.now();
       if (!validRecovery(c, epoch) || !allowed(c.info)) throw new Error('cancelled');
       // Direct Web Load/resume also parks the native output. Otherwise an
       // unwrapped native system command could revive the old audio instance.
       if (S.nativeGate?.releasing) await S.nativeGate.releasing;
       if (!validRecovery(c, epoch) || !allowed(c.info) || S.phase === 'restoring') throw new Error('cancelled');
       if (!S.nativeGate) await acquireNativeGate(c, epoch, 'continuous-web');
-      else await S.nativeGate.ready;
+      else { S.nativeGate.c = c; S.nativeGate.epoch = epoch; await S.nativeGate.ready; }
       if (!validRecovery(c, epoch) || !allowed(c.info) || S.phase === 'restoring') throw new Error('cancelled');
       clearTimeout(S.nativeGate?.watchdog);
+      timings.gateMs = Math.round(performance.now() - stageAt);
       // A Seek can arrive while the context/gain handshake is awaiting native.
       // Recheck the latest requested offset before committing any Web output.
       await prepareLoadPosition(c, epoch);
       if (c.entry.source.localKey) await localSource.validate(c.entry.source);
       if (!validRecovery(c, epoch) || !allowed(c.info) || S.phase === 'restoring') throw new Error('cancelled');
       clock.setOutput(true); c.loading = false; c.transitioning = false; c.blocked = false; S.phase = 'owned';
-      if (c.playing) clock.start(c, clock.ctx.currentTime + 0.01, c.offset);
+      if (c.playing) {
+        clock.start(c, clock.ctx.currentTime + 0.01, c.offset); recordLoadOutput(c);
+      }
       if (msg.resumeExisting) {
         ack(msg); emitState(c, c.playing ? 1 : 2, S.token); progress(c, true);
       } else answerLoad(msg, c);
       media?.sync(true); prefetch(); scheduleNext();
       trace('web-loaded', { id: c.id, origin: c.entry.origin, rate: c.entry.spec.rate,
-        loadMs: Math.round(performance.now() - loadAt) });
+        memoryHit, ...timings, loadMs: Math.round(performance.now() - loadAt) });
     } catch (error) {
       if (!validRecovery(c, epoch)) { bridge.dispatch(msg.seq, [c.id, { code: -1 }]); return; }
       if (error.message === 'native-only-context-awaiting-gesture' && allowed(c.info)) {
@@ -568,7 +618,7 @@ plugin.onLoad(() => {
     try {
       const normalized = await normalizeSource(c.info, c.row);
       if (!validRecovery(c, epoch)) return;
-      const entry = await resources.obtain(ref(c), normalized);
+      const entry = await obtain(ref(c), normalized);
       if (S.current !== c || S.epoch !== epoch || !allowed(c.info) || c.blocked) return;
       c.entry = entry; c.duration = entry.duration; c.level = entry.level;
       await takeover(); prefetch();
@@ -778,25 +828,31 @@ plugin.onLoad(() => {
     // retained in clock.volume and restored on every success/cancel/error path.
     gate.watchdog = setTimeout(() => {
       if (S.nativeGate !== gate) return;
-      if (validRecovery(c, epoch) && c.owns) void restoreNative('native-gate-timeout');
+      if (validRecovery(gate.c, gate.epoch) && gate.c.owns) void restoreNative('native-gate-timeout');
       else void releaseNativeGate().catch(error => trace('native-volume-restore-error', { reason: error.message }));
     }, 3000);
     gate.ready = bridge.raw('audioplayer.setVolume', ['', '', 0]);
     await gate.ready;
   }
-  async function restoreNative(reason, playIntent) {
-    nativeFill.clear();
+  async function restoreNative(reason, playIntent, seekTarget) {
+    clearRecent(); nativeFill.clear();
     reconcile(); const c = S.current;
     if (!c?.owns) return S.recovering;
     if (S.phase === 'restoring') return S.recovering;
-    const epoch = S.epoch, target = clock.position(c); let desired = playIntent ?? c.playing;
+    const pending = c.streamPreparation?.purpose === 'seek' ? c.streamPreparation.target : undefined;
+    const requested = seekTarget ?? pending;
+    const epoch = S.epoch, target = Number.isFinite(requested)
+      ? Math.max(0, Math.min(c.duration - 0.001, requested)) : clock.position(c);
+    let desired = playIntent ?? c.playing;
     c.recoveryPosition = target; c.recoveryPlaying = desired; c.recoveryHeard = clock.heard(c);
     c.recoverySucceeded = false; c.blocked = true; c.loading = false; S.claim = false;
     S.phase = 'restoring'; stopCurrent(); visual.stop(); trace('restore-start', { id: c.id, reason, position: target });
     const run = async () => {
       try {
         await nativeSource?.quiesce();
+        if (!validRecovery(c, epoch)) return;
         await releaseNativeGate();
+        if (!validRecovery(c, epoch)) return;
         // Only the SDK queue-selection workflow installs an onLoad auto-play
         // callback. A raw load does not; its first Play may be real user intent.
         // Direct startup restoration may precede the SDK's first Load, which
@@ -866,9 +922,11 @@ plugin.onLoad(() => {
       } finally {
         c.recoverySelecting = false;
         c.ignoreSelectionPlay = false;
-        resources.retain([ref(S.current)]);
-        if (!S.current?.owns) await clock.close();
-        if (validRecovery(c, epoch)) settlePendingWebLoad(c, c.recoverySucceeded ? 0 : -1, true);
+        if (validRecovery(c, epoch)) {
+          resources.retain([ref(c)]);
+          if (!c.owns) await clock.close();
+          if (validRecovery(c, epoch)) settlePendingWebLoad(c, c.recoverySucceeded ? 0 : -1, true);
+        }
       }
     };
     S.recovering = run(); await S.recovering;
@@ -950,9 +1008,19 @@ plugin.onLoad(() => {
     else {
       const valid = () => S.current === c && c.owns && S.enabled && S.phase !== 'restoring'
         && S.epoch === epoch && S.revision === revision;
-      if (c.entry?.source.localKey) await localSource.validate(c.entry.source);
-      await streamControl.prepare(c, offset, valid);
-      if (!valid()) throw globalThis.GaplessMacStreamControl.failure('stale');
+      try {
+        if (c.entry?.source.localKey) await localSource.validate(c.entry.source);
+        if (!valid()) throw globalThis.GaplessMacStreamControl.failure('stale');
+        await streamControl.prepare(c, offset, valid);
+        if (!valid()) throw globalThis.GaplessMacStreamControl.failure('stale');
+      } catch (error) {
+        if (error.cancelled || !valid()) throw error;
+        // A real unreadable target uses the native source at that target. A
+        // replaced/cancelled seek must never initiate this recovery.
+        await restoreNative('seek-buffer-unavailable', c.playing, offset);
+        if (!validRecovery(c, epoch) || !c.recoverySucceeded) throw error;
+        return offset;
+      }
       // Heartbeats may have scheduled the old End while preparation awaited.
       // Commit the replacement clock and its next reservation atomically.
       cancelScheduled();
@@ -1034,7 +1102,10 @@ plugin.onLoad(() => {
         position: position(), heard: clock.heard(c), playing: !!c.playing,
       } : null;
       const wasPlaying = c?.owns ? !!(c.playing || c.transitioning && c.loadIntent) : S.nativePlaying;
-      if (c?.entry && c.id !== id) nativeFill.remember(c.entry, c.account, c.requestedLevel);
+      if (c?.entry && c.id !== id) {
+        nativeFill.remember(c.entry, c.account, c.requestedLevel);
+        if (allowed(info)) rememberRecent(c); else clearRecent();
+      }
       settlePendingWebLoad(c);
       nativeSource?.cancel();
       S.epoch++; S.revision++; stopCurrent(); S.claim = false; S.phase = 'native';
@@ -1048,7 +1119,7 @@ plugin.onLoad(() => {
       // buffers between Load and play, especially when selecting the same track.
       const cached = allowed(info) && !localSource.path(info) && resources.lookup(ref(c), info);
       if (cached) { c.entry = cached; c.duration = cached.duration; c.level = cached.level; }
-      resources.resetFailures(); resources.retain([ref(c), nextTrack()]);
+      resources.resetFailures(); resources.retain([ref(c), nextTrack(), recent?.ref]);
       if (allowed(info) && !msg.observedNative) {
         c.owns = true; c.loading = true; c.playing = !!snapshot?.playing;
         c.loadIntent = snapshot ? snapshot.playing : wasPlaying; S.phase = 'loading';
@@ -1192,7 +1263,11 @@ plugin.onLoad(() => {
       S.revision++; const token = p[1] || c.id; S.token = token;
       if (c.loading) { c.playing = true; c.loadIntent = true; ack(msg); return true; }
       c.transitioning = false;
-      if (clock.ctx?.state !== 'running') { void restoreNative('play-context-unavailable'); return false; }
+      if (clock.ctx?.state !== 'running') {
+        // The parked native instance is not ready to receive this Play. Restore
+        // in order and carry the requested intent through that transaction.
+        ack(msg); void restoreNative('play-context-unavailable', true); return true;
+      }
       if (!c.playing && (c.entry?.source.localKey || !streamControl.ready(c.entry, c.offset))) {
         const revision = S.revision, epoch = S.epoch; c.loadIntent = true;
         const valid = () => S.current === c && c.owns && S.enabled && S.phase !== 'restoring'
@@ -1203,7 +1278,7 @@ plugin.onLoad(() => {
           await streamControl.prepare(c, c.offset, valid, { purpose: 'resume' });
         })().then(() => {
           if (!valid() || !c.loadIntent) throw globalThis.GaplessMacStreamControl.failure('stale');
-          cancelScheduled(); clock.start(c, clock.ctx.currentTime + 0.01, c.offset);
+          cancelScheduled(); clock.start(c, clock.ctx.currentTime + 0.01, c.offset); recordLoadOutput(c);
           emitState(c, 1, token); prefetch(); scheduleNext();
         }).catch(error => {
           if (!error.cancelled && valid())
@@ -1211,11 +1286,14 @@ plugin.onLoad(() => {
         });
         ack(msg); return true;
       }
-      if (!c.playing) { cancelScheduled(); clock.start(c, clock.ctx.currentTime + 0.01, c.offset); }
+      if (!c.playing) {
+        cancelScheduled(); clock.start(c, clock.ctx.currentTime + 0.01, c.offset);
+        recordLoadOutput(c);
+      }
       emitState(c, 1, token); ack(msg); trace('play', { id: c.id }); prefetch(); scheduleNext(); return true;
     }
     if (msg.command === 'audioplayer.pause') {
-      c.restoreSnapshot = false;
+      c.restoreSnapshot = false; c.loadAt = null;
       S.revision++; S.token = p[1] || c.id; stopCurrent('pause'); progress(c, true); emitState(c, 2, S.token); ack(msg);
       c.loadIntent = false; c.transitioning = false; if (c.loading) c.pauseAfterClaimRevision = S.revision;
       trace('pause', { id: c.id, position: clock.position(c) }); return true;
@@ -1316,7 +1394,7 @@ plugin.onLoad(() => {
   };
   window.addEventListener('pointerdown', gesture, true); window.addEventListener('keydown', gesture, true);
   async function disable() {
-    nativeFill.clear(); localSource.clear();
+    clearRecent(); nativeFill.clear(); localSource.clear();
     S.enabled = false; visual.stop(); resources.stop(); await restoreNative('disabled');
     resources.retain([]); await clock.close(); if (S.current) S.current.entry = null; trace('disabled');
   }
@@ -1360,7 +1438,7 @@ plugin.onLoad(() => {
       account: S.account, at: Date.now() })); } catch { /* Optional host recovery. */ }
   }
   window.addEventListener('beforeunload', () => {
-    persistRecovery(); clearInterval(timer); S.unsubscribe?.(); resources.stop();
+    persistRecovery(); clearRecent(); clearInterval(timer); S.unsubscribe?.(); resources.stop();
     nativeFill.clear(); nativeSource?.cancel();
     media?.release(); visual.stop();
     for (const [name, hook] of visualRenderHooks) if (hook.sdk[name] === hook.wrapped) hook.sdk[name] = hook.original;
@@ -1410,7 +1488,7 @@ plugin.onLoad(() => {
     } catch (error) { trace('reload-recovery-error', { reason: error.message }); }
   }
   window.gaplessMac = {
-    version: '0.3.5', status: () => {
+    version: '0.3.6', status: () => {
       reconcile(); const c = S.current;
       return { enabled: S.enabled, compatible: S.compatible, id: c?.id, phase: S.phase,
         ownsPlayback: !!c?.owns, playing: c?.owns ? !!c.playing : S.nativePlaying,
@@ -1427,7 +1505,7 @@ plugin.onLoad(() => {
         next: nextTrack()?.id, scheduled: S.scheduled?.id, claiming: S.claim,
         memory: resources.status(), mode: state()?.playing?.playingMode, nativeAllowed: allowed(c?.info),
         nativeCacheSource: nativeSource?.status(),
-        nativeCacheFill: nativeFill.status(), localSource: !!c?.entry?.source.localKey,
+        nativeCacheFill: nativeFill.status(), recentId: recent?.entry.id, localSource: !!c?.entry?.source.localKey,
         queueVersion: S.queueVersion, loadEpoch: S.epoch, controlRevision: S.revision,
         systemMedia: media?.status(), visualization: { ...visual.status(), renderClock: visualRenderHooks.size ? 'output' : 'pending',
           renderClockHooks: [...visualRenderHooks.keys()] } };

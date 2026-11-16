@@ -1,0 +1,143 @@
+{
+  "date": "2026-11-16",
+  "sourceBaseline": "62da6e5",
+  "macVersion": "0.3.6",
+  "windowsVersion": "0.4.8",
+  "windowsInstalledThisRound": false,
+  "macPackage": {
+    "sha256": "adea824ae686af57525946a020f1823fa967091cf48578cd7e5205eaa582f780",
+    "zipIntegrity": "passed",
+    "installedCopyMatches": true,
+    "runtimePlayerMatches": true,
+    "runtimeManifestMatches": true,
+    "previousPackageRetained": "0.3.5"
+  },
+  "naturalTransition": {
+    "from": "Baptized In Fear",
+    "to": "Open Hearts",
+    "scheduledGapFrames": 0,
+    "scheduledLeadSeconds": 42.6377777,
+    "claimDelayMs": 196,
+    "capture": {
+      "error": "",
+      "sampleRate": 48000,
+      "channels": 2,
+      "captureSeconds": 53.24,
+      "boundaryInsideCapture": true,
+      "windowSeconds": 2.0,
+      "maxBothChannelsBelowMinus80dBMs": 0.0,
+      "rms": 0.188197523355484,
+      "maxCapturePtsGapMs": 0.0
+    },
+    "scope": "Application output, one pair, not DAC or Bluetooth; before final diagnostic, cache-clear fallback and unavailable-context Play fixes"
+  },
+  "warmSwitches": [
+    {
+      "id": "2670863319",
+      "memoryHit": true,
+      "origin": "native-source",
+      "sourceMs": 0,
+      "bufferMs": 37,
+      "contextMs": 0,
+      "gateMs": 0,
+      "loadMs": 40,
+      "loadToEstimatedOutputMs": 150
+    },
+    {
+      "id": "2670863152",
+      "memoryHit": true,
+      "origin": "native-source",
+      "sourceMs": 0,
+      "bufferMs": 0,
+      "contextMs": 0,
+      "gateMs": 0,
+      "loadMs": 3,
+      "loadToEstimatedOutputMs": 117
+    }
+  ],
+  "timingScope": "Accepted plugin Load to output timestamp estimate; host Stop-to-Load, authorization, and actual driver output not measured by these numbers",
+  "finalInstalledControls": {
+    "continuousSeekTargets": [
+      30,
+      70,
+      186.07972789115655
+    ],
+    "lastPosition": 186.07972789115655,
+    "seekKeptPaused": true,
+    "resumePlaying": true,
+    "resumeOwns": true,
+    "resumeRevisionDelta": 1,
+    "finalId": "2670863152",
+    "finalPlaying": false,
+    "finalActiveNodes": 0
+  },
+  "loadingPauseObservation": {
+    "seenLoading": true,
+    "paused": true,
+    "activeNodes": 0,
+    "scope": "Observed while loading; explicitly resumed afterwards, not a completed no-autoplay check"
+  },
+  "offlineGain": {
+    "sampleRate": 48000,
+    "frames": 1920,
+    "unityAllExact": true,
+    "halfGainAtFrame241": 0.5,
+    "quarterGainAtFrame959": 0.25,
+    "gatedValueAtFrame960": 0,
+    "scope": "Actual source class in Mac CEF OfflineAudioContext; no final native-output equivalence claim"
+  },
+  "isolatedMediaSeek": {
+    "supported": true,
+    "positionsPublishedWhilePending": 0,
+    "positionsAfterCompletion": [
+      80
+    ],
+    "pendingAfterCompletion": false
+  },
+  "cacheObservation": {
+    "actualIndexFiles": 1,
+    "twoReadStampsStable": true,
+    "hasModificationTime": true,
+    "methodIsolationStableWaitMs": 513,
+    "methodIsolationFailedReadWaitMs": 501,
+    "noClearTimersLeft": true,
+    "userCacheDeletedThisRound": false,
+    "atomicFlushProven": false
+  },
+  "syntax": {
+    "node": "18.20.8",
+    "modifiedJsFiles": 8,
+    "passed": true,
+    "fullProjectChecks": false,
+    "newRepositoryTests": false
+  },
+  "limits": [
+    "Native control-center rollback not declared fixed",
+    "Cold source and actual manual click-to-sound distributions unmeasured",
+    "Long main-thread stalls and weak network can still underrun",
+    "Native volume curve, DSP and final device output not fully compared",
+    "Windows current candidate not installed or recorded"
+  ],
+  "isolatedUnavailableContextPlay": {
+    "handled": true,
+    "ackCount": 1,
+    "recoverPlayIntent": true
+  },
+  "isolatedDiagnosticFailure": {
+    "affectsPlayback": false,
+    "reportedOnce": true,
+    "timerCleared": true
+  },
+  "finalRuntimeState": {
+    "version": "0.3.6",
+    "id": "2670863152",
+    "position": 186.07972789115655,
+    "playing": false,
+    "loading": false,
+    "ownsPlayback": true,
+    "awaitingGesture": false,
+    "activeNodes": 0,
+    "sampleRate": 44100,
+    "nativeFailures": 0
+  }
+}

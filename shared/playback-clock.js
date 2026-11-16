@@ -164,8 +164,21 @@
     }
     setVolume(value) {
       if (!Number.isFinite(value)) return;
-      this.volume = Math.max(0, Math.min(1, value));
-      this.applyOutputVolume();
+      const volume = Math.max(0, Math.min(1, value));
+      if (volume === this.volume) return;
+      this.volume = volume;
+      if (!this.gain) return;
+      // Smooth user volume changes only. Output selection still uses exact
+      // scheduled steps: no track fade or crossfade is introduced.
+      const param = this.gain.gain, now = this.ctx.currentTime, s = this.outputSwitch;
+      const enabled = now < s.at ? s.before : s.enabled;
+      if (typeof param.cancelAndHoldAtTime === 'function') param.cancelAndHoldAtTime(now);
+      else {
+        const held = param.value;
+        param.cancelScheduledValues(now); param.setValueAtTime(held, now);
+      }
+      param.linearRampToValueAtTime(enabled ? volume : 0, s.at > now ? Math.min(now + 0.005, s.at) : now + 0.005);
+      if (s.at > now) param.setValueAtTime(s.enabled ? volume : 0, s.at);
     }
     async close() {
       for (const track of [...this.active]) this.stop(track);
