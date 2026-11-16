@@ -1,0 +1,145 @@
+{
+  "date": "2026-11-17",
+  "baseMain": "a9cd8b8",
+  "platform": "macOS",
+  "package": {
+    "macVersion": "0.3.8",
+    "macPackageSha256": "88113d90ed85ac7538d6a76128a043f6e204d025c4fa9605f34f00ccc23f2abe",
+    "installedPackageMatches": true,
+    "runtime": {
+      "manifest.json": {
+        "sha256": "c375130c75007724c587883e8e76dabbf2c1140576388107bbbfd9dbb289b27f",
+        "runtimeMatches": true
+      },
+      "player.js": {
+        "sha256": "f342f89ade2644e988dbe644280820d88cf036216badd62e21c10019ce4f7bb5",
+        "runtimeMatches": true
+      },
+      "startup_script.js": {
+        "sha256": "59894c571437a0ef3d3dd834269b07813ec7f36bd022498128c21d64afefd9b3",
+        "runtimeMatches": true
+      }
+    },
+    "hostMenuSha256": "041145f156b73a7b45fed0c821e395bb4436e5105a049f06211e396f5d93aa79",
+    "hostMenuInstalledMatches": true
+  },
+  "runtime": {
+    "checks": {
+      "beforeOff": {
+        "version": "0.3.8",
+        "position": 10.153351473922896,
+        "playing": false,
+        "owns": true,
+        "onLoadRegistered": false
+      },
+      "afterOff": {
+        "enabled": false,
+        "phase": "native",
+        "owns": false,
+        "playing": false,
+        "position": 10.15,
+        "activeNodes": 0,
+        "savingConfig": false,
+        "appPlayingState": 1,
+        "onLoadRegistered": true,
+        "recoveryTrace": [
+          {
+            "at": 41429,
+            "event": "restore-start",
+            "id": "2670863152",
+            "reason": "disabled",
+            "position": 10.153351473922896
+          },
+          {
+            "at": 43941,
+            "event": "native-load",
+            "id": "2670863152",
+            "phase": "restoring",
+            "current": "2670863152",
+            "epoch": 1
+          },
+          {
+            "at": 43978,
+            "event": "restored-native",
+            "id": "2670863152",
+            "reason": "disabled",
+            "position": 10.153351473922896,
+            "playing": false,
+            "confirmed": true
+          },
+          {
+            "at": 44085,
+            "event": "enabled-changed",
+            "enabled": false
+          }
+        ]
+      },
+      "afterOnPlay": {
+        "version": "0.3.8",
+        "enabled": true,
+        "owns": true,
+        "playing": true,
+        "position": 17.877392290249432,
+        "activeNodes": 2,
+        "sourceRate": 44100,
+        "systemMediaActive": true
+      }
+    },
+    "final": {
+      "version": "0.3.8",
+      "menuVersion": "1.0.0",
+      "enabled": true,
+      "owns": true,
+      "playing": false,
+      "position": 10.153351473922896,
+      "activeNodes": 0,
+      "savingConfig": false,
+      "nativeOutputGated": true,
+      "appPlayingState": 1,
+      "volume": 0.48,
+      "fade": true
+    },
+    "host": {
+      "version": "0.1.7",
+      "pluginManager": false,
+      "plugins": [
+        {
+          "slug": "@lyrics-window",
+          "name": "歌词窗口",
+          "version": "",
+          "enabled": false,
+          "note": "",
+          "builtin": true
+        },
+        {
+          "slug": "gapless-player-mac",
+          "name": "无缝播放",
+          "version": "0.3.8",
+          "enabled": true,
+          "note": "",
+          "builtin": false
+        }
+      ]
+    }
+  },
+  "uiChecks": {
+    "nativeTitlebarButtonReused": true,
+    "defaultGaplessView": true,
+    "installedPluginsManagement": true,
+    "hostCompatibilityNoteVisible": true,
+    "version038Visible": true,
+    "switchLockedAcrossManagementViewWhileSaving": true,
+    "returnToGaplessView": true,
+    "escapeClosesPanel": true,
+    "mainWindowAndLyricLayoutUnchangedByDiff": true
+  },
+  "recoveryFix": {
+    "previousFailure": "page restore with no native onLoad registration selected same paused row; native Resume shortcut caused an 8s Load timeout and lost position",
+    "implementation": "same-current SDK AudioPlayer.play registers Load, suppresses and immediately acknowledges only its automatic Play; SDK settles before final native Seek/Pause; late reconstruction Load suppressed until a real new Load; automatic-Play guard armed only in the native Load callback turn, so earlier user Play remains latest intent",
+    "sourceMatchedBeforeAfter": true,
+    "restoreConfirmedMs": 2549,
+    "positionDifferenceSeconds": 0.003351473922896,
+    "finalNativeAppState": "Paused"
+  },
+  "scope": "Installed Mac menu and related recovery smoke check. Short actual resume/pause and SDK Seek verified. No new audio recording, quality A/B, general-market compatibility matrix, uninstall execution or Windows machine run. Active Web nodes in playing snapshot include an advance-scheduled next source; count alone is not simultaneous audible playback evidence."
+}

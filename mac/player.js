@@ -12,7 +12,7 @@ plugin.onLoad(() => {
     store: null, phase: 'native', epoch: 0, revision: 0, serial: 0, queueVersion: 0,
     account: '', signature: '', selection: '', token: '', nativePosition: 0, nativeAt: performance.now(), nativePlaying: false,
     gestureAt: -Infinity, recovering: null, unsubscribe: null, starting: false, recoveryConsumed: false,
-    nativeGate: null, volumeLatencyMs: 2 };
+    nativeGate: null, volumeLatencyMs: 2, savingConfig: false };
   const trace = (event, detail = {}) => {
     log.push({ at: Math.round(performance.now()), event, ...detail }); if (log.length > 180) log.shift();
   };
@@ -854,11 +854,11 @@ plugin.onLoad(() => {
         if (!validRecovery(c, epoch)) return;
         await releaseNativeGate();
         if (!validRecovery(c, epoch)) return;
-        // Only the SDK queue-selection workflow installs an onLoad auto-play
-        // callback. A raw load does not; its first Play may be real user intent.
+        // The SDK's play workflow installs an onLoad auto-play callback. A raw
+        // load does not; its first Play may be real user intent.
         // Direct startup restoration may precede the SDK's first Load, which
-        // is also when it registers onLoad. Use its original selection flow
-        // to establish that callback before waiting for native completion.
+        // is also when it registers onLoad. Reconstruct through the SDK when
+        // the current row already matches; otherwise use its selection flow.
         const needsSelection = !c.info || c.restoreSelection || !bridge.registrations['audioplayer.onLoad'];
         c.recoverySelecting = !!needsSelection;
         // Native local Load may notify again after the reconstruction RPC has
@@ -870,9 +870,21 @@ plugin.onLoad(() => {
           const loaded = bridge.waitNative('audioplayer.onLoad', a => String(a[0]) === c.id && Number(a[1]?.code) === 0, 8000);
           const completed = loaded.promise;
           try {
-            S.store.dispatch({ type: 'playing/playOneTrackInPlayingList', payload: {
-              item: c.row, switchType: 'call', flag: 1, triggerScene: 'playingList' } });
-            await completed;
+            if (String(state()?.playing?.curPlaying?.resourceId) === c.id) {
+              const player = nativePlayer(), code = String(player.play || '');
+              if (!c.info || !code.includes('overwriteRegisterCall') || !code.includes('audioplayer.load'))
+                throw new Error('native-recovery-sdk-load-unavailable');
+              // Reconstruct only the same track's backend. The model's same-row
+              // selection shortcuts to Resume; force-selection instead publishes
+              // a late Playing state and its saved Seek after recovery finishes.
+              c.recoverySdkLoad = true;
+              c.ignoreSelectionPlay = false;
+              await Promise.all([completed, player.play({ ...c.info, songId: c.id })]);
+            } else {
+              S.store.dispatch({ type: 'playing/playOneTrackInPlayingList', payload: {
+                item: c.row, switchType: 'call', flag: 1, triggerScene: 'playingList' } });
+              await completed;
+            }
           } finally { loaded.cancel(); }
           c.info = bridge.loads.get(c.id);
           if (!c.info) throw new Error('native-recovery-info-unavailable');
@@ -921,7 +933,11 @@ plugin.onLoad(() => {
         await bridge.raw(`audioplayer.${desired ? 'play' : 'pause'}`, [c.id, `${c.id}|${desired ? 'resume' : 'pause'}|recovery-fallback-${epoch}`]).catch(() => {});
         trace('recovery-error', { id: c.id, reason: error.message, nativeFallbackIssued: true });
       } finally {
+        // A late/duplicate callback from this SDK-only reconstruction cannot
+        // auto-play after success or timeout. A new real Load clears the flag.
+        if (c.recoverySdkLoad) c.suppressRecoveryLoad = true;
         c.recoverySelecting = false;
+        c.recoverySdkLoad = false;
         c.ignoreSelectionPlay = false;
         if (validRecovery(c, epoch)) {
           resources.retain([ref(c)]);
@@ -965,6 +981,10 @@ plugin.onLoad(() => {
     if (nativeSource?.observe(command, args)) return;
     if (command === 'audioplayer.onVolume' && !S.nativeGate && !S.current?.owns) clock.setVolume(Number(args[3]));
     const c = S.current; if (!c || String(args[0]) !== c.id) return;
+    // Arm only within the native Load callback turn. A user Play while the
+    // backend is still loading must update recovery intent instead of being eaten.
+    if (command === 'audioplayer.onLoad' && c.recoverySdkLoad && S.phase === 'restoring'
+      && Number(args[1]?.code) === 0) c.ignoreSelectionPlay = true;
     if (command === 'audioplayer.onPlayProgress') {
       c.nativeClock = { position: Number(args[1]), at: performance.now(), playing: !!c.nativeClock?.playing };
     } else if (command === 'audioplayer.onPlayState') {
@@ -1152,6 +1172,9 @@ plugin.onLoad(() => {
           if (Number.isFinite(Number(p[2]))) c.recoveryPosition = Math.max(0, Math.min(c.duration - 0.001, Number(p[2])));
         } else c.recoveryPlaying = msg.command.endsWith('play');
       }
+      // SDK-only reconstruction must settle before our final Seek/Pause. Its
+      // automatic Play is acknowledged without reaching the real audio backend.
+      if (selectionPlay && c.recoverySdkLoad) { ack(msg); return true; }
       const epoch = S.epoch, token = p[1] || c.id;
       Promise.resolve(S.recovering).finally(() => {
         if (msg.command.endsWith('seek')) {
@@ -1404,6 +1427,8 @@ plugin.onLoad(() => {
     if (button?.getAttribute('aria-label') !== '无缝播放' || typeof BETTERNCM_API_PATH !== 'string'
       || typeof BETTERNCM_API_KEY !== 'string') return;
     event.preventDefault(); event.stopImmediatePropagation();
+    if (S.savingConfig) return;
+    S.savingConfig = true;
     const on = button.getAttribute('aria-checked') !== 'true'; button.disabled = true;
     // Persist through the same host endpoint; this isolated switch does not need a page reload.
     // That keeps the native backend playing when the plugin is no longer injected on future loads.
@@ -1426,7 +1451,7 @@ plugin.onLoad(() => {
           S.enabled = true; resources.enabled = true;
           if (S.current) { S.current.blocked = false; void prepareCurrent(S.current); }
         }
-      } finally { button.disabled = false; }
+      } finally { S.savingConfig = false; button.disabled = false; }
     })();
   }, true);
   function persistRecovery() {
@@ -1488,9 +1513,9 @@ plugin.onLoad(() => {
     } catch (error) { trace('reload-recovery-error', { reason: error.message }); }
   }
   window.gaplessMac = {
-    version: '0.3.7', status: () => {
+    version: gaplessMacBuild.version, status: () => {
       reconcile(); const c = S.current;
-      return { enabled: S.enabled, compatible: S.compatible, id: c?.id, phase: S.phase,
+      return { enabled: S.enabled, savingConfig: S.savingConfig, compatible: S.compatible, id: c?.id, phase: S.phase,
         ownsPlayback: !!c?.owns, playing: c?.owns ? !!c.playing : S.nativePlaying,
         playbackMode: 'continuous-web', loading: !!c?.loading, nativeOutputGated: !!S.nativeGate,
         startup: { ...bridge.startup }, awaitingGesture: !!c?.awaitingGesture,

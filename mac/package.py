@@ -21,7 +21,8 @@ with zipfile.ZipFile(output, 'w', zipfile.ZIP_DEFLATED) as archive:
                root / 'stream-control.js', root / 'native-source.js', root.parent / 'shared/native-cache-fill.js', root / 'player.js']
     vendor = root.parent / 'vendor/crypto-js-4.2.0'
     worker = '\n'.join(path.read_text(encoding='utf-8') for path in [vendor / 'core.js', vendor / 'md5.js', root.parent / 'shared/cache-worker-runtime.js'])
-    archive.writestr('player.js', 'globalThis.gaplessCacheWorkerSource = ' + json.dumps(worker) + ';\n'
+    archive.writestr('player.js', 'const gaplessMacBuild = ' + json.dumps({'version': manifest['version']}) + ';\n'
+                     + 'globalThis.gaplessCacheWorkerSource = ' + json.dumps(worker) + ';\n'
                      + 'new Function("module", "exports", "define", ' + json.dumps((root.parent / 'vendor/flac-decoder-0.2.11/flac-decoder.min.js').read_text(encoding='utf-8')) + ').call(globalThis);\n'
                      + '\n'.join(path.read_text(encoding='utf-8') for path in sources))
     archive.write(root.parent / 'LICENSE', 'LICENSE')

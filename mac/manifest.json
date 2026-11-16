@@ -2,11 +2,11 @@
   "manifest_version": 1,
   "name": "无缝播放",
   "slug": "gapless-player-mac",
-  "version": "0.3.7",
+  "version": "0.3.8",
   "author": "AntsandIce / Ehytr; macOS adaptation",
   "description": "macOS 3.1.12 无缝衔接；沿用原生音质选择和界面，不兼容时回退原生。",
   "type": "extension",
-  "betterncm_version": ">=1.3.4",
+  "betterncm_version": ">=0.1.7",
   "ncm-version-req": "3.1.12",
   "ncm3-compatible": true,
   "injects": { "Main": [{ "file": "player.js" }] }

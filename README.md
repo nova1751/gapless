@@ -1,51 +1,46 @@
 # gapless — 网易云无缝播放
 
-**当前安装与验收状态见 [统一状态表](docs/CURRENT_STATUS.md)。** Windows 已安装并保留原生缓存数据源候选；尚未正式发布。下文各版本记录需按平台和构建模式区分。
+网易云负责授权音源、音质选择、队列和持久缓存；插件读取有效区间并解码，由 Web Audio 连续输出。保留原窗口、歌词和频谱，不增加 EQ、交叉淡化、静音裁剪或音质降档。
 
-实验进展：[Windows 原生取数及后台整首缓存试验](docs/WINDOWS_NATIVE_SOURCE_TRIAL.md)。已跑通原生缓存供给 Web 解码、抢占取消与后台补齐；0.4.6 默认打包采用原生数据源，仍为待实机复测的候选。
+| 平台 | 源码版本 | 安装／运行记录 | 宿主 |
+|---|---|---|---|
+| macOS | **0.3.8** | 本轮安装，包与运行文件一致 | BetterNCM-mac 0.1.7；网易云 3.1.12（3444） |
+| Windows | **0.4.12** | main `a9cd8b8` 报告已安装及运行核对；本轮未操作 Windows | BetterNCM 1.3.4；网易云 x64 3.1.43.205627 |
 
-路线决策调研：[无缝播放与原生行为对齐方案](docs/GAPLESS_NATIVE_PARITY_PLAN.md)。比较纯原生、原生取数＋Web 输出及当前 Web 取数路线，覆盖缓存、任意位置起播、网络请求和逐项验收；原生数据源方案已在 Windows 候选实施并安装，完整发布矩阵尚未通过。
+[当前状态](docs/CURRENT_STATUS.md)和[版本记录](docs/versions.json)区分源码、已安装、运行和历史哈希证据。两端的版本序列独立，不要求版本数字相同。
 
-0.4.5 联动原生清缓存入口，释放闲置 PCM，并隔离 Web 接管期间的原生预加载请求。[本轮检查与限制](docs/WINDOWS_CACHE_LIFECYCLE_0.4.5.md)。
+## 使用与管理
 
-最新调查：Mac 0.3.1 已接入原生 Load/Seek/Stop 取数及有效区间读取，日常场景实机验收见 [Mac 记录](docs/MAC_NATIVE_CACHE_0.3.1.md)。早期可行性调查见[原生缓存数据源可行性](docs/NATIVE_CACHE_PROVIDER_FEASIBILITY.md)。
+右上角插件入口默认显示无缝开关、状态和管理入口。Windows 复用 BetterNCM 管理页，默认打开无缝设置；Mac 复用宿主按钮和开关，只管理本机已安装插件，保留通用市场默认隐藏。多数市场插件依赖 Windows 原生接口，菜单对齐不代表兼容性对齐。
 
-原生缓存复核：新版受支持 FLAC 使用原生取数与提交，落盘完整性仍须读索引证明；缓存百分比不保证完整，旧 Web 取数路径不能保证原生落盘。见[缓存所有权调查](docs/NATIVE_CACHE_OWNERSHIP_AUDIT.md)。
+关闭开关取消预约和工作缓存，恢复网易云原生播放及最新播放意图；重新开启时 Windows 等待下一次有效 Load，Mac 可准备当前曲。Mac 0.3.8 补修页面恢复后首次关闭时同曲 Resume 捷径导致的原生恢复失败。
 
-最新源码：**Windows 0.4.10 / macOS 0.3.7**；已安装记录为 **Windows 0.4.10 / Mac 0.3.7**。拉取至 `95cc978`，包含 Windows 0.4.10 安装及日常 UI/日志回归；0.4.10 修正两首位深/声道/采样率不同而取消预取的多余门槛。同率继续预约，异率保留预取并在下次 Load 重建输出。[功能与原文件音质复核](docs/PLATFORM_AUDIO_REVIEW_0.3.7_0.4.10.md)。Mac 独立解码、真实索引 PCM 和同率离线增益检查通过；现已补 [原生/Web 实际应用输出 A/B](docs/MAC_NATIVE_WEB_OUTPUT_AB_0.3.7.md)，本例响度和波形很接近，仍未证明逐位一致，没有据此证明可听降质。主要职责已有实现，整首缓存、系统控制和最终逐位一致仍有限制。[此前缓存/Seek 检查](docs/CACHE_SEEK_AUDIT_0.3.7_0.4.9.md)，[Windows 复验方案](docs/WINDOWS_REPAIR_PLAN_0.4.8.md)。默认 Windows 打包使用原生数据源，旧 Web 路径须显式 `--web-source`。网易云决定授权音源、音质、队列和音量；不增加 EQ、交叉淡化或音质降档。
-
-0.3.4 修正 FLAC 整数归一化，三份 16/24-bit 源共 72,722,734 样本与校验通过的 Apple 参考 PCM 完全相同。0.3.5 已修正优先级：无缝开启时绕过冲突的原生音效，关闭时原生沿用保存值，不再要求手动关闭淡入淡出。[开关行为与验证](docs/GAPLESS_PRIORITY_0.3.5.md)。不是设备比特直通或 Windows 新候选实机结论。[音质证据与限制](docs/AUDIO_FIDELITY_0.3.4.md)。
-
-Windows 0.4.0 对受支持的 FLAC 从第一首开始增量解码，缓冲约 0.75 秒即可准备输出；下一首可直接从原授权网络源准备，不再要求先播放两首。修复同曲重播、暂停 ID 和失败重试。[实现与验证](docs/WINDOWS_STREAMING_0.4.0.md)。只有一个插件及右上角开关，未修改窗口/歌词样式。
-
-- [跨平台最佳实践与实施方案](docs/CROSS_PLATFORM_BEST_PRACTICES.md)：生命周期、缓存、内存、时延口径、平台差异、后续门槛。
-- [Windows 使用与打包](windows/README.md) / [本次验证](docs/verification/windows-streaming-0.4.0.json)
-- [Mac 使用、候选与历史实测](mac/README.md)
-- [近期手动前后切歌优化](docs/WINDOWS_WARM_SWITCH_0.2.9.md)
-
-**历史验证边界：** Windows 0.4.0 当时已安装，验证空 Web 缓冲及绕过磁盘缓存后的首次准备、重播/暂停、失败重试和一次曲间系统回录。支持格式及下一首及时就绪时才可能首次无缝；弱网/异常回退不保证无间隔。Mac 0.3.1 已实测原生取数、重启复用及实际跨曲回录；具体限制见 Mac 当前说明。
-
-流式缓存读取先核对授权元数据，整首 MD5 在读取结束时检查，失败恢复原生；不能称为出声前已完成整首校验。单曲 PCM 与 Chromium 完整解码比对一致，不承诺所有音源与原生/DAC bit-perfect。受支持的原生数据源由网易云写盘，插件不写回 Web 下载；索引路径采用有上限的 PCM 分块缓存。
+- [Mac 安装、菜单与本轮验证](mac/README.md)
+- [Windows 使用与打包](windows/README.md)
+- [两端菜单对齐范围](docs/PLUGIN_MENU_ALIGNMENT_0.3.8_0.4.12.md)
+- [跨平台实现原则](docs/CROSS_PLATFORM_BEST_PRACTICES.md)
 
 ## 打包
 
-需要 Python、Node.js。只做 ZIP 插件打包，不是应用构建。
+Mac：
+
+```sh
+python3 mac/package.py
+python3 mac/install-menu.py
+```
+
+第二条只安装独立的 Mac 宿主菜单扩展；无缝插件包另复制到宿主插件目录。详见 Mac 安装步骤。Windows 必须使用精确客户端归档：
 
 ```powershell
 python windows/package.py --client "C:\Program Files\NetEase\CloudMusic\package\orpheus.ntpk"
-python -X utf8 mac/package.py
 ```
 
-产物在 `dist/`，不提交本机 profile、账号、签名 URL、缓存或音频录音。安装时同 slug 只保留一个启用版本，旧包移到插件目录之外。Windows 包由本机精确客户端版本生成；Mac 新候选应先验收，历史发布包不冒充最新构建。
+这些命令生成 ZIP 插件，不是应用构建。同 slug 的活动目录只保留一个版本，旧包备份到目录之外。默认 Windows 包使用原生数据源；显式 `--web-source` 是旧路径，新歌不保证原生持久缓存。
 
-## 历史依据
+## 验证边界
 
-- [Mac 0.2.4 首曲入口](docs/STARTUP_WEB_0.2.4.md)
-- [Mac 0.2.3 动画时钟](docs/VISUAL_TIMING_0.2.3.md)
-- [音质保护](docs/AUDIO_QUALITY_0.2.1.md)
-- [原生缓存读取边界](docs/CACHE_PRIORITY.md)
-- [系统媒体风险](docs/PLAYBACK_SCOPE_AND_RISKS.md)
-- [Windows 适配设计背景](docs/WINDOWS_CONTINUOUS_WEB_AUDIO.md)
-- [原生入口调查](docs/NATIVE_GAPLESS_RECHECK_2026-11-15.md)
+同采样率、下一首及时就绪时提前预约；不同采样率重建输出可能有短间隔。缓存完整性以真实有效索引和整首 MD5 为准，不保证跳到曲尾、播完或退出前一定缓存整首。Mac 控制中心进度回跳、Windows 系统时间线能力及极端网络/设备场景仍有限制。
 
-仓库按 AGENTS.md 采用增量语法、协议和必要实机检查，不新增常驻测试用例或运行全量构建。CryptoJS 4.2.0 core/MD5 及许可固定放在 `vendor/`，无运行时远程依赖。
+[原文件 PCM 检查](docs/AUDIO_FIDELITY_0.3.4.md)及[Mac 原生/Web 应用输出 A/B](docs/MAC_NATIVE_WEB_OUTPUT_AB_0.3.7.md)没有证明可听降质，也没有证明所有设备逐位一致。新菜单未修改解码、采样率、音量曲线或跨曲排程；旧音频证据保留原版本。完整历史见[历史状态](docs/HISTORY_STATUS_2026-11-17.md)。
+
+不提交 profile、账号、签名 URL、凭证、缓存或录音；不新增测试用例或执行全量静态检查、应用构建。
