@@ -1,5 +1,5 @@
 /* MIT. Host-backed menu; styling is confined to our own nodes. */
-function installGaplessToggle(controller) {
+function installGaplessToggle(controller, pluginManager) {
   const id = 'gapless-windows-menu';
   if (document.getElementById(id)) return;
   const style = document.createElement('style');
@@ -9,7 +9,7 @@ function installGaplessToggle(controller) {
     .gp-host-entry:focus-visible, #${id} button:focus-visible { outline:2px solid currentColor; outline-offset:3px; }
     .gp-host-entry svg { width:20px; height:20px; pointer-events:none; }
     #${id} { position:fixed; z-index:10000; width:320px; max-width:calc(100vw - 16px); box-sizing:border-box; padding:16px; border:1px solid var(--gp-border); border-radius:12px; background:var(--gp-bg); color:var(--gp-fg); font-family:inherit; font-size:13px; box-shadow:0 12px 36px #0004; backdrop-filter:blur(28px) saturate(180%); -webkit-app-region:no-drag; overflow:auto; animation:gp-menu-in .16s ease-out; }
-    #${id}[hidden] { display:none; }
+    #${id}[hidden], #${id} [hidden] { display:none; }
     #${id} .gp-heading { display:flex; align-items:center; gap:8px; margin-bottom:12px; font-weight:600; }
     #${id} .gp-row { display:flex; align-items:center; gap:12px; padding:12px 0; border-top:1px solid var(--gp-border); }
     #${id} .gp-info { flex:1; min-width:0; }
@@ -20,6 +20,8 @@ function installGaplessToggle(controller) {
     #${id} .gp-switch::after { content:''; position:absolute; width:18px; height:18px; top:2px; left:2px; border-radius:50%; background:white; box-shadow:0 1px 3px #0003; transition:transform .18s; }
     #${id} .gp-switch[aria-checked="true"]::after { transform:translateX(14px); }
     #${id} button:disabled { opacity:.45; cursor:wait; }
+    #${id} .gp-manage { display:flex; width:100%; align-items:center; justify-content:space-between; margin-top:10px; padding:10px 0 0; border:0; border-top:1px solid var(--gp-border); background:none; color:inherit; font:inherit; text-align:left; cursor:pointer; }
+    #${id} .gp-manage::after { content:'›'; opacity:.65; }
     #${id} .gp-status { min-height:16px; font-size:11px; opacity:.65; margin-top:8px; }
     @keyframes gp-menu-in { from { opacity:0; transform:translateY(-5px); } to { opacity:1; transform:translateY(0); } }
     @media(prefers-reduced-motion:reduce) { #${id}, #${id} .gp-switch, #${id} .gp-switch::after { animation:none; transition:none; } }
@@ -29,7 +31,7 @@ function installGaplessToggle(controller) {
   panel.id = id; panel.hidden = true; panel.setAttribute('role', 'dialog'); panel.setAttribute('aria-label', '插件');
   document.body.append(panel);
   const entries = new Map();
-  let active, toggle, message, busy = false, saveError = false;
+  let active, toggle, message, manage, busy = false, saveError = false;
   const element = (tag, cls, text) => {
     const node = document.createElement(tag); node.className = cls;
     if (text) node.textContent = text;
@@ -37,7 +39,7 @@ function installGaplessToggle(controller) {
   };
   function render() {
     panel.replaceChildren();
-    panel.append(element('div', 'gp-heading', '插件'));
+    panel.append(element('div', 'gp-heading', 'BetterNCM · 插件'));
     const row = element('div', 'gp-row'), info = element('div', 'gp-info');
     info.append(element('div', 'gp-name', '无缝播放'),
       element('div', 'gp-description', '连续播放，保留网易云音源与音质'));
@@ -52,10 +54,18 @@ function installGaplessToggle(controller) {
     });
     row.append(info, toggle); panel.append(row);
     message = element('div', 'gp-status'); message.setAttribute('role', 'status');
-    panel.append(message); update();
+    manage = element('button', 'gp-manage'); manage.type = 'button';
+    manage.addEventListener('click', () => {
+      if (pluginManager(true)) close(true);
+      else update();
+    });
+    panel.append(message, manage); update();
   }
   function update() {
     if (!toggle) return;
+    const manager = pluginManager();
+    manage.hidden = !manager;
+    manage.textContent = manager?.isOpen ? '返回网易云' : '管理插件';
     const state = controller.status();
     toggle.setAttribute('aria-checked', String(state.enabled));
     toggle.disabled = busy || state.savingConfig || state.handingBack || (!state.enabled && (state.owns || state.loading));
@@ -92,8 +102,8 @@ function installGaplessToggle(controller) {
     for (const [host, button] of entries) if (!host.isConnected) { button.remove(); entries.delete(host); }
     for (const host of hosts) {
       if (entries.has(host) && entries.get(host).isConnected) continue;
-      const button = element('button', 'gp-host-entry'); button.type = 'button'; button.title = '插件';
-      button.setAttribute('aria-label', '插件'); button.setAttribute('aria-haspopup', 'dialog');
+      const button = element('button', 'gp-host-entry'); button.type = 'button'; button.title = 'BetterNCM · 插件';
+      button.setAttribute('aria-label', 'BetterNCM 插件'); button.setAttribute('aria-haspopup', 'dialog');
       button.setAttribute('aria-expanded', 'false'); button.setAttribute('aria-controls', id);
       button.innerHTML = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M9 3H5a2 2 0 0 0-2 2v4h2a3 3 0 1 1 0 6H3v4a2 2 0 0 0 2 2h4v-2a3 3 0 1 1 6 0v2h4a2 2 0 0 0 2-2v-4h-2a3 3 0 1 1 0-6h2V5a2 2 0 0 0-2-2h-4v2a3 3 0 1 1-6 0Z"/></svg>';
       const reference = host.querySelector('[aria-label="setting"]')?.closest('.cmd-badge');

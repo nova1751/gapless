@@ -1550,7 +1550,7 @@ plugin.onLoad(async () => {
         if (value && current) { current.blocked = false; current.prepareAttempts = 0; current.prepareAfter = 0; cancelCandidate(); }
     }
     window.gaplessWindows = Object.freeze(publicStatus);
-    installGaplessToggle(publicStatus);
+    installGaplessToggle(publicStatus, pluginManager);
     function settingsControl(makeCheckbox) {
       const label = document.createElement('label');
       const checkbox = makeCheckbox({ checked: enabled() });
@@ -1564,23 +1564,35 @@ plugin.onLoad(async () => {
       return label;
     }
     plugin.onConfig(tools => settingsControl(options => tools.makeCheckbox(options)));
-    window.addEventListener('keydown', event => {
-      if (event.repeat || !event.ctrlKey || !event.altKey || event.shiftKey
-        || String(event.key).toLowerCase() !== 'g') return;
-      if (event.target?.closest?.('input,textarea,[contenteditable]')) return;
+    function pluginManager(toggle = false) {
       const manager = document.querySelector('section.better-ncm-manager');
       const main = document.querySelector('.right-container, section.g-mn:not(.better-ncm-manager)');
-      if (!manager || !main || manager === main) return;
-      event.preventDefault();
-      if (manager.classList.contains('ncmm-show')) {
+      if (!manager || !main || manager === main) return null;
+      const isOpen = manager.classList.contains('ncmm-show');
+      if (!toggle) return { isOpen };
+      // Reuse BetterNCM's page and plugin controls. Some layouts remove its
+      // original title-bar shortcut, so keep the existing page toggle as a fallback.
+      const shortcut = [...document.querySelectorAll('[title="BetterNCM"]')]
+        .find(node => !manager.contains(node));
+      if (shortcut) {
+        shortcut.click();
+        if (manager.classList.contains('ncmm-show') !== isOpen) return { isOpen: !isOpen };
+      }
+      if (isOpen) {
         manager.classList.remove('ncmm-show');
-        main.style.removeProperty('display');
+        if (main.style.getPropertyValue('display') === 'none') main.style.removeProperty('display');
       } else {
         if (manager.parentElement !== main.parentElement) main.after(manager);
         manager.classList.add('ncmm-show');
         main.style.setProperty('display', 'none', 'important');
-        manager.querySelector('[data-plugin-slug="gapless-player-windows"]')?.click();
       }
+      return { isOpen: !isOpen };
+    }
+    window.addEventListener('keydown', event => {
+      if (event.repeat || !event.ctrlKey || !event.altKey || event.shiftKey
+        || String(event.key).toLowerCase() !== 'g') return;
+      if (event.target?.closest?.('input,textarea,[contenteditable]')) return;
+      if (pluginManager(true)) event.preventDefault();
     }, true);
   }
   try { installPlayer(); } catch (error) { trace('init-error', { kind: error.name }); }
