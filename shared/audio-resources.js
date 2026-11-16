@@ -2,6 +2,16 @@
 (() => {
   'use strict';
   const MiB = 1024 * 1024;
+  function normalizeFlacPCM(channelData, bits) {
+    if (![8, 16, 24].includes(bits)) throw new Error('decode-flac-bit-depth');
+    const scale = 2 ** (bits - 1), wrapperMax = scale - 1;
+    // The WASM wrapper divides signed integers by positive full scale. Recover
+    // those integers, then use the exact power-of-two signed PCM scale for both
+    // signs. Float32 represents every normalized 8/16/24-bit integer exactly.
+    for (const pcm of channelData) for (let i = 0; i < pcm.length; i++)
+      pcm[i] = Math.round(pcm[i] * wrapperMax) / scale;
+    return channelData;
+  }
   function header(bytes, durationHint = 0) {
     const a = bytes instanceof Uint8Array ? bytes : new Uint8Array(bytes);
     if (a.length >= 42 && a[0] === 102 && a[1] === 76 && a[2] === 97 && a[3] === 67) {
@@ -291,5 +301,5 @@
     resetFailures() { this.failures.clear(); }
     status() { return { held: this.held(), reserved: this.reserved, limit: this.limit, pending: this.jobs.size }; }
   }
-  globalThis.GaplessAudioResources = { AudioResources, header, fingerprint, localIdentity };
+  globalThis.GaplessAudioResources = { AudioResources, header, fingerprint, localIdentity, normalizeFlacPCM };
 })();

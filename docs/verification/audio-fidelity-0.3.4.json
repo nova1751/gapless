@@ -1,0 +1,742 @@
+{
+  "date": "2026-11-16",
+  "baseCommit": "8a638aa",
+  "macVersion": "0.3.4",
+  "windowsSourceVersion": "0.4.6",
+  "windowsNewCandidateInstalledThisTurn": false,
+  "sourceSelection": "readonly original cache backups; clear file MD5 verified; one invalid backup excluded",
+  "reference": "Apple AVAudioFile Float32 at source sample rate; reconstructed signed PCM MD5 equals FLAC STREAMINFO",
+  "before": [
+    {
+      "id": "2670863319",
+      "md5": "cad47df6dd03b5faa82ffc244f6a99c1",
+      "rate": 44100,
+      "channels": 2,
+      "bits": 16,
+      "frames": 10238980,
+      "bytes": 27081483,
+      "samples": 20477960,
+      "floatMismatches": 10141989,
+      "integerMismatches": 869658,
+      "maxAbs": 3.0159950256347656e-05,
+      "maxIntegerDelta": 1,
+      "snrDB": 93.28949449944132,
+      "isolatedResources": {
+        "held": 81944608,
+        "reserved": 0,
+        "limit": 536870912,
+        "pending": 0,
+        "encodedCache": {
+          "bytes": 32768,
+          "limit": 67108864,
+          "hits": 0,
+          "reads": 0,
+          "joins": 0
+        },
+        "boundedPCM": {
+          "entries": 0,
+          "bytes": 0,
+          "capacity": 0
+        }
+      }
+    },
+    {
+      "id": "29027690",
+      "md5": "3cde75a6c33717b015cd3ad76870bc24",
+      "rate": 48000,
+      "channels": 2,
+      "bits": 24,
+      "frames": 11564179,
+      "bytes": 55543112,
+      "samples": 23128358,
+      "floatMismatches": 11787744,
+      "integerMismatches": 3524472,
+      "maxAbs": 1.1920928955078125e-07,
+      "maxIntegerDelta": 1,
+      "snrDB": 141.44378270927317,
+      "isolatedResources": {
+        "held": 92546200,
+        "reserved": 0,
+        "limit": 536870912,
+        "pending": 0,
+        "encodedCache": {
+          "bytes": 32768,
+          "limit": 67108864,
+          "hits": 0,
+          "reads": 0,
+          "joins": 0
+        },
+        "boundedPCM": {
+          "entries": 0,
+          "bytes": 0,
+          "capacity": 0
+        }
+      }
+    },
+    {
+      "id": "1378406132",
+      "md5": "ba6b5fbd2f2f53f7b005919031ef49a4",
+      "rate": 44100,
+      "channels": 2,
+      "bits": 24,
+      "frames": 14558208,
+      "bytes": 59825499,
+      "samples": 29116416,
+      "floatMismatches": 14390092,
+      "integerMismatches": 2325345,
+      "maxAbs": 1.1920928955078125e-07,
+      "maxIntegerDelta": 1,
+      "snrDB": 141.65172619863145,
+      "isolatedResources": {
+        "held": 116498432,
+        "reserved": 0,
+        "limit": 536870912,
+        "pending": 0,
+        "encodedCache": {
+          "bytes": 32768,
+          "limit": 67108864,
+          "hits": 0,
+          "reads": 0,
+          "joins": 0
+        },
+        "boundedPCM": {
+          "entries": 0,
+          "bytes": 0,
+          "capacity": 0
+        }
+      }
+    }
+  ],
+  "after": [
+    {
+      "id": "2670863319",
+      "md5": "cad47df6dd03b5faa82ffc244f6a99c1",
+      "rate": 44100,
+      "channels": 2,
+      "bits": 16,
+      "frames": 10238980,
+      "bytes": 27081483,
+      "samples": 20477960,
+      "floatMismatches": 0,
+      "integerMismatches": 0,
+      "maxAbs": 0,
+      "maxIntegerDelta": 0,
+      "snrDB": null,
+      "isolatedResources": {
+        "held": 81944608,
+        "reserved": 0,
+        "limit": 536870912,
+        "pending": 0,
+        "encodedCache": {
+          "bytes": 32768,
+          "limit": 67108864,
+          "hits": 0,
+          "reads": 0,
+          "joins": 0
+        },
+        "boundedPCM": {
+          "entries": 0,
+          "bytes": 0,
+          "capacity": 0
+        }
+      }
+    },
+    {
+      "id": "29027690",
+      "md5": "3cde75a6c33717b015cd3ad76870bc24",
+      "rate": 48000,
+      "channels": 2,
+      "bits": 24,
+      "frames": 11564179,
+      "bytes": 55543112,
+      "samples": 23128358,
+      "floatMismatches": 0,
+      "integerMismatches": 0,
+      "maxAbs": 0,
+      "maxIntegerDelta": 0,
+      "snrDB": null,
+      "isolatedResources": {
+        "held": 92546200,
+        "reserved": 0,
+        "limit": 536870912,
+        "pending": 0,
+        "encodedCache": {
+          "bytes": 32768,
+          "limit": 67108864,
+          "hits": 0,
+          "reads": 0,
+          "joins": 0
+        },
+        "boundedPCM": {
+          "entries": 0,
+          "bytes": 0,
+          "capacity": 0
+        }
+      }
+    },
+    {
+      "id": "1378406132",
+      "md5": "ba6b5fbd2f2f53f7b005919031ef49a4",
+      "rate": 44100,
+      "channels": 2,
+      "bits": 24,
+      "frames": 14558208,
+      "bytes": 59825499,
+      "samples": 29116416,
+      "floatMismatches": 0,
+      "integerMismatches": 0,
+      "maxAbs": 0,
+      "maxIntegerDelta": 0,
+      "snrDB": null,
+      "isolatedResources": {
+        "held": 116498432,
+        "reserved": 0,
+        "limit": 536870912,
+        "pending": 0,
+        "encodedCache": {
+          "bytes": 32768,
+          "limit": 67108864,
+          "hits": 0,
+          "reads": 0,
+          "joins": 0
+        },
+        "boundedPCM": {
+          "entries": 0,
+          "bytes": 0,
+          "capacity": 0
+        }
+      }
+    }
+  ],
+  "referencePCMIntegrity": [
+    {
+      "id": "2670863319",
+      "bits": 16,
+      "rate": 44100,
+      "samples": 20477960,
+      "streamInfoPCMMD5": "90429fc1eedd0cb33ba25b5efb1a6955",
+      "applePCMMD5": "90429fc1eedd0cb33ba25b5efb1a6955",
+      "match": true
+    },
+    {
+      "id": "29027690",
+      "bits": 24,
+      "rate": 48000,
+      "samples": 23128358,
+      "streamInfoPCMMD5": "84b8cf2a4c06e6977ca498f08daeedfd",
+      "applePCMMD5": "84b8cf2a4c06e6977ca498f08daeedfd",
+      "match": true
+    },
+    {
+      "id": "1378406132",
+      "bits": 24,
+      "rate": 44100,
+      "samples": 29116416,
+      "streamInfoPCMMD5": "e79bfa8769158bca6a662e8b24bbc008",
+      "applePCMMD5": "e79bfa8769158bca6a662e8b24bbc008",
+      "match": true
+    }
+  ],
+  "integerNormalization": {
+    "total": 16843008,
+    "checks": [
+      {
+        "bits": 8,
+        "integerValues": 256,
+        "mismatches": 0
+      },
+      {
+        "bits": 16,
+        "integerValues": 65536,
+        "mismatches": 0
+      },
+      {
+        "bits": 24,
+        "integerValues": 16777216,
+        "mismatches": 0
+      }
+    ]
+  },
+  "indexedAndOfflineOutput": {
+    "indexed": [
+      {
+        "id": "2670863319",
+        "bits": 16,
+        "rate": 44100,
+        "points": [
+          {
+            "target": 0,
+            "samples": 88200,
+            "mismatches": 0,
+            "maxAbs": 0,
+            "offlineUnityMismatches": 0
+          },
+          {
+            "target": 100,
+            "samples": 88200,
+            "mismatches": 0,
+            "maxAbs": 0
+          },
+          {
+            "target": 230.1764172335601,
+            "samples": 88200,
+            "mismatches": 0,
+            "maxAbs": 0
+          }
+        ],
+        "peakPCM": 7823392,
+        "limit": 33554432
+      },
+      {
+        "id": "29027690",
+        "bits": 24,
+        "rate": 48000,
+        "points": [
+          {
+            "target": 0,
+            "samples": 96000,
+            "mismatches": 0,
+            "maxAbs": 0,
+            "offlineUnityMismatches": 0
+          },
+          {
+            "target": 100,
+            "samples": 96000,
+            "mismatches": 0,
+            "maxAbs": 0
+          },
+          {
+            "target": 238.92039583333334,
+            "samples": 96000,
+            "mismatches": 0,
+            "maxAbs": 0
+          }
+        ],
+        "peakPCM": 8037528,
+        "limit": 33554432
+      },
+      {
+        "id": "1378406132",
+        "bits": 24,
+        "rate": 44100,
+        "points": [
+          {
+            "target": 0,
+            "samples": 88200,
+            "mismatches": 0,
+            "maxAbs": 0,
+            "offlineUnityMismatches": 0
+          },
+          {
+            "target": 100,
+            "samples": 88200,
+            "mismatches": 0,
+            "maxAbs": 0
+          },
+          {
+            "target": 328.11809523809524,
+            "samples": 88200,
+            "mismatches": 0,
+            "maxAbs": 0
+          }
+        ],
+        "peakPCM": 7806976,
+        "limit": 33554432
+      }
+    ],
+    "offlineUnitySynthetic": [
+      {
+        "rate": 44100,
+        "bits": 24,
+        "samples": 8192,
+        "mismatches": 0
+      },
+      {
+        "rate": 48000,
+        "bits": 24,
+        "samples": 8192,
+        "mismatches": 0
+      },
+      {
+        "rate": 96000,
+        "bits": 24,
+        "samples": 8192,
+        "mismatches": 0
+      },
+      {
+        "rate": 192000,
+        "bits": 24,
+        "samples": 8192,
+        "mismatches": 0
+      }
+    ],
+    "audibleNodesCreated": false
+  },
+  "liveControls": {
+    "version": "0.3.4",
+    "trace": [
+      {
+        "at": 317381,
+        "event": "web-loaded",
+        "id": "2670863319",
+        "origin": "native-source",
+        "rate": 44100,
+        "loadMs": 331
+      },
+      {
+        "at": 333540,
+        "event": "seek",
+        "id": "2670863319",
+        "position": 225.1764172335601
+      },
+      {
+        "at": 340583,
+        "event": "transition",
+        "from": "2670863319",
+        "to": "2670863152",
+        "scheduledGapFrames": 0
+      },
+      {
+        "at": 340756,
+        "event": "claimed",
+        "id": "2670863152",
+        "position": 0.17301587301587773,
+        "claimDelayMs": 173.40000009536743
+      },
+      {
+        "at": 381596,
+        "event": "seek",
+        "id": "2670863152",
+        "position": 117
+      },
+      {
+        "at": 381621,
+        "event": "restore-start",
+        "id": "2670863152",
+        "reason": "native-settings",
+        "position": 117
+      },
+      {
+        "at": 381652,
+        "event": "restored-native",
+        "id": "2670863152",
+        "reason": "native-settings",
+        "position": 117,
+        "playing": false,
+        "confirmed": true
+      }
+    ],
+    "nativeAfterFade": {
+      "enabled": true,
+      "compatible": true,
+      "id": "2670863152",
+      "phase": "native",
+      "ownsPlayback": false,
+      "playing": false,
+      "playbackMode": "continuous-web",
+      "loading": false,
+      "nativeOutputGated": false,
+      "startup": {
+        "phase": "web-ready",
+        "held": 0,
+        "released": 0
+      },
+      "awaitingGesture": false,
+      "nativeTransport": {
+        "load": 1,
+        "play": 0,
+        "pause": 2,
+        "seek": 1,
+        "stop": 0,
+        "unload": 0
+      },
+      "seekPending": false,
+      "seekSettling": false,
+      "position": 117,
+      "duration": 234.9238775510204,
+      "requestedLevel": "hires",
+      "actualLevel": "lossless",
+      "sourceRate": 44100,
+      "decodedRate": 44100,
+      "sampleRatePolicy": "source-matched",
+      "contextGeneration": 2,
+      "activeNodes": 0,
+      "deviceFormat": "unknown",
+      "sourceBits": 16,
+      "sourceChannels": 2,
+      "nativeAudioBlockers": [
+        "fade"
+      ],
+      "resourceOrigin": "native-source",
+      "claiming": false,
+      "memory": {
+        "held": 0,
+        "reserved": 0,
+        "limit": 536870912,
+        "pending": 0,
+        "encodedCache": {
+          "bytes": 0,
+          "limit": 67108864,
+          "hits": 3,
+          "reads": 51,
+          "joins": 0
+        },
+        "boundedPCM": {
+          "entries": 0,
+          "bytes": 0,
+          "capacity": 0
+        }
+      },
+      "mode": "playCycle",
+      "nativeAllowed": false,
+      "nativeCacheSource": {
+        "batches": 0,
+        "reads": 54,
+        "hits": 54,
+        "failures": 0,
+        "queued": 0,
+        "activePriority": null,
+        "generation": 2,
+        "closed": false,
+        "pendingClears": 0,
+        "fault": null
+      },
+      "nativeCacheFill": {
+        "filling": false,
+        "fillId": null,
+        "pendingPrevious": 0,
+        "retiredStalls": []
+      },
+      "localSource": false,
+      "queueVersion": 2,
+      "loadEpoch": 1,
+      "controlRevision": 6,
+      "systemMedia": {
+        "supported": true,
+        "active": true,
+        "failed": false,
+        "seekPending": false
+      },
+      "visualization": {
+        "active": false,
+        "failed": false,
+        "frames": 7614,
+        "lastPosition": 40.81666666666667,
+        "maxWorkMs": 3.4000000953674316,
+        "averageWorkMs": 0.2839768887943942,
+        "visualRate": 48000,
+        "visualChannels": 2,
+        "packetFrames": 400,
+        "packetBytes": 1600,
+        "maxPacketsPerTick": 6,
+        "resets": 4,
+        "skippedFrames": 0,
+        "affectsAudioOutput": false,
+        "renderClock": "output",
+        "renderClockHooks": [
+          "_AERenderMV",
+          "_AEWebSetPlaybackPosition"
+        ]
+      }
+    },
+    "postTransitionWebPausedSeekObserved": {
+      "id": "2670863152",
+      "position": 117,
+      "playing": false,
+      "ownsPlayback": true
+    },
+    "deviceAudioRecaptured": false
+  },
+  "optionFlags": {
+    "observations": [
+      {
+        "flag": "listenDolby",
+        "blockers": [
+          "dolby",
+          "fade"
+        ]
+      },
+      {
+        "flag": "systemAudioEnhance",
+        "blockers": [
+          "enhancement",
+          "fade"
+        ]
+      }
+    ],
+    "qualityPreferencesUnchanged": true,
+    "restoredFlags": {
+      "listenDolby": false,
+      "systemAudioEnhance": false
+    },
+    "final": {
+      "id": "482636090",
+      "playing": false,
+      "position": 160.98,
+      "blockers": [
+        "fade"
+      ],
+      "activeNodes": 0
+    }
+  },
+  "device": {
+    "interface": "CoreAudio default output nominal sample rate query",
+    "available": true,
+    "nominalRate": 48000,
+    "dacBitPerfectVerified": false
+  },
+  "package": {
+    "file": "gapless-player-mac-0.3.4.plugin",
+    "sha256": "5a495964af8d87609bf37f99f8667643eb9834b0a51c27066a43a91f92bb5df5",
+    "runtimeFiles": 7,
+    "runtimeMatch": true,
+    "zipIntegrity": true,
+    "old033KeptOutsidePlugins": true
+  },
+  "finalState": {
+    "version": "0.3.4",
+    "status": {
+      "enabled": true,
+      "compatible": true,
+      "id": "482636090",
+      "phase": "native",
+      "ownsPlayback": false,
+      "playing": false,
+      "playbackMode": "continuous-web",
+      "loading": false,
+      "nativeOutputGated": false,
+      "startup": {
+        "phase": "web-ready",
+        "held": 0,
+        "released": 0
+      },
+      "awaitingGesture": false,
+      "nativeTransport": {
+        "load": 2,
+        "play": 1,
+        "pause": 4,
+        "seek": 2,
+        "stop": 0,
+        "unload": 0
+      },
+      "seekPending": false,
+      "seekSettling": true,
+      "position": 160.98379591836743,
+      "duration": 178.213,
+      "requestedLevel": "hires",
+      "actualLevel": "lossless",
+      "sampleRatePolicy": "source-matched",
+      "contextGeneration": 2,
+      "activeNodes": 0,
+      "deviceFormat": "unknown",
+      "nativeAudioBlockers": [
+        "fade"
+      ],
+      "resourceOrigin": null,
+      "claiming": false,
+      "memory": {
+        "held": 0,
+        "reserved": 0,
+        "limit": 536870912,
+        "pending": 0,
+        "encodedCache": {
+          "bytes": 0,
+          "limit": 67108864,
+          "hits": 3,
+          "reads": 51,
+          "joins": 0
+        },
+        "boundedPCM": {
+          "entries": 0,
+          "bytes": 0,
+          "capacity": 0
+        }
+      },
+      "mode": "playCycle",
+      "nativeAllowed": false,
+      "nativeCacheSource": {
+        "batches": 0,
+        "reads": 54,
+        "hits": 54,
+        "failures": 0,
+        "queued": 0,
+        "activePriority": null,
+        "generation": 3,
+        "closed": false,
+        "pendingClears": 0,
+        "fault": null
+      },
+      "nativeCacheFill": {
+        "filling": false,
+        "fillId": null,
+        "pendingPrevious": 1,
+        "retiredStalls": [
+          0
+        ]
+      },
+      "localSource": false,
+      "queueVersion": 2,
+      "loadEpoch": 2,
+      "controlRevision": 10,
+      "systemMedia": {
+        "supported": true,
+        "active": true,
+        "failed": false,
+        "seekPending": false
+      },
+      "visualization": {
+        "active": false,
+        "failed": false,
+        "frames": 7614,
+        "lastPosition": 40.81666666666667,
+        "maxWorkMs": 3.4000000953674316,
+        "averageWorkMs": 0.2839768887943942,
+        "visualRate": 48000,
+        "visualChannels": 2,
+        "packetFrames": 400,
+        "packetBytes": 1600,
+        "maxPacketsPerTick": 6,
+        "resets": 4,
+        "skippedFrames": 0,
+        "affectsAudioOutput": false,
+        "renderClock": "output",
+        "renderClockHooks": [
+          "_AERenderMV",
+          "_AEWebSetPlaybackPosition"
+        ]
+      }
+    },
+    "modelId": "482636090",
+    "queueLength": 374,
+    "qualityPreference": 1999,
+    "playFade": true,
+    "listenDolby": false,
+    "systemAudioEnhance": false
+  },
+  "ui": {
+    "blankWindowObservedDuringManualRecovery": true,
+    "normalRestartRestoredWindow": true,
+    "finalOriginalSongAndPausedButtonObserved": true,
+    "originalPlayingPageStyleObserved": true,
+    "rootCauseOfTransientBlankWindowProven": false
+  },
+  "checks": {
+    "changedJavaScriptSyntaxFiles": 5,
+    "changedJavaScriptSyntax": "passed",
+    "macPackagingPythonAst": "passed",
+    "zipRuntimeByteMatch": true,
+    "newRepositoryTests": false,
+    "fullStaticChecks": false,
+    "applicationBuild": false
+  },
+  "limits": [
+    "Three actual FLAC files, 16/24-bit at 44.1/48 kHz; not every codec or source",
+    "96/192 kHz offline render samples are constructed PCM, not real Hi-Res FLAC",
+    "Same-rate unity gain offline output is not real-time system/device capture",
+    "No new DAC, Bluetooth or complete original NCM engine waveform comparison",
+    "Native system media progress rollback remains",
+    "Transient blank window during manual recovery cleared by restart; cause not proven",
+    "Native fade, Dolby or enhancement preferences route to native; gapless is then unavailable"
+  ],
+  "privateAudioProfilesUrlsOrScriptsCommitted": false
+}

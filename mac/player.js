@@ -71,15 +71,19 @@ plugin.onLoad(() => {
     } catch (error) { trace('capability-fallback', { reason: error.message }); return false; }
   }
   const quality = info => info?.soundQuality || QUALITY[state()?.playing?.resourcePlayingQuality] || info?.level;
+  const nativeAudioBlockers = s => Object.entries({
+    audioEffects: s?.audioEffect?.setting?.isOn || s?.assignedAudioEffect?.isOn
+      || s?.assignedAudioEffect?.setting?.isOn || s?.playing?.audioEffect?.isOpen,
+    loudness: s?.setting?.loudnessBalance, spatial: s?.setting?.systemSpatialSound,
+    enhancement: s?.setting?.systemAudioEnhance, dolby: s?.setting?.listenDolby, fade: s?.setting?.playFade,
+    speed: Number(s?.playing?.playingSpeed || 1) !== 1 || Number(s?.playing?.playingSpeedTrack || 1) !== 1,
+  }).filter(([, value]) => value).map(([name]) => name);
   const allowed = info => {
     const s = state();
     return !!(S.enabled && S.compatible && s && (!info || (!info.freeTrialInfo
       && (info.audioType === 'track' || localSource.path(info))))
       && !s.playing?.isPlayingVideo && !s.playing?.resourceIsTryType
-      && Number(s.playing?.playingSpeed || 1) === 1 && Number(s.playing?.playingSpeedTrack || 1) === 1
-      && !s.audioEffect?.setting?.isOn && !s.assignedAudioEffect?.isOn
-      && !s.assignedAudioEffect?.setting?.isOn && !s.playing?.audioEffect?.isOpen
-      && !s.setting?.loudnessBalance && !s.setting?.systemSpatialSound);
+      && nativeAudioBlockers(s).length === 0);
   };
   const rowId = row => String(row.resourceId || row.trackId || row.id);
   const rows = () => state()?.playingList?.curPlayingList || [];
@@ -1401,7 +1405,7 @@ plugin.onLoad(() => {
     } catch (error) { trace('reload-recovery-error', { reason: error.message }); }
   }
   window.gaplessMac = {
-    version: '0.3.3', status: () => {
+    version: '0.3.4', status: () => {
       reconcile(); const c = S.current;
       return { enabled: S.enabled, compatible: S.compatible, id: c?.id, phase: S.phase,
         ownsPlayback: !!c?.owns, playing: c?.owns ? !!c.playing : S.nativePlaying,
@@ -1411,6 +1415,8 @@ plugin.onLoad(() => {
         seekPending: !!c?.nativeSeekTokens?.size, seekSettling: performance.now() < (c?.seekStableAt || 0),
         position: position(), duration: c?.duration, requestedLevel: c?.requestedLevel, actualLevel: c?.level || c?.info?.level,
         sourceRate: c?.entry?.spec.rate, decodedRate: c?.entry?.buffer.sampleRate, ...clock.status(),
+        sourceBits: c?.entry?.spec.bits, sourceChannels: c?.entry?.spec.channels,
+        nativeAudioBlockers: nativeAudioBlockers(state()),
         resourceOrigin: c?.entry?.origin || null,
         next: nextTrack()?.id, scheduled: S.scheduled?.id, claiming: S.claim,
         memory: resources.status(), mode: state()?.playing?.playingMode, nativeAllowed: allowed(c?.info),

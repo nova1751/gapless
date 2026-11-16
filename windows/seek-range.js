@@ -128,10 +128,9 @@
         if (result.errors?.length || result.samplesDecoded !== next.sample - p.sample
           || result.sampleRate !== entry.spec.rate || result.bitDepth !== entry.spec.bits
           || result.channelData.length !== entry.spec.channels) throw new Error('seek-range-decode');
-        const max = 2 ** (entry.spec.bits - 1) - 1, positive = Math.fround(1 / max), negative = Math.fround(1 / (max + 1));
+        globalThis.GaplessAudioResources.normalizeFlacPCM(result.channelData, entry.spec.bits);
         for (let ch = 0; ch < entry.spec.channels; ch++) {
           const pcm = result.channelData[ch];
-          for (let i = 0; i < pcm.length; i++) { const v = Math.round(pcm[i] * max); pcm[i] = v * (v < 0 ? negative : positive); }
           if (!entry.stream.bounded) entry.buffer.copyToChannel(pcm, ch, p.sample);
         }
         if (entry.stream.bounded) {

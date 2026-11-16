@@ -1,7 +1,7 @@
 /* MIT. Incremental FLAC acquisition; the playback clock only sees decoded PCM. */
 (() => {
   'use strict';
-  const { AudioResources, header, fingerprint } = globalThis.GaplessAudioResources;
+  const { AudioResources, header, fingerprint, normalizeFlacPCM } = globalThis.GaplessAudioResources;
   // Yield to the UI without the nested/background setTimeout minimum delay.
   // This is a main-thread task boundary, not a worker or CSP workaround.
   const yieldWork = (() => {
@@ -87,17 +87,9 @@
             || result.channelData.length !== spec.channels) throw new Error('decode-stream-spec');
           const end = entry.stream.decodedFrames + result.samplesDecoded;
           if (end > spec.frames) throw new Error('decode-stream-length');
-          // libFLAC's wrapper divides both signs by the positive full scale.
-          // Recover exact <=24-bit integers, then match Chromium's signed PCM
-          // conversion (float32 reciprocal, asymmetric positive/negative scale).
-          const max = 2 ** (spec.bits - 1) - 1;
-          const positive = Math.fround(1 / max), negative = Math.fround(1 / (max + 1));
+          normalizeFlacPCM(result.channelData, spec.bits);
           for (let ch = 0; ch < spec.channels; ch++) {
             const pcm = result.channelData[ch];
-            for (let i = 0; i < pcm.length; i++) {
-              const integer = Math.round(pcm[i] * max);
-              pcm[i] = integer * (integer < 0 ? negative : positive);
-            }
             entry.buffer.copyToChannel(pcm, ch, entry.stream.decodedFrames);
           }
           entry.stream.decodedFrames = end;

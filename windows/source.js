@@ -123,7 +123,7 @@ const WindowsSource = (() => {
       || state.assignedAudioEffect?.setting?.isOn || playing.audioEffect?.isOpen;
     const blockers = Object.entries({
       account: !account, audioEffects, loudness: setting.loudnessBalance,
-      spatial: setting.systemSpatialSound, fade: setting.playFade,
+      spatial: setting.systemSpatialSound, enhancement: setting.systemAudioEnhance, fade: setting.playFade,
       dolby: setting.listenDolby, trial: playing.resourceIsTryType, video: playing.isPlayingVideo,
       speed: Number(playing.playingSpeed || 1) !== 1 || Number(playing.playingSpeedTrack || 1) !== 1,
     }).filter(([, blocked]) => blocked).map(([name]) => name);
