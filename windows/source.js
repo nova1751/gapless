@@ -152,11 +152,39 @@ const WindowsSource = (() => {
       blockers, nativeAudioPreferences, nativeAudioPolicy: gaplessEnabled ? 'gapless-priority' : 'native',
       playing: playing.playingState === 2, playFade: !!setting.playFade };
   }
-  function acceptsCandidate(preload, snap, current) {
-    if (!snap.nextKnown || preload?.code !== 1 || !valid(preload.info) || !snap.queue.includes(preload.row)) return false;
-    const id = trackId(preload.info);
-    return rowId(preload.row) === id && snap.queue.filter(row => rowId(row) === id).length === 1
-      && (snap.mode === 'playOneCycle' ? id === trackId(current.info) : id !== trackId(current.info));
+  function acceptsCandidate(preload, target) {
+    return preload?.code === 1 && valid(preload.info) && !!preload.row
+      && rowId(preload.row) === trackId(preload.info) && queueRowKey(preload.row) === target.rowKey;
+  }
+  function queueRowKey(row) {
+    // Order is checked by the host selector. Include the selected row's source
+    // context, so a new row with the same song ID cannot reuse stale audio.
+    try {
+      return JSON.stringify([row.resourceId, row.trackId, row.id, row.resourceType,
+        row.scene, row.href, row.fromInfo, row.localTrack, row.track]);
+    } catch { return null; }
+  }
+  function boundaryTarget(native, snap, fromId) {
+    const queue = snap?.queue, mode = snap?.mode;
+    if (!Array.isArray(queue) || !fromId
+      || !['playOrder', 'playCycle', 'playOneCycle', 'playRandom'].includes(mode)) return null;
+    const origins = queue.filter(row => rowId(row) === fromId);
+    if (origins.length !== 1) return null;
+    const origin = origins[0];
+    if (mode !== 'playOneCycle') {
+      const order = mode === 'playRandom' ? 'randomOrder' : 'displayOrder';
+      if (mode === 'playRandom' && (!native.supportsRandom || queue.length < 2)) return null;
+      if (!queue.every(row => Number.isFinite(row[order]))
+        || new Set(queue.map(row => row[order])).size !== queue.length
+        || (mode === 'playOrder' && !queue.some(row => row[order] > origin[order]))) return null;
+    }
+    const row = native.nextRow(mode, queue, origin);
+    if (!row || !queue.includes(row)) return null;
+    const id = rowId(row);
+    if (queue.filter(item => rowId(item) === id).length !== 1
+      || (mode === 'playOneCycle' ? id !== fromId : id === fromId)) return null;
+    const fromKey = queueRowKey(origin), toKey = queueRowKey(row);
+    return fromKey && toKey ? { row, rowKey: toKey, key: JSON.stringify([fromKey, toKey]) } : null;
   }
   function sourceInfo(info, row) {
     const path = localPath(info);
@@ -168,5 +196,6 @@ const WindowsSource = (() => {
     return { ...info, songDuration: duration, fileSize: state.size,
       localKey: path.toLowerCase(), localVersion: state.version };
   }
-  return { valid, same, connect, snapshot, acceptsCandidate, trackId, sourceInfo, openLocal, openLocalInput };
+  return { valid, same, connect, snapshot, acceptsCandidate, boundaryTarget,
+    trackId, sourceInfo, openLocal, openLocalInput };
 })();

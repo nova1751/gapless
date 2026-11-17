@@ -53,6 +53,7 @@ patched = patched.replace(loop_anchor, "!v)return;if(d===r.i.PlayOneCycle)p=v;el
 patched += """
 ;return {
   supportsRandom: RANDOM_CAPABILITY,
+  nextRow: (mode, queue, row) => mode === r.i.PlayOneCycle ? row : O.a(mode, queue, row, 1),
   read: () => c.a.getStore(),
   resolveCurrent: () => new Promise((resolve, reject) => {
     const state = c.a.getStore(), row = state.playing.curPlaying;
