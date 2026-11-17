@@ -873,7 +873,8 @@ plugin.onLoad(() => {
     c.recoveryPosition = target; c.recoveryPlaying = desired; c.recoveryHeard = clock.heard(c);
     S.lastFallback = { at: Math.round(performance.now()), id: c.id,
       reason: /^[a-z0-9-]+$/.test(reason) ? reason : 'source-error', position: target,
-      next: S.scheduled?.id || nextTrack()?.id || null, sourceRate: c.entry?.spec.rate };
+      next: S.scheduled?.id || nextTrack()?.id || null, sourceRate: c.entry?.spec.rate,
+      streamError: c.entry?.stream?.error || null };
     c.recoverySucceeded = false; c.blocked = true; c.loading = false; S.claim = false;
     S.phase = 'restoring'; stopCurrent(); visual.stop(); trace('restore-start', { id: c.id, reason, position: target });
     const run = async () => {

@@ -1,0 +1,89 @@
+{
+  "date": "2026-11-17",
+  "sourceVersion": "0.3.11",
+  "installedVersion": "0.3.11",
+  "loaderVersion": "0.3.10",
+  "liveFix": {
+    "version": "0.3.11",
+    "scope": "indexed-range-parser-and-read-errors",
+    "at": 2184562
+  },
+  "runtimeFilesMatchPackage": true,
+  "pageReloaded": false,
+  "capturedFailure": {
+    "loaderVersion": "0.3.10",
+    "id": "22676181",
+    "position": 220.0870975056689,
+    "duration": 244.50666666666666,
+    "sourceRate": 44100,
+    "reason": "context-stream-failed",
+    "outputReason": "stream-integrity",
+    "cursorSeconds": 223,
+    "nativeRestoredAfterMs": 56,
+    "next": "22676164"
+  },
+  "cachedRangeReproduction": {
+    "cacheCompleteAtAudit": true,
+    "fromSeconds": 225.9998185941043,
+    "toSeconds": 227.99673469387756,
+    "expectedFrames": 88064,
+    "oldDecodeFileFrames": 87040,
+    "missingFrames": 1024,
+    "nextHeaderLookaheadBytes": 16,
+    "streamingDecodedFrames": 88064,
+    "decoderErrors": []
+  },
+  "fixedRangeAudit": {
+    "id": "22676181",
+    "intervals": 123,
+    "passed": 123,
+    "failures": [],
+    "comparison": {
+      "expectedFrames": 88064,
+      "combinedDecodedFrames": 176128,
+      "maxDifference": 0,
+      "errors": []
+    },
+    "pcmBytes": 33349824
+  },
+  "postFixPlayback": {
+    "id": "29750586",
+    "position": 101.34843537414963,
+    "duration": 183.29333333333332,
+    "playing": true,
+    "ownsPlayback": true,
+    "next": "1378406132",
+    "scheduled": "1378406132",
+    "lastRangeFailure": null
+  },
+  "postFixTrace": [
+    {
+      "at": 2368540,
+      "event": "transition",
+      "from": "29567155",
+      "to": "29750586",
+      "scheduledGapFrames": 0
+    },
+    {
+      "at": 2368738,
+      "event": "claimed",
+      "id": "29750586",
+      "position": 0.20811791383221134,
+      "claimDelayMs": 197.09999990463257
+    }
+  ],
+  "limitations": [
+    "Original underlying read exception was masked; same-cache indexed decode defect independently reproduced at the corresponding lookahead position.",
+    "Full cached source intervals checked in an isolated decoder; no new audio recording or native/Web final output AB.",
+    "Mac UI unavailable. Page not reloaded; narrow decoder hotfix active over loader 0.3.10, installed 0.3.11 prepared for next reload.",
+    "Windows shared source fixed in 0.4.15; installed/runtime evidence remains 0.4.14, no Windows device validation in this turn."
+  ],
+  "observedNaturalBoundary": {
+    "from": "29567155",
+    "to": "29750586",
+    "scheduledGapFrames": 0,
+    "claimDelayMs": 197.09999990463257,
+    "nativeFallbackObserved": false,
+    "audioCapture": false
+  }
+}

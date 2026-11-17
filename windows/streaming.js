@@ -25,7 +25,7 @@
       return { ...super.status(), encodedCache: this.songCache.status(), boundedPCM: {
         entries: bounded.length, bytes: bounded.reduce((n, entry) => n + entry.buffer.bytes, 0),
         capacity: bounded.reduce((n, entry) => n + entry.buffer.limit, 0),
-      } };
+      }, lastRangeFailure: this.lastRangeFailure && { ...this.lastRangeFailure } };
     }
     clearCachedData(active) {
       for (const entry of this.entries.values()) entry.stream?.ensureController?.abort();
@@ -61,7 +61,12 @@
       state.ensureController?.abort();
       const controller = state.ensureController = new AbortController(); state.ensureTarget = target;
       void globalThis.GaplessSeekRange.prepare(this, entry, target, controller.signal)
-        .catch(() => { if (!controller.signal.aborted) state.error = 'indexed-read-failed'; })
+        .catch(error => {
+          if (controller.signal.aborted) return;
+          state.error = /^[a-z0-9-]+$/.test(error.message) ? error.message : 'indexed-read-failed';
+          this.lastRangeFailure = { at: Math.round(performance.now()), id: entry.id, target, reason: state.error };
+          this.trace('indexed-read-failed', this.lastRangeFailure);
+        })
         .finally(() => { if (state.ensureController === controller) state.ensureController = null; });
     }
     async decodeInput(job, source, input) {
@@ -81,7 +86,7 @@
         let prefix = new Uint8Array(0), spec, workAt = performance.now();
         const append = result => {
           this.check(job);
-          if (result.errors?.length) throw new Error('decode-stream-frame');
+          if ((result.errors || result.U)?.length) throw new Error('decode-stream-frame');
           if (!result.samplesDecoded) return;
           if (!entry || result.sampleRate !== spec.rate || result.bitDepth !== spec.bits
             || result.channelData.length !== spec.channels) throw new Error('decode-stream-spec');
@@ -295,7 +300,8 @@
           if (cursor === entry.buffer.length) clearInterval(timer);
         } catch (error) {
           clearInterval(timer);
-          this.trace('stream-output-fallback', { reason: error.message, position: this.position(track),
+          this.trace('stream-output-fallback', { id: track.id, reason: error.message, sourceError: stream.error,
+            position: this.position(track),
             decodedSeconds: stream.decodedFrames / rate, cursorSeconds: cursor / rate });
           // Player owns restoration and current intent; do not fake an End.
           this.onState('stream-failed', track);

@@ -85,6 +85,36 @@
       else stream.ranges.push(range);
     }
   }
+  function frameHeader(bytes, blockSize) {
+    if (bytes.length < 6 || bytes[0] !== 255 || (bytes[1] & 254) !== 248 || (bytes[3] & 1))
+      throw new Error('seek-frame-header');
+    let value = bytes[4], cursor = 5;
+    if (value >= 128) {
+      let count = 0, mask = 128;
+      while (value & mask) { count++; mask >>= 1; }
+      if (count < 2 || count > 7) throw new Error('seek-frame-number');
+      value &= mask - 1;
+      for (let k = 1; k < count; k++) {
+        const v = bytes[cursor++];
+        if ((v & 192) !== 128) throw new Error('seek-frame-number');
+        value = value * 64 + (v & 63);
+      }
+    }
+    const block = bytes[2] >> 4, rate = bytes[2] & 15;
+    if (!block || rate === 15) throw new Error('seek-frame-header');
+    cursor += block === 6 ? 1 : block === 7 ? 2 : 0;
+    cursor += rate === 12 ? 1 : rate === 13 || rate === 14 ? 2 : 0;
+    if (cursor >= bytes.length) throw new Error('seek-frame-header');
+    let crc = 0;
+    for (let i = 0; i < cursor; i++) {
+      crc ^= bytes[i];
+      for (let bit = 0; bit < 8; bit++) crc = ((crc << 1) ^ (crc & 128 ? 7 : 0)) & 255;
+    }
+    if (crc !== bytes[cursor]) throw new Error('seek-frame-header-crc');
+    const sample = bytes[1] & 1 ? value : value * blockSize;
+    if (!Number.isSafeInteger(sample)) throw new Error('seek-frame-number');
+    return { sample, length: cursor + 1 };
+  }
   async function prepare(resources, entry, target, signal, ahead = 8) {
     const points = entry.stream?.seekPoints, readRange = entry.stream?.readRange;
     if (!points || !readRange || entry.stream.done) return;
@@ -107,25 +137,25 @@
         if (until(entry, points[n].sample) >= points[n + 1].sample) continue;
         const p = points[n], next = points[n + 1];
         // Bound one range's encoded bytes and temporary PCM before allocating.
-        if (next.offset - p.offset > 2 * MiB || (next.sample - p.sample) * entry.spec.channels * 4 > 4 * MiB)
+        const readEnd = Math.min(points[points.length - 1].offset, next.offset + 16);
+        if (readEnd - p.offset > 2 * MiB || (next.sample - p.sample) * entry.spec.channels * 4 > 4 * MiB)
           throw new Error('seek-range-budget');
-        const bytes = await readRange(p.offset, next.offset, signal); check();
-        if (bytes[0] !== 255 || (bytes[1] & 254) !== 248) throw new Error('seek-frame-header');
-        let value = bytes[4], cursor = 5;
-        if (value >= 128) {
-          let count = 0, mask = 128;
-          while (value & mask) { count++; mask >>= 1; }
-          if (count < 2 || count > 7) throw new Error('seek-frame-number');
-          value &= mask - 1;
-          for (let k = 1; k < count; k++) {
-            const v = bytes[cursor++];
-            if ((v & 192) !== 128) throw new Error('seek-frame-number');
-            value = value * 64 + (v & 63);
-          }
+        const bytes = await readRange(p.offset, readEnd, signal); check();
+        if (frameHeader(bytes, points.blockSize).sample !== p.sample) throw new Error('seek-frame-position');
+        if (readEnd > next.offset) {
+          // The pinned parser can drop a valid final frame when an indexed
+          // interval is presented as EOF. Give its streaming parser bounded
+          // lookahead containing the following verified frame header instead.
+          const boundary = frameHeader(bytes.subarray(next.offset - p.offset), points.blockSize);
+          if (boundary.sample !== next.sample) throw new Error('seek-frame-position');
         }
-        if ((bytes[1] & 1 ? value : value * points.blockSize) !== p.sample) throw new Error('seek-frame-position');
-        const result = await decoder.decodeFile(bytes); check();
-        if (result.errors?.length || result.samplesDecoded !== next.sample - p.sample
+        // Do not flush lookahead as a complete file: a highly compressed next
+        // frame could otherwise be emitted too. Only real EOF uses decodeFile.
+        const result = readEnd > next.offset ? await decoder.decode(bytes) : await decoder.decodeFile(bytes);
+        if (readEnd > next.offset) await decoder.reset();
+        check();
+        // The pinned minified bundle names its decoder error array `U`.
+        if ((result.errors || result.U)?.length || result.samplesDecoded !== next.sample - p.sample
           || result.sampleRate !== entry.spec.rate || result.bitDepth !== entry.spec.bits
           || result.channelData.length !== entry.spec.channels) throw new Error('seek-range-decode');
         globalThis.GaplessAudioResources.normalizeFlacPCM(result.channelData, entry.spec.bits);
