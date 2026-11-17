@@ -1,24 +1,23 @@
 {
   "date": "2026-11-17",
-  "baseMain": "3402692",
+  "baseMain": "924f6d8",
   "mac": {
-    "sourceVersion": "0.3.11",
-    "installedVersion": "0.3.11",
-    "runtimeVersion": "0.3.10",
-    "package": "releases/gapless-player-mac-0.3.11.plugin",
-    "packageSha256": "c6e1713d68dd277b97e80fce22ef4b7b4b3d50f45b8a5cc39ceadcbb09f60330",
-    "runtimeMatchesPackage": false,
+    "sourceVersion": "0.3.12",
+    "installedVersion": "0.3.12",
+    "runtimeVersion": "0.3.12",
+    "package": "releases/gapless-player-mac-0.3.12.plugin",
+    "packageSha256": "2fcb42c09451a672ede9fc7acc092c711e8ba2c031849c4709c4494de8aa2684",
+    "runtimeMatchesPackage": true,
     "clientVersion": "3.1.12 (3444)",
     "hostVersion": "0.1.7",
     "menuVersion": "1.2.1",
     "menuSha256": "cf966fbefd0b8f2cdf50c8276c9f1bdbe729d33f5d73d7f6ffb6ce1c22329a9f",
-    "evidence": "docs/verification/mac-indexed-decoder-0.3.11.json",
+    "evidence": "docs/verification/mac-progress-recovery-0.3.12.json",
     "menuEvidence": "docs/verification/mac-quick-menu-1.2.1.json",
     "marketPluginVersion": "0.8.0",
     "marketExposed": true,
     "marketPluginEnabled": true,
     "managerAvailable": true,
-    "liveDecoderFixVersion": "0.3.11",
     "runtimeFilesMatchPackage": true
   },
   "windows": {
@@ -59,7 +58,7 @@
     "Windows 0.4.14 runtime verification covers manager navigation and PluginMarket.",
     "Mac menu 1.2.1 provides a host-styled gapless quick switch and Manage plugins entry; the quick switch and gapless 0.3.9 host checkbox share the existing playback transaction. Market remains independently configurable.",
     "Mac 0.3.10 retains valid scheduled/claiming adjacent occurrences after unrelated queue changes. Windows equivalent is a recommendation, not implemented or validated in this turn.",
-    "Mac 0.3.11 installed and runtime files prepared, but current page remains loader 0.3.10 with a live indexed-decoder fix to preserve ongoing playback. Full page reload/UI acceptance pending.",
-    "Windows 0.4.15 shared indexed-decoder fix is source-only; installed/runtime 0.4.14 and its package hash retain their historical meaning."
+    "Windows 0.4.15 shared indexed-decoder fix is source-only; installed/runtime 0.4.14 and its package hash retain their historical meaning.",
+    "Mac 0.3.12 installed and running; native fallback preserves the original pending SDK Load callback. Actual source-read failure injection clears the client loading gate and native progress advances. Previous indexed decoder fix is included. Windows not operated."
   ]
 }

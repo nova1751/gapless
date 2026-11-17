@@ -1,0 +1,99 @@
+{
+  "date": "2026-11-17",
+  "version": "0.3.12",
+  "before": {
+    "id": "1909926053",
+    "title": "Out of Time",
+    "phase": "native",
+    "playing": false,
+    "nativePosition": 183.7475,
+    "uiPosition": "00:00",
+    "isLoadingFirst": true,
+    "progressLoadingGate": true,
+    "nativeProgressDelivered": true,
+    "hostApiListening": false,
+    "injectorAlive": false,
+    "cacheFailure": "Failed to fetch"
+  },
+  "faultInjection": {
+    "version": "0.3.12",
+    "probe": {
+      "id": "1909926053",
+      "hits": 1
+    },
+    "id": "1909926053",
+    "phase": "native",
+    "playing": true,
+    "position": 9.941199999809266,
+    "gate": false,
+    "isLoadingFirst": false,
+    "playId": "1909926053",
+    "native": {
+      "playId": "1909926053",
+      "current": "9.05",
+      "cacheProgress": "1.0000"
+    },
+    "trace": [
+      {
+        "at": 627910,
+        "event": "web-load-fallback",
+        "id": "1909926053",
+        "reason": "native-only-cache-probe-unavailable"
+      },
+      {
+        "at": 627910,
+        "event": "restore-start",
+        "id": "1909926053",
+        "reason": "web-load-native-only-cache-probe-unavailable",
+        "position": 0
+      },
+      {
+        "at": 627910,
+        "event": "recovery-load-route",
+        "id": "1909926053",
+        "pendingSdkLoad": true,
+        "sdkSelection": false
+      },
+      {
+        "at": 627958,
+        "event": "restored-native",
+        "id": "1909926053",
+        "reason": "web-load-native-only-cache-probe-unavailable",
+        "position": 0,
+        "playing": false,
+        "confirmed": true
+      }
+    ]
+  },
+  "restoration": {
+    "id": "1909926053",
+    "position": 183.7475,
+    "playing": false,
+    "seekCode": 0
+  },
+  "finalObservation": {
+    "id": "431610014",
+    "phase": "owned",
+    "playing": true,
+    "position": 191.02281179138322,
+    "userSelectedDifferentTrack": true
+  },
+  "scope": {
+    "localSyntax": true,
+    "packageIntegrity": true,
+    "actualPageReload": true,
+    "uiProgressAdvanced": true,
+    "nativeFallbackProgressAdvanced": true,
+    "newAudioRecording": false,
+    "windowsOperated": false,
+    "hostExitCauseEstablished": false
+  },
+  "installation": {
+    "installedVersion": "0.3.12",
+    "runtimeVersion": "0.3.12",
+    "runtimeFilesMatchPackage": true,
+    "packageSha256": "2fcb42c09451a672ede9fc7acc092c711e8ba2c031849c4709c4494de8aa2684",
+    "previousPackageRetained": "0.3.11",
+    "hostApiHealthyAfterAttach": true
+  }
+}

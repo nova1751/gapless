@@ -451,6 +451,7 @@ plugin.onLoad(() => {
       const args = [c.id, { code: 0, duration: c.duration }];
       if (msg.seq) {
         bridge.dispatch(msg.seq, args); bridge.emit('audioplayer.onLoad', args);
+        if (c.pendingSdkLoad === msg) c.pendingSdkLoad = null;
         releaseLoadPlayGuard(c, epoch);
       } else {
         // A saved snapshot has no pending SDK Load. Do not complete an
@@ -479,6 +480,7 @@ plugin.onLoad(() => {
       if (!msg.seq) return;
       if (code === 0) c.nativeLoadPlayPending = true;
       bridge.dispatch(msg.seq, args); bridge.emit('audioplayer.onLoad', args);
+      if (c.pendingSdkLoad === msg) c.pendingSdkLoad = null;
       releaseLoadPlayGuard(c, epoch);
     });
   }
@@ -558,6 +560,7 @@ plugin.onLoad(() => {
   async function loadOwned(msg, c) {
     if (c.webLoadRunning) return;
     c.webLoadRunning = true;
+    if (msg.command === 'audioplayer.load' && msg.seq) c.pendingSdkLoad = msg;
     const epoch = S.epoch, loadAt = performance.now(), timings = {};
     c.loadAt = c.pauseAfterClaimRevision != null || msg.resumeExisting && !c.playing ? null : loadAt;
     try {
@@ -620,7 +623,6 @@ plugin.onLoad(() => {
         trace('web-start-awaiting-gesture', { id: c.id }); return;
       }
       c.loading = false; c.playing = c.loadIntent;
-      if (error.message.startsWith('native-only-cache-')) c.restoreSelection = true;
       trace('web-load-fallback', { id: c.id, reason: error.message });
       // Reuse the exact authorized Native Load, never substitute a lower quality.
       await restoreNative(`web-load-${error.message}`);
@@ -888,7 +890,16 @@ plugin.onLoad(() => {
         // Direct startup restoration may precede the SDK's first Load, which
         // is also when it registers onLoad. Reconstruct through the SDK when
         // the current row already matches; otherwise use its selection flow.
-        const needsSelection = !c.info || c.restoreSelection || !bridge.registrations['audioplayer.onLoad'];
+        // An intercepted SDK Load still owns the client's Load subscriber.
+        // Calling SDK play again would overwrite it, leaving the original
+        // model workflow (and its progress loading gate) pending forever.
+        // Reuse that exact authorized payload and complete the original Load
+        // once native transport has restored the latest playback intent.
+        const pendingSdkLoad = !!c.pendingSdkLoad;
+        if (pendingSdkLoad && !c.info) throw new Error('native-recovery-pending-load-info-unavailable');
+        const needsSelection = !pendingSdkLoad
+          && (!c.info || c.restoreSelection || !bridge.registrations['audioplayer.onLoad']);
+        trace('recovery-load-route', { id: c.id, pendingSdkLoad, sdkSelection: needsSelection });
         c.recoverySelecting = !!needsSelection;
         // Native local Load may notify again after the reconstruction RPC has
         // settled. Those replies still belong to recovery, not a new SDK Play.
@@ -1120,7 +1131,7 @@ plugin.onLoad(() => {
         && (localClaim || c.level === info?.level && c.entry?.hash
           && Resources.fingerprint({ ...info, url: info?.musicurl }) === c.entry.hash)) {
         if (localClaim) {
-          const epoch = S.epoch; c.info = info;
+          const epoch = S.epoch; c.info = info; c.pendingSdkLoad = msg;
           void normalizeSource(info, c.row).then(normalized => {
             if (!validRecovery(c, epoch) || !S.claim) {
               bridge.dispatch(msg.seq, [id, { code: -1 }]); return;
