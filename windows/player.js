@@ -73,10 +73,12 @@ plugin.onLoad(async () => {
       id: source.trackId(info), account: snap.account, level: snap.quality,
       duration: Number(info.songDuration) / 1000,
     });
+    // Queue mode determines the next song, not the current Web Audio source.
     const sameEnvironment = (a, b) => b?.capable && !customOutput
-      && a?.mode === b.mode && a?.quality === b.quality && a?.account === b.account;
+      && a?.quality === b.quality && a?.account === b.account;
     const matchingBoundary = (candidate, snap) => {
-      if (!candidate || !sameEnvironment(candidate.snapshot, snap)) return null;
+      if (!candidate || !sameEnvironment(candidate.snapshot, snap)
+        || candidate.snapshot.mode !== snap.mode) return null;
       const target = source.boundaryTarget(native, snap, candidate.snapshot.sourceId);
       return target?.key === candidate.boundaryKey ? target : null;
     };
@@ -1451,22 +1453,29 @@ plugin.onLoad(async () => {
             playFade: snap.playFade, blockers: snap.blockers, nextKnown: snap.nextKnown });
         }
         clock.setVolume(snap.volume);
-        const finishLast = c.owns && snap.terminal && sameEnvironment(c.environment, snap);
-        if (!enabled() || (!snap.nextKnown && !finishLast) || !snap.capable || customOutput) {
+        if (!enabled() || !snap.capable || customOutput) {
           cancelCandidate();
           if (c.owns && !c.claimed) {
-            void recover(c, 'native-settings-or-queue');
+            void recover(c, 'native-settings');
           }
           if (!c.owns && !switchIn) resources.retain([]);
           return;
         }
-        if (c.owns && !sameEnvironment(c.environment, snap)) {
+        if (c.owns && (!sameEnvironment(c.environment, snap)
+          || (snap.sourceId && snap.sourceId !== source.trackId(c.info)))) {
           void recover(c, 'environment-changed');
           return;
         }
-        if (selected && !matchingBoundary(selected, snap)) {
+        // Random order can be absent or incomplete while the host updates its
+        // queue. Drop the old reservation without interrupting this song.
+        if (selected && (!snap.nextKnown || !matchingBoundary(selected, snap))) {
           cancelCandidate();
+          if (c.owns) resources.retain([makeRef(c.info, c.environment)]);
           c.prepareAttempts = 0; c.prepareAfter = 0;
+        }
+        if (!c.owns && !snap.nextKnown) {
+          if (!switchIn) resources.retain([]);
+          return;
         }
         if (!source.valid(c.info) || c.blocked) return;
         if (c.owns) {
@@ -1481,7 +1490,7 @@ plugin.onLoad(async () => {
           if (c.claimed && performance.now() - (c.claimAt || 0) > 800) c.claimed = false;
           // Paused playback still has a valid authorized source and queue.
           // Prepare only; schedule() remains gated on actual playback intent.
-          if (!temporaryBridge && !c.claimed && !finishLast && !selected) void prepare(c, snap);
+          if (!temporaryBridge && !c.claimed && snap.nextKnown && !selected) void prepare(c, snap);
           maybeFill(c);
           if (!c.playing || c.claimed) return;
           if (performance.now() - lastProgress > 50) { lastProgress = performance.now(); progress(c); }
@@ -1494,11 +1503,7 @@ plugin.onLoad(async () => {
             if (bridgeWindow.shouldReturn(c.duration, clock.outputPosition(c))) void handBack(c, 'bridge-head-complete');
             return;
           }
-          if (finishLast) cancelCandidate();
-          else {
-            if (!selected) void prepare(c, snap);
-            schedule(c, selected);
-          }
+          if (snap.nextKnown) schedule(c, selected);
         } else if (!temporaryBridge && !nativeSourceMode && enabled() && snap.nextKnown && c.nativePlaying && snap.playing) {
           // Prepare an authorized next source without waiting for a prior listen. Never interrupt
           // an already sounding native instance to chase Web ownership.
