@@ -52,7 +52,9 @@ patched = patched.replace(loop_anchor, "!v)return;if(d===r.i.PlayOneCycle)p=v;el
 
 patched += """
 ;return {
-  supportsRandom: RANDOM_CAPABILITY,
+  // The resolver owns random ordering; F only delegates to it.
+  supportsRandom: typeof O.a === 'function' && ['PlayRandom', 'randomOrder', 'displayOrder']
+    .every(marker => String(O.a).includes(marker)),
   nextRow: (mode, queue, row) => mode === r.i.PlayOneCycle ? row : O.a(mode, queue, row, 1),
   read: () => c.a.getStore(),
   resolveCurrent: () => new Promise((resolve, reject) => {
@@ -73,7 +75,6 @@ patched += """
   })
 };
 """
-patched = patched.replace('RANDOM_CAPABILITY', json.dumps('PlayRandom' in original and 'randomOrder' in original))
 selector = "const selector = " + json.dumps({"original": original, "patched": patched}) + ";"
 mode = json.dumps({"version": manifest["version"], "probe": args.probe, "diagnostics": args.diagnostics, "temporaryBridge": args.temporary_bridge,
                    "nativeSource": native_source})
