@@ -19,25 +19,42 @@ plugin.onLoad(async () => {
   if (!modeEnabled) bridge.flushStartup?.(true);
 
   const events = [];
+  const retainedDiagnostics = [];
+  let diagnosticState = () => null;
   let lastFallback;
   let flush;
   function trace(event, detail = {}) {
-    events.push({ at: Math.round(performance.now()), wallMs: Date.now(), event, ...detail });
+    const record = { at: Math.round(performance.now()), wallMs: Date.now(), event, ...detail };
+    events.push(record);
+    // Keep native handovers after noisy range/cache events rotate the main ring.
+    if (/^(web-load-fallback|stream-output-fallback|restore|restored|native-load|claim-timeout)$/.test(event)) {
+      retainedDiagnostics.push(record);
+      if (retainedDiagnostics.length > 16) retainedDiagnostics.shift();
+    }
     if (/^(web-load-fallback|stream-output-fallback|restore)$/.test(event)) {
       const safe = value => /^[a-z0-9:-]+$/.test(value || '') ? value : undefined;
       lastFallback = { event, at: Math.round(performance.now()), reason: safe(detail.reason),
         sourceError: safe(detail.sourceError), position: detail.position };
     }
     if (events.length > 180) events.shift();
-    const health = /^(loaded|native-settings|web-load-fallback|stream-output-fallback|restore|restored|prepare-fallback|claim-timeout|boundary|claimed|scheduled|stream-fully-scheduled|stream-seek-wait|stream-seek-ready|stream-seek-cancel|load-timing|first-output-scheduled|host-stop-to-load|cache-cleared|native-preload-suppressed|native-cache-clear-result)$/.test(event);
+    const health = /^(loaded|native-load|native-settings|web-load-fallback|stream-output-fallback|restore|restored|prepare-fallback|claim-timeout|boundary|claimed|scheduled|stream-fully-scheduled|stream-seek-wait|stream-seek-ready|stream-seek-cancel|load-timing|first-output-scheduled|host-stop-to-load|cache-cleared|native-preload-suppressed|native-cache-clear-result)$/.test(event);
     if (!gaplessWindowsBuild.diagnostics && !gaplessWindowsBuild.probe && !health) return;
     if (flush) return;
     flush = setTimeout(() => {
       flush = null;
-      const safe = events.slice(-80).map(({ at, wallMs, event, id, from, to, reason, mode, enabled,
+      const recent = events.slice(-80);
+      const records = [...retainedDiagnostics.filter(record => !recent.includes(record)), ...recent];
+      let state;
+      try { state = diagnosticState(); } catch { /* Diagnostics cannot block playback or the log. */ }
+      if (state) records.push({ at: Math.round(performance.now()), wallMs: Date.now(), event: 'diagnostic-state', ...state });
+      const safe = records.map(({ at, wallMs, event, id, from, to, reason, mode, enabled,
+        owns, loading, capable, nextKnown, supportsRandom, codec, sourceError,
         rate, sourceRate, loadMs, leadSeconds, scheduledGapFrames, delayMs, blockers, memoryHit, waitMs, target, position, decodedSeconds, retainedPlaybackBytes, success, outputWallMs, pcmBytes, pcmCapacity,
         sourceKind, sourceInfoMs, resourceMs, bufferMs, contextMs, gateMs, firstOutputEstimateMs, stopToLoadMs }) => ({
-        at, wallMs, event, id, from, to, mode, enabled, rate, sourceRate, loadMs, leadSeconds,
+        at, wallMs, event, id, from, to, mode, enabled, owns, loading, capable, nextKnown, supportsRandom,
+        codec: /^[a-z0-9-]+$/i.test(codec || '') ? codec : undefined,
+        sourceError: /^[a-z0-9:-]+$/.test(sourceError || '') ? sourceError : undefined,
+        rate, sourceRate, loadMs, leadSeconds,
         scheduledGapFrames, delayMs, blockers, memoryHit, waitMs, target, position, decodedSeconds, retainedPlaybackBytes, success, outputWallMs, pcmBytes, pcmCapacity,
         sourceKind, sourceInfoMs, resourceMs, bufferMs, contextMs, gateMs, firstOutputEstimateMs, stopToLoadMs,
         reason: reason ? (/^[a-z0-9:-]+$/.test(reason) ? reason : 'unavailable') : undefined,
@@ -69,6 +86,12 @@ plugin.onLoad(async () => {
     let revision = 0, serial = 0, customOutput = bridge.customOutput;
     let reportedSettings, hostStopAt;
     const getSnapshot = () => source.snapshot(native, current, enabled());
+    diagnosticState = () => {
+      const snap = getSnapshot();
+      return { enabled: enabled(), owns: !!current?.owns, loading: !!current?.loading,
+        id: source.trackId(current?.info), mode: snap?.mode, nextKnown: snap?.nextKnown,
+        supportsRandom: native.supportsRandom === true };
+    };
     const makeRef = (info, snap) => ({
       id: source.trackId(info), account: snap.account, level: snap.quality,
       duration: Number(info.songDuration) / 1000,

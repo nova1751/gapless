@@ -21,10 +21,10 @@
     "runtimeFilesMatchPackage": true
   },
   "windows": {
-    "sourceVersion": "0.4.18",
-    "installedVersion": "0.4.18",
-    "runtimeVersion": "0.4.18",
-    "packageSha256": "4F6AD0866FA4B6688D27D0992CE20B6386F6FC03663C8BD867F48F9F0FCC7C85",
+    "sourceVersion": "0.4.19",
+    "installedVersion": "0.4.19",
+    "runtimeVersion": "0.4.19",
+    "packageSha256": "22F5AD6CFA4802F96C0971E708097D5EC1A55162FB554670EE747BFA01788409",
     "runtimeMatchesPackage": true,
     "evidence": "docs/CURRENT_STATUS.md",
     "previousInstallationReported": {
@@ -43,7 +43,7 @@
     },
     "clientVersion": "3.1.43.205627 x64",
     "hostVersion": "1.3.4",
-    "verificationScope": "0.4.18 restarted and runtime files match package. Actual client resolver passed isolated random insertion/wrap and capability checks. No in-client random boundary listening verification.",
+    "verificationScope": "0.4.19 diagnostic-only update restarted; runtime files match package. Bounded fallback retention survives noisy event rotation; field whitelist and diagnostics failure isolation checked. User-reported random native handover cause remains undetermined; no playback fix claimed.",
     "runtimeMatchesCurrentSource": true
   },
   "historicalAudioEvidence": {
