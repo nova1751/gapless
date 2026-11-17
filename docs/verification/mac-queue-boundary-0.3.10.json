@@ -1,0 +1,76 @@
+{
+  "date": "2026-11-17",
+  "baseMain": "8867cbb",
+  "platform": "macOS",
+  "clientVersion": "3.1.12 (3444)",
+  "hostVersion": "0.1.7",
+  "sourceVersion": "0.3.10",
+  "installedVersion": "0.3.10",
+  "runtimeVersion": "0.3.10",
+  "menuVersion": "1.2.1",
+  "userReportedFallbackReproduced": false,
+  "checks": {
+    "queueUpdatePreservesSameScheduledOccurrence": "Source review; not injected on device",
+    "queueUpdatePreservesSameClaimedPair": "Source review; original-track prediction plus unchanged source/clock guards",
+    "realNextChangeAccountSourceOrClockChangeStillInvalidates": "Source review; no fault injection",
+    "boundedLastFallbackRecordExposed": true,
+    "installedPackageAndRuntimeMatch": true,
+    "generatedPlayerSyntax": "passed",
+    "previousVersionNaturalPair": {
+      "version": "0.3.9",
+      "from": "Baptized In Fear",
+      "to": "Open Hearts",
+      "observedClaimMs": [
+        178.6,
+        279.5
+      ],
+      "fallbackObserved": false
+    },
+    "newVersionNaturalPair": {
+      "version": "0.3.10",
+      "from": "Open Hearts",
+      "to": "Moth To A Flame",
+      "transitionAtMs": 270304,
+      "claimAtMs": 270622,
+      "claimDelayMs": 318.9,
+      "scheduledGapFrames": 0,
+      "webOwnedAfterClaim": true,
+      "nextScheduled": true,
+      "fallbackObserved": false
+    },
+    "queueDragAttempt": "UI attempt did not reorder rows; not branch validation",
+    "postBoundaryUI": "No readable window available; system controls, lyrics and spectrum not revalidated",
+    "actualAudioGapMeasured": false
+  },
+  "hashes": {
+    "packageSha256": "4df449910867a973f743f0c13a79cd84ccca1b3a85d262ab2b8b163345d47ac3",
+    "runtimeFilesMatchPackage": [
+      "manifest.json",
+      "player.js",
+      "startup_script.js"
+    ]
+  },
+  "rollback": {
+    "version": "0.3.9",
+    "outsideActivePlugins": true
+  },
+  "finalObserved": {
+    "trackId": "1938192798",
+    "phase": "owned",
+    "playing": true,
+    "ownsPlayback": true,
+    "position": 191.32083900226755,
+    "next": "431811451",
+    "scheduled": "431811451",
+    "lastFallback": null,
+    "gaplessEnabled": true,
+    "marketEnabled": true,
+    "lyricsWindowEnabled": false
+  },
+  "scope": [
+    "Playback intent restored after supported host reload and actual input gesture",
+    "No quality downgrade, source/decoder/gain/sample-rate change, new audio recording, new test cases, full static checks or application build",
+    "Windows 0.4.14 unchanged; corresponding fix documented as a recommendation",
+    "Observed successful transitions do not reproduce or eliminate all intermittent fallback cases"
+  ]
+}

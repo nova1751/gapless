@@ -22,7 +22,7 @@ plugin.onLoad(() => {
     store: null, phase: 'native', epoch: 0, revision: 0, serial: 0, queueVersion: 0,
     account: '', signature: '', selection: '', token: '', nativePosition: 0, nativeAt: performance.now(), nativePlaying: false,
     gestureAt: -Infinity, recovering: null, unsubscribe: null, starting: false, recoveryConsumed: false,
-    nativeGate: null, volumeLatencyMs: 2, savingConfig: false };
+    nativeGate: null, volumeLatencyMs: 2, savingConfig: false, lastFallback: null };
   const trace = (event, detail = {}) => {
     log.push({ at: Math.round(performance.now()), event, ...detail }); if (log.length > 180) log.shift();
   };
@@ -332,8 +332,8 @@ plugin.onLoad(() => {
     }
     return false;
   }
-  function nextTrack() {
-    const c = S.current, s = state(); if (!c || !allowed(c.info)) return null;
+  function nextTrack(c = S.current) {
+    const s = state(); if (!c || !allowed(c.info)) return null;
     const mode = s.playing.playingMode;
     if (!['playOrder', 'playCycle', 'playOneCycle', 'playRandom'].includes(mode)) return null;
     const list = [...rows()].sort((a, b) => Number(a.displayOrder) - Number(b.displayOrder));
@@ -373,6 +373,7 @@ plugin.onLoad(() => {
       rememberRecent(c);
       nativeFill.remember(c.entry, c.account, c.requestedLevel);
       clock.stop(c); S.scheduled = null; S.current = candidate; S.claim = true;
+      candidate.claimFrom = { id: c.id, info: c.info, requestedLevel: c.requestedLevel };
       S.phase = 'claiming'; candidate.claimAt = performance.now();
       trace('transition', { from: c.id, to: candidate.id, scheduledGapFrames: Math.round((candidate.start - c.end) * clock.ctx.sampleRate) });
     } else {
@@ -397,8 +398,22 @@ plugin.onLoad(() => {
     const signature = JSON.stringify([s.playing?.playingMode, rows().map(r => [r.id, rowId(r), r.displayOrder, r.randomOrder])]);
     if (signature !== S.signature) {
       nativeFill.clear();
-      S.signature = signature; S.queueVersion++; cancelScheduled(); trace('queue-changed', { queueVersion: S.queueVersion });
-      if (S.claim) void restoreNative('queue-during-claim');
+      S.signature = signature; S.queueVersion++;
+      const candidate = S.scheduled, c = S.current, next = nextTrack();
+      // Unrelated row updates do not change the audible next occurrence. Keep
+      // its already scheduled nodes instead of rebuilding them at the boundary.
+      const keep = !!(candidate && c?.owns && account === S.account
+        && candidate.selectionKey === next?.key && candidate.clockGeneration === clock.generation
+        && !candidate.entry?.stream?.error && clock.matches(candidate.entry)
+        && Math.abs(candidate.start - c.end) <= 1 / clock.ctx.sampleRate);
+      if (keep) candidate.queueVersion = S.queueVersion;
+      else cancelScheduled();
+      const keepClaim = !!(S.claim && c?.claimFrom && account === S.account
+        && c.selectionKey === nextTrack(c.claimFrom)?.key && !c.entry?.stream?.error
+        && c.clockGeneration === clock.generation && clock.matches(c.entry));
+      if (keepClaim) c.queueVersion = S.queueVersion;
+      trace('queue-changed', { queueVersion: S.queueVersion, scheduledRetained: keep, claimRetained: keepClaim });
+      if (S.claim && !keepClaim) void restoreNative('queue-during-claim');
     }
     if (S.account && account !== S.account) { nativeFill.clear(); S.epoch++; resources.resetFailures(); void restoreNative('account-changed'); }
     S.account = account;
@@ -856,6 +871,9 @@ plugin.onLoad(() => {
       ? Math.max(0, Math.min(c.duration - 0.001, requested)) : clock.position(c);
     let desired = playIntent ?? c.playing;
     c.recoveryPosition = target; c.recoveryPlaying = desired; c.recoveryHeard = clock.heard(c);
+    S.lastFallback = { at: Math.round(performance.now()), id: c.id,
+      reason: /^[a-z0-9-]+$/.test(reason) ? reason : 'source-error', position: target,
+      next: S.scheduled?.id || nextTrack()?.id || null, sourceRate: c.entry?.spec.rate };
     c.recoverySucceeded = false; c.blocked = true; c.loading = false; S.claim = false;
     S.phase = 'restoring'; stopCurrent(); visual.stop(); trace('restore-start', { id: c.id, reason, position: target });
     const run = async () => {
@@ -1107,7 +1125,7 @@ plugin.onLoad(() => {
               bridge.dispatch(msg.seq, [id, { code: -1 }]); return;
             }
             if (Resources.localIdentity(normalized) !== c.entry.identity) throw new Error('native-only-local-changed');
-            S.claim = false; S.phase = 'owned';
+            S.claim = false; c.claimFrom = null; S.phase = 'owned';
             if (!c.playing) c.pauseAfterClaimRevision = S.revision;
             trace('claimed', { id, position: clock.position(c), claimDelayMs: performance.now() - c.claimAt, local: true });
             answerLoad(msg, c); prefetch(); scheduleNext();
@@ -1120,7 +1138,7 @@ plugin.onLoad(() => {
           });
           return true;
         }
-        c.info = info; S.claim = false; S.phase = 'owned';
+        c.info = info; S.claim = false; c.claimFrom = null; S.phase = 'owned';
         if (!c.playing) c.pauseAfterClaimRevision = S.revision;
         trace('claimed', { id, position: clock.position(c), claimDelayMs: performance.now() - c.claimAt });
         answerLoad(msg, c);
@@ -1539,6 +1557,7 @@ plugin.onLoad(() => {
         resourceOrigin: c?.entry?.origin || null,
         next: nextTrack()?.id, scheduled: S.scheduled?.id, claiming: S.claim,
         memory: resources.status(), mode: state()?.playing?.playingMode, nativeAllowed: allowed(c?.info),
+        lastFallback: S.lastFallback && { ...S.lastFallback },
         nativeCacheSource: nativeSource?.status(),
         nativeCacheFill: nativeFill.status(), recentId: recent?.entry.id, localSource: !!c?.entry?.source.localKey,
         queueVersion: S.queueVersion, loadEpoch: S.epoch, controlRevision: S.revision,

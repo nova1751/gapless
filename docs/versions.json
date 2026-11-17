@@ -1,18 +1,18 @@
 {
   "date": "2026-11-17",
-  "baseMain": "d82634d",
+  "baseMain": "8867cbb",
   "mac": {
-    "sourceVersion": "0.3.9",
-    "installedVersion": "0.3.9",
-    "runtimeVersion": "0.3.9",
-    "package": "releases/gapless-player-mac-0.3.9.plugin",
-    "packageSha256": "10451c1392338df5324a9682cb2fc0f64c8d80c3e915bae192621530826bca31",
+    "sourceVersion": "0.3.10",
+    "installedVersion": "0.3.10",
+    "runtimeVersion": "0.3.10",
+    "package": "releases/gapless-player-mac-0.3.10.plugin",
+    "packageSha256": "4df449910867a973f743f0c13a79cd84ccca1b3a85d262ab2b8b163345d47ac3",
     "runtimeMatchesPackage": true,
     "clientVersion": "3.1.12 (3444)",
     "hostVersion": "0.1.7",
     "menuVersion": "1.2.1",
     "menuSha256": "cf966fbefd0b8f2cdf50c8276c9f1bdbe729d33f5d73d7f6ffb6ce1c22329a9f",
-    "evidence": "docs/verification/mac-plugin-manager-1.2.0.json",
+    "evidence": "docs/verification/mac-queue-boundary-0.3.10.json",
     "menuEvidence": "docs/verification/mac-quick-menu-1.2.1.json",
     "marketPluginVersion": "0.8.0",
     "marketExposed": true,
@@ -54,6 +54,7 @@
     "Mac menu uses installed host API data; runtime player version is generated from Mac manifest at packaging.",
     "Historical hashes and audio evidence keep their original versions.",
     "Windows 0.4.14 runtime verification covers manager navigation and PluginMarket.",
-    "Mac menu 1.2.1 provides a host-styled gapless quick switch and Manage plugins entry; the quick switch and gapless 0.3.9 host checkbox share the existing playback transaction. Market remains independently configurable."
+    "Mac menu 1.2.1 provides a host-styled gapless quick switch and Manage plugins entry; the quick switch and gapless 0.3.9 host checkbox share the existing playback transaction. Market remains independently configurable.",
+    "Mac 0.3.10 retains valid scheduled/claiming adjacent occurrences after unrelated queue changes. Windows equivalent is a recommendation, not implemented or validated in this turn."
   ]
 }

@@ -1,8 +1,10 @@
-# macOS 无缝播放 0.3.9
+# macOS 无缝播放 0.3.10
 
-当前源码、安装包和运行版本均为 **0.3.9**。实测宿主 **BetterNCM-mac 0.1.7**、网易云音乐 **3.1.12（3444）**；独立管理入口版本 **1.2.1**。[版本与哈希](../docs/versions.json)，[本轮快捷菜单验证](../docs/verification/mac-quick-menu-1.2.1.json)。
+当前源码、安装包和运行版本均为 **0.3.10**。实测宿主 **BetterNCM-mac 0.1.7**、网易云音乐 **3.1.12（3444）**；独立管理入口版本 **1.2.1**。[版本与哈希](../docs/versions.json)，[本轮跨曲记录](../docs/verification/mac-queue-boundary-0.3.10.json)。
 
 ## 本次更新
+
+0.3.10 修正无关队列更新也撤销预约的问题：实际下一首、源规格、输出时钟及边界仍匹配时保留预约；接认阶段从原曲重新计算下一首，确认同一队列项后保留接认。真正的选曲、账号／档位／源变化、输出或缓存故障仍有原生回退。`gaplessMac.status().lastFallback` 保留本次页面最近一次切回原生的原因、位置和源采样率。[修正范围与 Windows 建议](../docs/QUEUE_BOUNDARY_0.3.10.md)。
 
 右上角插件按钮打开宿主样式快捷菜单：上方「无缝播放」开关，下方「管理插件」。点击管理插件进入宿主原 BetterNCM 管理页，左侧列出全部已安装插件，右侧展示所选插件详情、启停及其原有配置。无缝插件通过 BetterNCM `onConfig(tools)` 和 `tools.makeCheckbox` 提供「无缝播放」；勾选开启，取消勾选关闭并交回原生。快捷开关与配置复选框同步，保留原页面、侧栏和卸载行为。
 
@@ -11,7 +13,7 @@
 - 管理页显示安装版本和可用的运行版本；快捷菜单显示安装版本。0.3.9 注册原生 `onConfig` 回调，让已加载的无缝插件侧栏可点击，右侧展示插件自己的无缝复选框。
 - 显示「市场主要面向 Windows，很多插件在 macOS 不能直接使用」，下载和安装由用户选择。没有自动下载／安装其他插件。
 
-未修改音源选择、解码、音量曲线、采样率策略、音乐排程、歌词或频谱算法。0.3.8 的同曲原生恢复修复继续保留。
+本轮调整队列更新时预约／接认的有效性判断；未修改音源选择、解码、音量曲线、采样率策略、歌词或频谱算法。0.3.8 的同曲原生恢复修复继续保留。
 
 ## 安装与回退
 
@@ -20,7 +22,7 @@ python3 mac/package.py
 python3 mac/install-menu.py
 ```
 
-1. 生成 `dist/gapless-player-mac-0.3.9.plugin`，交付副本见 [0.3.9 包](../releases/gapless-player-mac-0.3.9.plugin)。复制到 `~/Library/Application Support/BetterNCM-mac/plugins/`；同 slug 只留一个活动版本，旧包移到目录之外。
+1. 生成 `dist/gapless-player-mac-0.3.10.plugin`，交付副本见 [0.3.10 包](../releases/gapless-player-mac-0.3.10.plugin)。复制到 `~/Library/Application Support/BetterNCM-mac/plugins/`；同 slug 只留一个活动版本，旧包移到目录之外。本机已保留 0.3.9 回退包。
 2. 菜单安装脚本只写 `/Applications/BetterNCM.app/Contents/Resources/app/src/prelude/gapless-plugin-menu.js`，不改宿主原文件，不修改 CSP。`--market` 仅将指定 profile 的 `mac.pluginManager` 保存为 `true`，复用已内置的 PluginMarket，其他配置不变；不加该参数仅更新菜单，保留市场原有设置。宿主 API／自动发现接口不匹配时退出，保留原菜单。非默认安装位置可加 `--app /path/to/BetterNCM.app`；自定义 profile 加 `--profile /path/to/profile`。
 3. 由宿主重载插件并刷新页面，或正常退出后重新打开。核对菜单安装版本、`gaplessMac.version` 和 [当前状态](../docs/CURRENT_STATUS.md)。初次真实输入之前 Web Audio 可以等待授权，不主动发声。
 
@@ -38,6 +40,8 @@ python3 mac/install-menu.py
 
 ## 证据
 
-本轮验证快捷菜单布局、两处无缝控制同步、关闭后原生恢复、保存值重载、未加载时通过快捷菜单重新启用、Esc／外部点击收起与原暂停意图保留。见 [快捷菜单记录](../docs/MAC_PLUGIN_QUICK_MENU_1.2.1.md)。市场启停与管理页原有配置证据保留在 [1.2.0](../docs/MAC_PLUGIN_MANAGER_1.2.0.md)。既有播放验证保留在 [0.3.8 记录](../docs/PLUGIN_MENU_ALIGNMENT_0.3.8_0.4.12.md)。没有新增音频回录、全市场插件或全客户端兼容验收。
+本轮核对安装／运行文件与 0.3.10 包一致，重载后恢复当前播放；观察到 Open Hearts → Moth To A Flame 自然预约与接认成功，未切回原生。没有复现用户报告的偶发故障，也没有对无关队列更新或接认中更新做实机故障注入；相应修正以代码审查为证据。跨曲后窗口不可读，系统控件与频谱未重新逐项验收。见 [本轮记录](../docs/QUEUE_BOUNDARY_0.3.10.md)。
 
-历史音频／缓存证据保留原版本：[0.3.7 应用输出 A/B](../docs/MAC_NATIVE_WEB_OUTPUT_AB_0.3.7.md)、[0.3.7 缓存/Seek](../docs/CACHE_SEEK_AUDIT_0.3.7_0.4.9.md)、[0.3.6 真实跨曲回录](../docs/CORE_PLAYBACK_AUDIT_0.3.6_0.4.8.md)、[0.3.4 PCM 保真](../docs/AUDIO_FIDELITY_0.3.4.md)、[0.3.3 本地及后台缓存](../docs/PLATFORM_ALIGNMENT_0.4.6_0.3.3.md)、[0.2.3 频谱修复](../docs/VISUAL_TIMING_0.2.3.md)。不能把历史证据改写为 0.3.9 全量验收；不承诺所有输出 bit-perfect。
+快捷菜单 1.2.1 的既有验证见 [菜单记录](../docs/MAC_PLUGIN_QUICK_MENU_1.2.1.md)。市场启停与管理页原有配置证据保留在 [1.2.0](../docs/MAC_PLUGIN_MANAGER_1.2.0.md)，既有播放验证保留在 [0.3.8 记录](../docs/PLUGIN_MENU_ALIGNMENT_0.3.8_0.4.12.md)。没有新增音频回录、全市场插件或全客户端兼容验收。
+
+历史音频／缓存证据保留原版本：[0.3.7 应用输出 A/B](../docs/MAC_NATIVE_WEB_OUTPUT_AB_0.3.7.md)、[0.3.7 缓存/Seek](../docs/CACHE_SEEK_AUDIT_0.3.7_0.4.9.md)、[0.3.6 真实跨曲回录](../docs/CORE_PLAYBACK_AUDIT_0.3.6_0.4.8.md)、[0.3.4 PCM 保真](../docs/AUDIO_FIDELITY_0.3.4.md)、[0.3.3 本地及后台缓存](../docs/PLATFORM_ALIGNMENT_0.4.6_0.3.3.md)、[0.2.3 频谱修复](../docs/VISUAL_TIMING_0.2.3.md)。不能把历史证据改写为当前版本全量验收；不承诺所有输出 bit-perfect。
