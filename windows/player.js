@@ -473,6 +473,13 @@ plugin.onLoad(async () => {
     function clearRecent() {
       resources.unpin(recentEntry); recentEntry = null;
     }
+    function rememberRecent(c) {
+      const entry = c?.entry;
+      if (!entry || entry.stream?.error
+        || (entry.stream && !entry.stream.done && !entry.stream.indexed)
+        || entry.size > 128 * 1024 * 1024) return;
+      clearRecent(); recentEntry = entry; resources.pin(entry);
+    }
     function clearMemoryCache() {
       clearRetiredFills(); if (current) current.cacheComplete = false;
       resetFillRetry(current);
@@ -523,9 +530,8 @@ plugin.onLoad(async () => {
       // One recently heard buffer makes back/forward navigation responsive.
       // It remains inside the shared memory budget and is evicted before a
       // prefetch is allowed to fail for memory pressure.
-      if (keepWarm && current?.entry && !current.entry.stream?.error && (!current.entry.stream || current.entry.stream.done || current.entry.stream.indexed) && current.entry.size <= 128 * 1024 * 1024) {
-        clearRecent(); recentEntry = current.entry; resources.pin(recentEntry);
-      } else if (!keepWarm) clearRecent();
+      if (keepWarm) rememberRecent(current);
+      else clearRecent();
       revision++;
       cancelPendingSeek(current);
       cancelCandidate();
@@ -1206,6 +1212,7 @@ plugin.onLoad(async () => {
         claim = null;
         clearTimeout(incoming.timer);
         cancelFill(); rememberFill(incoming.previous);
+        rememberRecent(incoming.previous);
         const c = current = incoming.track;
         c.id = id;
         c.info = info;

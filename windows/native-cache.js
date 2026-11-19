@@ -1,6 +1,12 @@
 /* MIT. Read-only Windows 3.1.43 playback cache, matched to the authorized source. */
 (() => {
   const BITRATE = { standard: 128, higher: 192, exhigh: 320, lossless: 999, hires: 1999 };
+  // Yield in bounded batches without the nested/background timer minimum.
+  const yieldWork = (() => {
+    const channel = new MessageChannel(), waiting = [];
+    channel.port1.onmessage = () => waiting.shift()?.();
+    return () => new Promise(resolve => { waiting.push(resolve); channel.port2.postMessage(0); });
+  })();
   class WindowsNativeCache {
     constructor({ settings, trace }) {
       this.settings = settings; this.trace = trace; this.mounts = new Map(); this.generation = 0;
@@ -47,6 +53,7 @@
       const generation = this.generation;
       const check = () => { if (signal.aborted || generation !== this.generation) throw new Error('cancelled'); };
       const crypto = this.crypto, digest = crypto.algo.MD5.create(); let total = 0;
+      let workAt = performance.now();
       for (const bytes of parts) {
         check();
         total += bytes.length;
@@ -58,7 +65,7 @@
           const words = new Array(Math.ceil(chunk.length / 4)).fill(0);
           for (let i = 0; i < chunk.length; i++) words[i >>> 2] |= chunk[i] << (24 - (i & 3) * 8);
           digest.update(crypto.lib.WordArray.create(words, chunk.length));
-          await new Promise(resolve => setTimeout(resolve, 0));
+          if (performance.now() - workAt >= 4) { await yieldWork(); workAt = performance.now(); }
         }
       }
       check();
