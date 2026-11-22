@@ -2,6 +2,12 @@
 (() => {
   'use strict';
   const BITRATE = { standard: 128, higher: 192, exhigh: 320, lossless: 999, hires: 1999 };
+  // Match the Windows cache lane: yield bounded work without timer clamping.
+  const yieldWork = (() => {
+    const channel = new MessageChannel(), waiting = [];
+    channel.port1.onmessage = () => waiting.shift()?.();
+    return () => new Promise(resolve => { waiting.push(resolve); channel.port2.postMessage(0); });
+  })();
   class NativeCache {
     constructor({ storage, crypto, settings, trace }) {
       this.storage = storage; this.crypto = crypto; this.settings = settings; this.trace = trace;
@@ -36,11 +42,43 @@
         else signal.addEventListener('abort', abort, { once: true });
       });
     }
-    async nativeFs(method, args, signal) {
-      const result = await fetch(BETTERNCM_API_PATH + '/native/fs.' + method, {
+    async nativeCall(command, args, signal) {
+      const result = await fetch(BETTERNCM_API_PATH + '/native/' + command, {
         method: 'POST', signal, headers: { BETTERNCM_API_KEY, 'Content-Type': 'application/json' }, body: JSON.stringify(args),
       });
       const data = await result.json(); return data.ok ? data.value : null;
+    }
+    nativeFs(method, args, signal) { return this.nativeCall('fs.' + method, args, signal); }
+    async ensureHome(signal) {
+      if (this.home) return;
+      // app.datapath returns existing host metadata without stat-ing protected
+      // Desktop/Documents/Music folders. fs.getLibraries can block the entire
+      // host process on an unavailable folder or an OS access prompt.
+      const profile = await this.nativeCall('app.datapath', [], signal);
+      if (signal.aborted) throw new Error('cancelled');
+      const suffix = '/Library/Application Support/BetterNCM-mac';
+      if (typeof profile === 'string' && profile.startsWith('/') && profile.endsWith(suffix))
+        this.home = profile.slice(0, -suffix.length);
+      if (!this.home && !this.roots().length) throw new Error('native-only-cache-home-unavailable');
+    }
+    async readIndex(path, size, signal) {
+      if (!Number.isSafeInteger(size) || size < 0 || size > 1024 * 1024)
+        throw new Error('native-only-cache-index-size');
+      if (size === 0) return '';
+      if (!this.mounts.has(path)) this.mounts.set(path, await this.wait(betterncm.fs.mountFile(path), signal));
+      const url = this.mounts.get(path), parsed = new URL(url);
+      if (parsed.protocol !== 'http:' || parsed.hostname !== '127.0.0.1') throw new Error('native-only-cache-mount');
+      // The native text endpoint uses readFileSync and can strand the host's
+      // event loop on OS file access. Its mounted-file route streams instead.
+      try {
+        const bytes = await globalThis.GaplessSeekRange.read(url, 0, size, size, signal);
+        return new TextDecoder().decode(bytes);
+      } catch (error) {
+        // An index may grow between stat and Range. Let snapshotSource compare
+        // file versions before deciding whether the read was really invalid.
+        if (error.message === 'seek-range-unsupported') return null;
+        throw error;
+      }
     }
     async indexStamp(sources, signal) {
       const paths = new Set();
@@ -72,11 +110,7 @@
       const metadata = JSON.parse(record.playInfoStr || '{}');
       if (metadata.resourceType !== 'track' || metadata.freeTrialInfo || metadata.level !== source.level
         || String(metadata.md5).toLowerCase() !== hash || Number(metadata.size) !== size) return null;
-      if (!this.home) {
-        const libraries = await this.nativeFs('getLibraries', [], signal); check();
-        const library = Array.isArray(libraries) && libraries.find(x => x.name === 'Music');
-        if (library?.path?.endsWith('/Music')) this.home = library.path.slice(0, -6);
-      }
+      await this.ensureHome(signal); check();
       for (const root of this.roots()) {
         const prefix = `${root}/${id}-_-_${bitrate}-_-_${hash}`;
         for (const suffix of ['!', '']) {
@@ -85,9 +119,10 @@
           if (file?.type !== 'file' || Number(file.size) > size) continue;
           const before = await this.nativeFs('getProperties', [indexPath], signal); check();
           if (before?.type !== 'file' || Number(before.size) > 1024 * 1024) continue;
-          const text = await this.nativeFs('readFileText', [indexPath], signal); check();
+          const text = await this.readIndex(indexPath, Number(before.size), signal); check();
           const after = await this.nativeFs('getProperties', [indexPath], signal); check();
           if (!after || before.size !== after.size || before.lastModified !== after.lastModified) continue;
+          if (text === null) throw new Error('native-only-cache-index-read');
           let coverage;
           try { coverage = globalThis.GaplessCacheCoverage.parse(text, size); }
           catch (error) {
@@ -118,17 +153,20 @@
     async verifyParts(source, parts, signal) {
       const crypto = this.crypto(), generation = this.generation;
       if (!crypto?.algo?.MD5?.create) throw new Error('native-only-cache-verifier');
-      const digest = crypto.algo.MD5.create(); let total = 0;
+      const size = Number(source.size ?? source.fileSize), hash = String(source.md5 || '').toLowerCase();
+      if (!Number.isSafeInteger(size) || size <= 0 || !/^[a-f0-9]{32}$/.test(hash))
+        throw new Error('native-only-cache-source');
+      const digest = crypto.algo.MD5.create(); let total = 0, workAt = performance.now();
       for (const part of parts) for (let at = 0; at < part.length; at += 65536) {
         if (signal.aborted || generation !== this.generation) throw new Error('cancelled');
         const chunk = part.subarray(at, at + 65536), words = new Array(Math.ceil(chunk.length / 4)).fill(0);
         for (let i = 0; i < chunk.length; i++) words[i >>> 2] |= chunk[i] << (24 - (i & 3) * 8);
         total += chunk.length; digest.update(crypto.lib.WordArray.create(words, chunk.length));
-        await new Promise(resolve => setTimeout(resolve, 0));
+        if (total > size) throw new Error('native-only-cache-integrity');
+        if (performance.now() - workAt >= 4) { await yieldWork(); workAt = performance.now(); }
       }
       if (signal.aborted || generation !== this.generation) throw new Error('cancelled');
-      if (total !== Number(source.size ?? source.fileSize)
-        || digest.finalize().toString(crypto.enc.Hex).toLowerCase() !== String(source.md5).toLowerCase())
+      if (total !== size || digest.finalize().toString(crypto.enc.Hex).toLowerCase() !== hash)
         throw new Error('native-only-cache-integrity');
     }
     async read(ref, source, signal, full = false) {
@@ -147,13 +185,8 @@
       if (metadata.resourceType !== 'track' || metadata.freeTrialInfo || metadata.level !== source.level
         || String(metadata.md5).toLowerCase() !== hash || Number(metadata.size) !== size || !(size > 0)) return null;
       const name = `${ref.id}-_-_${bitrate}-_-_${hash}.uc!`;
-      if (!this.home) {
-        // The synchronous native shim can block the UI on an OS access prompt.
-        // Directory discovery and metadata reads use abortable async requests.
-        const libraries = await this.nativeFs('getLibraries', [], signal);
-        const library = Array.isArray(libraries) && libraries.find(x => x.name === 'Music');
-        if (library?.path?.endsWith('/Music')) this.home = library.path.slice(0,-6);
-      }
+      await this.ensureHome(signal);
+      if (signal.aborted || generation !== this.generation) throw new Error('cancelled');
       let path;
       for (const root of this.roots()) {
         if (signal.aborted) throw new Error('cancelled');
@@ -177,17 +210,8 @@
           response: new Response(head, { status: 206, headers: {
             'content-range': `bytes 0-${end - 1}/${size}`, 'content-length': String(end) } }),
           verifyParts: async (parts, verifySignal) => {
-            const digest = crypto.algo.MD5.create(); let total = 0;
-            for (const part of parts) for (let at = 0; at < part.length; at += 65536) {
-              if (verifySignal.aborted || generation !== this.generation) throw new Error('cancelled');
-              const chunk = part.subarray(at, at + 65536), words = new Array(Math.ceil(chunk.length / 4)).fill(0);
-              for (let i = 0; i < chunk.length; i++) words[i >>> 2] |= chunk[i] << (24 - (i & 3) * 8);
-              total += chunk.length; digest.update(crypto.lib.WordArray.create(words, chunk.length));
-              await new Promise(resolve => setTimeout(resolve, 0));
-            }
             if (verifySignal.aborted || generation !== this.generation) throw new Error('cancelled');
-            if (total !== size || digest.finalize().toString(crypto.enc.Hex).toLowerCase() !== hash)
-              throw new Error('cache-integrity');
+            await this.verifyParts(source, parts, verifySignal);
           } };
       }
       const response = await fetch(url, { signal });

@@ -1,0 +1,96 @@
+{
+  "date": "2026-11-22",
+  "baseMain": "ffacf07",
+  "macVersion": "0.3.13",
+  "windowsVersion": "0.4.21",
+  "nativeQueue": {
+    "heartNext": true,
+    "renumberKeepsKey": true,
+    "sourceChangeInvalidates": true,
+    "heartTailDoesNotWrap": true,
+    "heartTailExtension": true,
+    "hostRandomOrder": true,
+    "invalidRandomRejected": true,
+    "singleTrackRepeat": true,
+    "duplicateTrackRejected": true
+  },
+  "integrity": {
+    "syntheticBytes": 2097152,
+    "samples": [
+      {
+        "newCompletedMs": 69,
+        "oldCancelledMs": 38812
+      },
+      {
+        "newCompletedMs": 63,
+        "oldCancelledMs": 40661
+      }
+    ],
+    "oldCancellationRequestedMs": 2500,
+    "oldCompleted": false,
+    "damageRejected": true,
+    "cancellationRejected": true,
+    "clearGenerationRejected": true,
+    "audioStartTimeMeasured": false
+  },
+  "recovery": {
+    "delayedStartupRestored": true,
+    "newControlRejectsOldStartup": true,
+    "recentControlRejectsOldStartup": true,
+    "failedRecoveryPreserved": true,
+    "newSeekSupersedesFailedRecovery": true
+  },
+  "fileAdapter": {
+    "homeResolved": true,
+    "mountedTextReadMatches": true,
+    "indexByteLimit": 1048576,
+    "usesNativeTextEndpoint": false,
+    "unsupportedCustomProfileRejected": true,
+    "configuredCustomRootsAccepted": true,
+    "indexOversizeRejected": true
+  },
+  "installation": {
+    "version": "0.3.13",
+    "compatible": true,
+    "id": "431811451",
+    "position": 218.15663492063504,
+    "reportedPosition": 218.16,
+    "playing": false,
+    "phase": "native",
+    "activeNodes": 0,
+    "seekCode": 0,
+    "cacheApiHealthy": true,
+    "musicCacheReadVerified": false,
+    "uiAvailable": false,
+    "packageSha256": "262eec3d5ffe803530df1a812a41674cb730ffb59f2b739240c3b32c6d2bc389",
+    "runtimeFilesMatchPackage": true,
+    "previousPackageRetained": "0.3.12",
+    "clientPausedRestoreCompleted": true,
+    "isLoadingFirst": false,
+    "progressLoadingGate": false,
+    "clientPlayIdDeferredUntilResume": true,
+    "automaticPausedSelectionRestoreIncluded": true,
+    "automaticFallbackSeekIncluded": true,
+    "automaticRecoveryReportedPosition": 218.16,
+    "automaticRecoveryIsLoadingFirst": false,
+    "sdkProgressPlayId": "431811451",
+    "sdkProgressPosition": 218.16
+  },
+  "host": {
+    "ordinaryStopTimedOut": true,
+    "blockedMainThreadReadFileUtf8": true,
+    "normalAttachRestarted": true,
+    "apiHealthyAfterStreamingIndexChange": true,
+    "hostSourceModified": false,
+    "blockingFilePathEstablished": false
+  },
+  "scope": {
+    "isolatedNativeSelectorAndProductionMethods": true,
+    "nativeSeekConfirmed": true,
+    "uiAvailable": false,
+    "actualHeartBoundary": false,
+    "newAudioRecording": false,
+    "realMusicCacheReadPassed": false,
+    "windowsOperated": false
+  }
+}

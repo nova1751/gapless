@@ -62,20 +62,22 @@ plugin.onLoad(() => {
     }
     throw new Error('native-player-unavailable');
   }
-  function nativeRandomNext(list, current) {
-    // Use the client's existing shuffled order. Never create a second random
-    // queue, which could make the audible next track differ from the UI.
+  function nativeQueueNext(mode, list, current) {
+    // Use the client's actual selector for both shuffled and ordered queues.
     const resolver = webpackRequire().c[161]?.exports?.a;
     const code = typeof resolver === 'function' ? String(resolver) : '';
     if (!code.includes('PlayRandom') || !code.includes('randomOrder') || !code.includes('displayOrder')) return null;
-    if (list.some(row => !Number.isFinite(row.randomOrder))
-      || new Set(list.map(row => Number(row.randomOrder))).size !== list.length) return null;
-    const selected = resolver('playRandom', list, current, 1);
+    const order = mode === 'playRandom' ? 'randomOrder' : 'displayOrder';
+    if (list.some(row => !Number.isFinite(row[order]))
+      || new Set(list.map(row => row[order])).size !== list.length) return null;
+    if ((mode === 'playOrder' || mode === 'playAi')
+      && !list.some(row => row[order] > current[order])) return null;
+    const selected = resolver(mode, list, current, 1);
     return list.includes(selected) ? selected : null;
   }
   function capabilityCheck() {
     try {
-      if (window.APP_CONF?.appver !== '3.1.12' || !state()?.playing || !state()?.playingList || !state()?.['page:vinylPage']) return false;
+      if (window.APP_CONF?.appver !== '3.1.12' || !state()?.playing || !state()?.playingList) return false;
       if (!['onSeek', 'onPlayState', 'onPlayProgress', 'onEnd'].every(n => bridge.registrations[`audioplayer.${n}`])) return false;
       nativePlayer(); nativeSourceResolver(); return true;
     } catch (error) { trace('capability-fallback', { reason: error.message }); return false; }
@@ -335,19 +337,24 @@ plugin.onLoad(() => {
   function nextTrack(c = S.current) {
     const s = state(); if (!c || !allowed(c.info)) return null;
     const mode = s.playing.playingMode;
-    if (!['playOrder', 'playCycle', 'playOneCycle', 'playRandom'].includes(mode)) return null;
+    if (!['playOrder', 'playCycle', 'playOneCycle', 'playRandom', 'playAi'].includes(mode)) return null;
     const list = [...rows()].sort((a, b) => Number(a.displayOrder) - Number(b.displayOrder));
     // Duplicate track IDs cannot be tied to an occurrence by this version's native Load protocol.
     const matches = list.filter(row => rowId(row) === c.id);
     if (matches.length !== 1) return null;
-    const index = list.indexOf(matches[0]);
-    const row = mode === 'playRandom' ? nativeRandomNext(list, matches[0])
-      : mode === 'playOneCycle' ? matches[0] : list[index + 1] || (mode === 'playCycle' ? list[0] : null);
+    const row = mode === 'playOneCycle' ? matches[0] : nativeQueueNext(mode, list, matches[0]);
     if (!row || !['track', 'localTrack', 'downloadTrack'].includes(row.resourceType)
       || list.filter(item => rowId(item) === rowId(row)).length !== 1) return null;
     const id = rowId(row), duration = localSource.duration(row) / 1000;
+    // Ordering determines the selected occurrence, not its source identity.
+    // Renumbering unrelated rows must not revoke an otherwise valid schedule.
+    const context = item => [item.resourceId, item.trackId, item.id, item.resourceType,
+      item.scene, item.href, item.fromInfo, item.localTrack, item.track];
+    let key;
+    try { key = JSON.stringify([S.account, c.requestedLevel, context(matches[0]), context(row)]); }
+    catch { return null; }
     return { id, level: c.requestedLevel, account: S.account, duration, row, queueVersion: S.queueVersion,
-      occurrence: `${row.id}:${row.displayOrder}`, key: `${S.account}:${id}:${c.requestedLevel}:${row.id}:${row.displayOrder}:${row.randomOrder}` };
+      occurrence: String(row.id), key };
   }
   function cancelScheduled() { clock.stop(S.scheduled); S.scheduled = null; }
   function stopCurrent(reason = 'cancelled') {
@@ -390,7 +397,7 @@ plugin.onLoad(() => {
   function updateEnvironment() {
     reconcile();
     const s = state(); if (!s) return;
-    if (!S.compatible && s['page:vinylPage']) {
+    if (!S.compatible) {
       S.compatible = capabilityCheck();
       if (S.compatible) { trace('capabilities', { compatible: true }); queueMicrotask(consumeRecovery); }
     }
@@ -872,6 +879,7 @@ plugin.onLoad(() => {
     const epoch = S.epoch, target = Number.isFinite(requested)
       ? Math.max(0, Math.min(c.duration - 0.001, requested)) : clock.position(c);
     let desired = playIntent ?? c.playing;
+    c.recoveryRevision = S.revision;
     c.recoveryPosition = target; c.recoveryPlaying = desired; c.recoveryHeard = clock.heard(c);
     S.lastFallback = { at: Math.round(performance.now()), id: c.id,
       reason: /^[a-z0-9-]+$/.test(reason) ? reason : 'source-error', position: target,
@@ -967,10 +975,49 @@ plugin.onLoad(() => {
         }
       } catch (error) {
         if (!validRecovery(c, epoch)) return;
-        stopCurrent(); c.owns = false; S.phase = 'native';
+        stopCurrent();
+        let fallbackPosition, fallbackRevision;
+        // A timeout does not prove the old native instance is gone. Seek that
+        // same ID before restoring transport, while recovery events are still
+        // isolated from SDK Seek listeners. New controls supersede this target.
+        for (let attempt = 0; attempt < 3; attempt++) {
+          const revision = S.revision, target = c.recoveryPosition;
+          if (!Number.isFinite(target) || target <= 0) break;
+          try {
+            const mark = `${c.id}|seek|restore-${epoch}-fallback-${attempt}`;
+            const result = await eventCall('audioplayer.seek', [c.id, mark, target], 'audioplayer.onSeek',
+              a => String(a[0]) === c.id && a[1] === mark);
+            if (!validRecovery(c, epoch)) return;
+            if (Number(result[2]) !== 0) break;
+            if (S.revision === revision) { fallbackPosition = Number(result[3]); fallbackRevision = revision; break; }
+          } catch { break; }
+        }
+        if (!validRecovery(c, epoch)) return;
+        c.owns = false; S.phase = 'native';
+        if (Number.isFinite(fallbackPosition) && S.revision === fallbackRevision) {
+          S.nativePosition = fallbackPosition; S.nativeAt = performance.now();
+        }
         // Even a failed seek/load acknowledgement must leave the real backend in an explicit state.
         desired = c.recoveryPlaying;
         await bridge.raw(`audioplayer.${desired ? 'play' : 'pause'}`, [c.id, `${c.id}|${desired ? 'resume' : 'pause'}|recovery-fallback-${epoch}`]).catch(() => {});
+        const canRestorePausedSelection = () => validRecovery(c, epoch) && !c.recoveryPlaying && !S.nativePlaying
+          && S.revision === c.recoveryRevision && c.recoverySelecting && !c.recoverySdkLoad && c.row;
+        if (canRestorePausedSelection()) {
+          // A failed model selection can leave its loading action pending even
+          // though native audio is paused. Use the client's own paused restore
+          // workflow; do not patch its loading flag or stop the real backend.
+          try {
+            await S.store.dispatch({ type: 'playing/stop', payload: {
+              nativePlayerStop: false, reason: 'call', nativePlayId: c.id, triggerScene: 'native' } });
+            if (canRestorePausedSelection()) {
+              await S.store.dispatch({ type: 'playing/setPlaying', payload: {
+                trackIn: c.row, playingState: 1, noAddToHistory: true, fromType: 'restore', triggerScene: 'native' } });
+              trace('native-paused-selection-restored', { id: c.id });
+            }
+          } catch { trace('native-paused-selection-restore-error', { id: c.id }); }
+        }
+        if (validRecovery(c, epoch) && Number.isFinite(fallbackPosition) && S.revision === fallbackRevision)
+          bridge.emit('audioplayer.onPlayProgress', [c.id, fallbackPosition, 1, true]);
         trace('recovery-error', { id: c.id, reason: error.message, nativeFallbackIssued: true });
       } finally {
         // A late/duplicate callback from this SDK-only reconstruction cannot
@@ -1159,7 +1206,9 @@ plugin.onLoad(() => {
       }
       if (S.claim) trace('claim-rejected', { expected: c?.id, received: id, reason: 'native-source-or-queue-changed' });
       const snapshot = c?.restoreSnapshot && c.id === id ? {
-        position: position(), heard: clock.heard(c), playing: !!c.playing,
+        position: c.recoverySucceeded === false && c.recoveryRevision === S.revision ? c.recoveryPosition : position(),
+        heard: c.recoverySucceeded === false && c.recoveryRevision === S.revision ? c.recoveryHeard : clock.heard(c),
+        playing: c.recoverySucceeded === false && c.recoveryRevision === S.revision ? c.recoveryPlaying : !!c.playing,
       } : null;
       const wasPlaying = c?.owns ? !!(c.playing || c.transitioning && c.loadIntent) : S.nativePlaying;
       if (c?.entry && c.id !== id) {
@@ -1211,6 +1260,7 @@ plugin.onLoad(() => {
         if (msg.command.endsWith('seek')) {
           if (Number.isFinite(Number(p[2]))) c.recoveryPosition = Math.max(0, Math.min(c.duration - 0.001, Number(p[2])));
         } else c.recoveryPlaying = msg.command.endsWith('play');
+        c.recoveryRevision = S.revision;
       }
       // SDK-only reconstruction must settle before our final Seek/Pause. Its
       // automatic Play is acknowledged without reaching the real audio backend.
@@ -1497,9 +1547,12 @@ plugin.onLoad(() => {
   function persistRecovery() {
     const c = S.current; if (!c || !S.enabled) return;
     const row = c.row || rows().find(r => rowId(r) === c.id);
+    const pendingRecovery = S.phase === 'restoring'
+      || c.recoverySucceeded === false && c.recoveryRevision === S.revision;
     try { sessionStorage.setItem(recoveryKey, JSON.stringify({ id: c.id, info: c.info,
-      row, position: position(), playing: c.owns ? c.playing : S.nativePlaying,
-      heard: c.owns ? clock.heard(c) : c.nativeHeardBase || 0,
+      row, position: pendingRecovery ? c.recoveryPosition : position(),
+      playing: pendingRecovery ? c.recoveryPlaying : c.owns ? c.playing : S.nativePlaying,
+      heard: pendingRecovery ? c.recoveryHeard : c.owns ? clock.heard(c) : c.nativeHeardBase || 0,
       account: S.account, at: Date.now() })); } catch { /* Optional host recovery. */ }
   }
   window.addEventListener('beforeunload', () => {
@@ -1518,7 +1571,14 @@ plugin.onLoad(() => {
     S.recoveryConsumed = true;
     try {
     const saved = JSON.parse(sessionStorage.getItem(recoveryKey) || 'null'); sessionStorage.removeItem(recoveryKey);
-    if (saved && Date.now() - saved.at < 30000 && saved.account === S.account
+    // A hidden window can delay initialization beyond 30 seconds. Retain its
+    // one-shot snapshot only while no new instance or native control supersedes
+    // it; an old saved intent must never overwrite newer playback.
+    const untouchedStartup = !S.current && S.revision === 0
+      && Object.values(bridge.nativeTransport).every(count => count === 0);
+    const age = saved && Date.now() - saved.at;
+    const unchangedLoad = S.current?.loadRevision === S.revision;
+    if (saved && Number.isFinite(age) && age >= 0 && (untouchedStartup || age < 30000 && unchangedLoad) && saved.account === S.account
       && (!S.current || S.current.id === saved.id)) {
       const info = saved.info || bridge.loads.get(saved.id);
       if (info && saved.row) {

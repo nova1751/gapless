@@ -1,24 +1,25 @@
 {
   "date": "2026-11-22",
-  "baseMain": "d198315",
+  "baseMain": "ffacf07",
   "mac": {
-    "sourceVersion": "0.3.12",
-    "installedVersion": "0.3.12",
-    "runtimeVersion": "0.3.12",
-    "package": "releases/gapless-player-mac-0.3.12.plugin",
-    "packageSha256": "2fcb42c09451a672ede9fc7acc092c711e8ba2c031849c4709c4494de8aa2684",
+    "sourceVersion": "0.3.13",
+    "installedVersion": "0.3.13",
+    "runtimeVersion": "0.3.13",
+    "package": "releases/gapless-player-mac-0.3.13.plugin",
+    "packageSha256": "262eec3d5ffe803530df1a812a41674cb730ffb59f2b739240c3b32c6d2bc389",
     "runtimeMatchesPackage": true,
     "clientVersion": "3.1.12 (3444)",
     "hostVersion": "0.1.7",
     "menuVersion": "1.2.1",
     "menuSha256": "cf966fbefd0b8f2cdf50c8276c9f1bdbe729d33f5d73d7f6ffb6ce1c22329a9f",
-    "evidence": "docs/verification/mac-progress-recovery-0.3.12.json",
+    "evidence": "docs/verification/mac-native-queue-cache-0.3.13.json",
     "menuEvidence": "docs/verification/mac-quick-menu-1.2.1.json",
     "marketPluginVersion": "0.8.0",
     "marketExposed": true,
     "marketPluginEnabled": true,
     "managerAvailable": true,
-    "runtimeFilesMatchPackage": true
+    "runtimeFilesMatchPackage": true,
+    "verificationScope": "Real native selector and production methods checked in isolation; background integrity work, replay intent and file adapter guards passed. Runtime and package match. Native paused position restored. Window unavailable; music cache currently falls back, no actual heart-mode audio boundary or new output recording."
   },
   "windows": {
     "sourceVersion": "0.4.21",
@@ -59,6 +60,7 @@
     "Mac menu 1.2.1 provides a host-styled gapless quick switch and Manage plugins entry; the quick switch and gapless 0.3.9 host checkbox share the existing playback transaction. Market remains independently configurable.",
     "Mac 0.3.10 and Windows 0.4.16 preserve valid scheduled boundaries after unrelated queue changes. Windows verified that case in isolation.",
     "Windows 0.4.16 includes the shared indexed-decoder fix.",
-    "Mac 0.3.12 installed and running; native fallback preserves the original pending SDK Load callback. Actual source-read failure injection clears the client loading gate and native progress advances. Previous indexed decoder fix is included. Windows not operated."
+    "Historical 0.3.12 verification: Mac 0.3.12 installed and running; native fallback preserves the original pending SDK Load callback. Actual source-read failure injection clears the client loading gate and native progress advances. Previous indexed decoder fix is included. Windows not operated.",
+    "Mac 0.3.13 adds verified native heart-mode target selection, keeps boundary identity across renumbering, avoids timer-clamped MD5 work, removes lyric-page startup gating and preserves unsuperseded recovery intent. Cache index text uses existing mounted streaming route, not host readFileSync. Windows 0.4.21 kept unchanged in this Mac turn."
   ]
 }
