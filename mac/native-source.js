@@ -10,7 +10,7 @@
       this.prefix = Date.now().toString(36);
       this.clearTimers = [];
       this.recentStops = [];
-      this.stats = { batches: 0, reads: 0, hits: 0, failures: 0 };
+      this.stats = { batches: 0, reads: 0, hits: 0, refreshes: 0, failures: 0 };
     }
     observe(name, args) {
       return name.startsWith('audioplayer.') && (args?.[0] === this.active?.id || this.retired.has(args?.[0]));
@@ -115,54 +115,61 @@
         const abort = () => controller.abort();
         if (requestSignal.aborted) abort();
         requestSignal.addEventListener('abort', abort, { once: true });
-        const timeout = setTimeout(abort, 8000), inputSignal = controller.signal;
-        let changedReads = 0;
+        let timedOut = false;
+        const timeout = setTimeout(() => { timedOut = true; abort(); }, 8000), inputSignal = controller.signal;
+        let refreshedReads = 0;
         try {
           for (;;) {
             if (inputSignal.aborted || !this.valid(source)) throw new Error('cancelled');
             if (this.fault) throw new Error(this.fault);
             if (this.clearTimers.length) { await delay(20); continue; }
-            let coverage = committed?.generation === this.cache.generation ? committed
-              : await this.cache.snapshotSource(source, inputSignal);
-            let gaps = coverage ? globalThis.GaplessCacheCoverage.missing(coverage, start, end) : [[start, end]];
-            if (gaps.length && committed && coverage === committed) {
-              // Another reader or background fill may already have committed
-              // this interval. Refresh before starting another native batch.
-              coverage = await this.cache.snapshotSource(source, inputSignal);
-              gaps = coverage ? globalThis.GaplessCacheCoverage.missing(coverage, start, end) : [[start, end]];
-            }
-            if (gaps.length) {
-              const position = points ? globalThis.GaplessCacheCoverage.seekBefore(gaps[0][0], points, rate) : 0;
-              try {
-                coverage = await this.queue.request({ source, position, signal: inputSignal,
-                  priority: this.priority(source), budgetMs: 500 });
-              } catch (error) {
-                if (['native-cache-preempted', 'native-cache-cleared'].includes(error.message)) continue;
-                throw error;
+            try {
+              let coverage = committed?.generation === this.cache.generation ? committed
+                : await this.cache.snapshotSource(source, inputSignal);
+              let gaps = coverage ? globalThis.GaplessCacheCoverage.missing(coverage, start, end) : [[start, end]];
+              if (gaps.length && committed && coverage === committed) {
+                // Another reader or background fill may already have committed
+                // this interval. Refresh before starting another native batch.
+                coverage = await this.cache.snapshotSource(source, inputSignal);
+                gaps = coverage ? globalThis.GaplessCacheCoverage.missing(coverage, start, end) : [[start, end]];
               }
-              gaps = coverage ? globalThis.GaplessCacheCoverage.missing(coverage, start, end) : [[start, end]];
-              if (gaps.length) continue;
-            } else this.stats.hits++;
-            committed = coverage;
-            let bytes;
-            try { bytes = await this.cache.readReadyRange(source, start, end, inputSignal, coverage); }
-            catch (error) {
-              // Native writes can advance file properties during a read. Retry
-              // with a newly verified index, inside the existing deadline.
-              if (error.message === 'native-only-cache-changed' && changedReads++ < 1) {
+              if (gaps.length) {
+                const position = points ? globalThis.GaplessCacheCoverage.seekBefore(gaps[0][0], points, rate) : 0;
+                try {
+                  coverage = await this.queue.request({ source, position, signal: inputSignal,
+                    priority: this.priority(source), budgetMs: 500 });
+                } catch (error) {
+                  if (['native-cache-preempted', 'native-cache-cleared'].includes(error.message)) continue;
+                  throw error;
+                }
+                gaps = coverage ? globalThis.GaplessCacheCoverage.missing(coverage, start, end) : [[start, end]];
+                if (gaps.length) continue;
+              } else this.stats.hits++;
+              committed = coverage;
+              const bytes = await this.cache.readReadyRange(source, start, end, inputSignal, coverage);
+              if (inputSignal.aborted || !this.valid(source)) throw new Error('cancelled');
+              this.stats.reads++;
+              return bytes;
+            } catch (error) {
+              if (inputSignal.aborted || !this.valid(source)) throw new Error('cancelled');
+              // Both index and audio may briefly disappear when native commits
+              // a file. Refresh once within the original deadline; persistent
+              // failures still restore native, without a second Web download.
+              if (['native-only-cache-changed', 'native-only-cache-read-unavailable'].includes(error.message)
+                && refreshedReads++ < 1) {
+                this.stats.refreshes++;
+                this.trace('native-cache-read-refresh', { id: String(source.songId), reason: error.message });
                 committed = null; continue;
               }
               throw error;
             }
-            if (inputSignal.aborted || !this.valid(source)) throw new Error('cancelled');
-            this.stats.reads++;
-            return bytes;
           }
         } catch (error) {
           if (requestSignal.aborted || !this.valid(source)) throw new Error('cancelled');
           // Do not let the generic cache fallback create a second Web download
           // after native acquisition has already started.
           this.stats.failures++;
+          if (timedOut) throw new Error('native-only-cache-read-timeout');
           throw new Error(error.message.startsWith('native-only-') ? error.message : 'native-only-cache-' + error.message);
         } finally { clearTimeout(timeout); requestSignal.removeEventListener('abort', abort); }
       };

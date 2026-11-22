@@ -43,9 +43,17 @@
       });
     }
     async nativeCall(command, args, signal) {
-      const result = await fetch(BETTERNCM_API_PATH + '/native/' + command, {
-        method: 'POST', signal, headers: { BETTERNCM_API_KEY, 'Content-Type': 'application/json' }, body: JSON.stringify(args),
-      });
+      let result;
+      try {
+        result = await fetch(BETTERNCM_API_PATH + '/native/' + command, {
+          method: 'POST', signal, headers: { BETTERNCM_API_KEY, 'Content-Type': 'application/json' }, body: JSON.stringify(args),
+        });
+      } catch (error) {
+        if (signal.aborted) throw new Error('cancelled');
+        if (error instanceof TypeError) throw new Error('native-only-cache-host-unavailable');
+        throw error;
+      }
+      if (!result.ok) throw new Error('native-only-cache-host-response');
       const data = await result.json(); return data.ok ? data.value : null;
     }
     nativeFs(method, args, signal) { return this.nativeCall('fs.' + method, args, signal); }
@@ -65,18 +73,33 @@
       if (!Number.isSafeInteger(size) || size < 0 || size > 1024 * 1024)
         throw new Error('native-only-cache-index-size');
       if (size === 0) return '';
-      if (!this.mounts.has(path)) this.mounts.set(path, await this.wait(betterncm.fs.mountFile(path), signal));
-      const url = this.mounts.get(path), parsed = new URL(url);
-      if (parsed.protocol !== 'http:' || parsed.hostname !== '127.0.0.1') throw new Error('native-only-cache-mount');
       // The native text endpoint uses readFileSync and can strand the host's
       // event loop on OS file access. Its mounted-file route streams instead.
       try {
-        const bytes = await globalThis.GaplessSeekRange.read(url, 0, size, size, signal);
+        const bytes = await this.readMountedRange(path, 0, size, size, signal);
         return new TextDecoder().decode(bytes);
       } catch (error) {
         // An index may grow between stat and Range. Let snapshotSource compare
         // file versions before deciding whether the read was really invalid.
         if (error.message === 'seek-range-unsupported') return null;
+        throw error;
+      }
+    }
+    async readMountedRange(path, start, end, size, signal, xor = false, partialFile = false) {
+      if (!this.mounts.has(path)) this.mounts.set(path, await this.wait(betterncm.fs.mountFile(path), signal));
+      const url = this.mounts.get(path), parsed = new URL(url);
+      if (parsed.protocol !== 'http:' || parsed.hostname !== '127.0.0.1') throw new Error('native-only-cache-mount');
+      try {
+        return await globalThis.GaplessSeekRange.read(url, start, end, size, signal, xor, partialFile);
+      } catch (error) {
+        if (signal.aborted) throw new Error('cancelled');
+        // A mounted stream can disappear when native replaces a cache file.
+        // Discard only its mount; the caller must revalidate the index before
+        // retrying. Never accept a failed/short range or invent valid bytes.
+        if (error instanceof TypeError) {
+          this.mounts.delete(path);
+          throw new Error('native-only-cache-read-unavailable');
+        }
         throw error;
       }
     }
@@ -111,6 +134,7 @@
       if (metadata.resourceType !== 'track' || metadata.freeTrialInfo || metadata.level !== source.level
         || String(metadata.md5).toLowerCase() !== hash || Number(metadata.size) !== size) return null;
       await this.ensureHome(signal); check();
+      let readFailure;
       for (const root of this.roots()) {
         const prefix = `${root}/${id}-_-_${bitrate}-_-_${hash}`;
         for (const suffix of ['!', '']) {
@@ -119,7 +143,16 @@
           if (file?.type !== 'file' || Number(file.size) > size) continue;
           const before = await this.nativeFs('getProperties', [indexPath], signal); check();
           if (before?.type !== 'file' || Number(before.size) > 1024 * 1024) continue;
-          const text = await this.readIndex(indexPath, Number(before.size), signal); check();
+          let text;
+          try { text = await this.readIndex(indexPath, Number(before.size), signal); }
+          catch (error) {
+            check();
+            if (error.message !== 'native-only-cache-read-unavailable') throw error;
+            // Try the other native filename/root. A stat alone does not prove
+            // that the index is readable, even when its length is complete.
+            readFailure = error; continue;
+          }
+          check();
           const after = await this.nativeFs('getProperties', [indexPath], signal); check();
           if (!after || before.size !== after.size || before.lastModified !== after.lastModified) continue;
           if (text === null) throw new Error('native-only-cache-index-read');
@@ -133,17 +166,20 @@
           return { ...coverage, generation, path, indexPath };
         }
       }
+      if (readFailure) throw readFailure;
       return null;
     }
     async readReadyRange(source, start, end, signal, coverage) {
       if (!coverage || coverage.generation !== this.generation
         || globalThis.GaplessCacheCoverage.missing(coverage, start, end).length) throw new Error('native-only-cache-gap');
       const before = await this.nativeFs('getProperties', [coverage.path], signal);
-      if (!before || Number(before.size) < end) throw new Error('native-only-cache-file');
-      if (!this.mounts.has(coverage.path)) this.mounts.set(coverage.path, await this.wait(betterncm.fs.mountFile(coverage.path), signal));
-      const url = this.mounts.get(coverage.path), parsed = new URL(url);
-      if (parsed.protocol !== 'http:' || parsed.hostname !== '127.0.0.1') throw new Error('native-only-cache-mount');
-      const bytes = await globalThis.GaplessSeekRange.read(url, start, end, coverage.size, signal, true, true);
+      if (!before || Number(before.size) < end) throw new Error('native-only-cache-changed');
+      let bytes;
+      try { bytes = await this.readMountedRange(coverage.path, start, end, coverage.size, signal, true, true); }
+      catch (error) {
+        if (error.message === 'seek-range-unsupported') throw new Error('native-only-cache-changed');
+        throw error;
+      }
       const after = await this.nativeFs('getProperties', [coverage.path], signal);
       if (signal.aborted || coverage.generation !== this.generation) throw new Error('cancelled');
       if (!after || before.size !== after.size || before.lastModified !== after.lastModified)

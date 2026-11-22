@@ -1,0 +1,115 @@
+{
+  "date": "2026-11-23",
+  "baseMain": "d54f990",
+  "version": "0.3.14",
+  "client": "3.1.12 (3444)",
+  "host": "0.1.7",
+  "cache": {
+    "version": "0.3.14",
+    "id": "431811451",
+    "requestedLevel": "hires",
+    "actualLevel": "lossless",
+    "bytes": 26511114,
+    "ranges": 1,
+    "complete": true,
+    "md5Verified": true,
+    "fullReadMs": 1023,
+    "paused": true,
+    "modelCurrent": 218,
+    "modelQuality": 1999
+  },
+  "directedProductionChecks": [
+    {
+      "kind": "normal",
+      "success": true,
+      "validFlac": true,
+      "refreshes": 0,
+      "failures": 0,
+      "ms": 51
+    },
+    {
+      "kind": "index-once",
+      "success": true,
+      "validFlac": true,
+      "refreshes": 1,
+      "failures": 0,
+      "ms": 40
+    },
+    {
+      "kind": "audio-once",
+      "success": true,
+      "validFlac": true,
+      "refreshes": 1,
+      "failures": 0,
+      "ms": 53
+    },
+    {
+      "kind": "stale-path",
+      "success": true,
+      "validFlac": true,
+      "refreshes": 1,
+      "failures": 0,
+      "ms": 54
+    },
+    {
+      "kind": "persistent",
+      "success": false,
+      "error": "native-only-cache-read-unavailable",
+      "refreshes": 1,
+      "failures": 1,
+      "ms": 29
+    },
+    {
+      "kind": "cancel",
+      "success": false,
+      "error": "cancelled",
+      "refreshes": 0,
+      "failures": 0,
+      "ms": 14
+    },
+    {
+      "kind": "timeout",
+      "success": false,
+      "error": "native-only-cache-read-timeout",
+      "refreshes": 0,
+      "failures": 1,
+      "ms": 8005
+    }
+  ],
+  "beforeDeploymentBoundary": {
+    "version": "0.3.13",
+    "from": "431811451",
+    "to": "2058139099",
+    "sourceRate": 44100,
+    "contextRate": 44100,
+    "scheduledGapFrames": 0,
+    "leadSeconds": 23.706349206349213,
+    "claimDelayMs": 188.2999997138977,
+    "unexpectedNativeFallback": false,
+    "audioRecorded": false
+  },
+  "final": {
+    "enabled": true,
+    "phase": "native",
+    "playing": false,
+    "activeNodes": 0,
+    "modelResourceId": "431811451",
+    "savedPosition": 218,
+    "savedQuality": 1999,
+    "isLoadingFirst": false,
+    "progressLoadingGate": false,
+    "nativeCacheFault": null
+  },
+  "package": {
+    "path": "releases/gapless-player-mac-0.3.14.plugin",
+    "sha256": "d8c6bb6b767363c1038445dff27f5fe9001d102a32c950cf835b60f2ff89f6f7",
+    "runtimeFilesMatch": true
+  },
+  "scope": {
+    "currentFullCacheReadAndRestartReuse": true,
+    "postDeploymentSoundBoundary": false,
+    "windowAfterDeployment": "cgWindowNotFound",
+    "previousSystemOpenTriggerDetermined": false,
+    "windowsOperated": false
+  }
+}
