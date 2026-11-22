@@ -138,7 +138,7 @@ const WindowsSource = (() => {
     const sameTrack = current && id === current.id && sourceId === trackId(current.info);
     const matchingRows = sameTrack && Array.isArray(queue) ? queue.filter(row => rowId(row) === sourceId) : [];
     const order = matchingRows[0]?.displayOrder;
-    const ordered = mode === 'playOrder' && matchingRows.length === 1 && Number.isFinite(order)
+    const ordered = (mode === 'playOrder' || mode === 'playAi') && matchingRows.length === 1 && Number.isFinite(order)
       && queue.every(row => Number.isFinite(row.displayOrder));
     const terminal = ordered && !queue.some(row => row.displayOrder > order);
     // The exact client's original selector chooses the next randomized row.
@@ -167,7 +167,7 @@ const WindowsSource = (() => {
   function boundaryTarget(native, snap, fromId) {
     const queue = snap?.queue, mode = snap?.mode;
     if (!Array.isArray(queue) || !fromId
-      || !['playOrder', 'playCycle', 'playOneCycle', 'playRandom'].includes(mode)) return null;
+      || !['playOrder', 'playCycle', 'playOneCycle', 'playRandom', 'playAi'].includes(mode)) return null;
     const origins = queue.filter(row => rowId(row) === fromId);
     if (origins.length !== 1) return null;
     const origin = origins[0];
@@ -176,7 +176,7 @@ const WindowsSource = (() => {
       if (mode === 'playRandom' && (!native.supportsRandom || queue.length < 2)) return null;
       if (!queue.every(row => Number.isFinite(row[order]))
         || new Set(queue.map(row => row[order])).size !== queue.length
-        || (mode === 'playOrder' && !queue.some(row => row[order] > origin[order]))) return null;
+        || ((mode === 'playOrder' || mode === 'playAi') && !queue.some(row => row[order] > origin[order]))) return null;
     }
     const row = native.nextRow(mode, queue, origin);
     if (!row || !queue.includes(row)) return null;
