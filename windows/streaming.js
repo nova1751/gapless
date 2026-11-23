@@ -220,6 +220,10 @@
   }
 
   class StreamingClock extends globalThis.GaplessPlaybackClock {
+    constructor(options) {
+      super(options);
+      this.scheduleAheadSeconds = options.scheduleAheadSeconds ?? 2;
+    }
     async open(entry) {
       const stamp = this.ctx?.getOutputTimestamp?.();
       if (this.readyContext === this.ctx && this.ctx?.state === 'running' && this.matches(entry)
@@ -273,7 +277,7 @@
             // Once verified PCM is complete, schedule the entire remaining
             // buffer now, even for a track minutes in the future. Do not leave
             // a last-second main-thread timer responsible for its continuation.
-            if (!stream.done && when > this.ctx.currentTime + 2 && cursor !== first) break;
+            if (!stream.done && when > this.ctx.currentTime + this.scheduleAheadSeconds && cursor !== first) break;
             const available = globalThis.GaplessSeekRange.until(entry, cursor) - cursor;
             if (available <= 0) {
               if (when < this.ctx.currentTime + 0.03) throw new Error('stream-underrun');

@@ -238,7 +238,7 @@ plugin.onLoad(async () => {
       }
     }
     const clock = new globalThis.GaplessStreamingClock({
-      resources, trace,
+      resources, trace, scheduleAheadSeconds: 4,
       onState: (state, failedTrack) => {
         if (state === 'running') return;
         if (failedTrack && failedTrack !== current) {
@@ -1491,11 +1491,19 @@ plugin.onLoad(async () => {
           if (!c.owns && !switchIn) resources.retain([]);
           return;
         }
-        if (c.owns && (!sameEnvironment(c.environment, snap)
-          || (snap.sourceId && snap.sourceId !== source.trackId(c.info)))) {
-          void recover(c, 'environment-changed');
+        if (c.owns && !sameEnvironment(c.environment, snap)) {
+          void recover(c, c.environment.account !== snap.account ? 'account-changed' : 'quality-changed');
           return;
         }
+        // The host can publish its next row before issuing Stop/Load. Give
+        // that transaction time to supersede this instance.
+        if (c.owns && snap.sourceId && snap.sourceId !== source.trackId(c.info)) {
+          cancelCandidate();
+          if (c.rowMismatchSince == null) c.rowMismatchSince = performance.now();
+          if (performance.now() - c.rowMismatchSince >= 1500) void recover(c, 'source-mismatch');
+          return;
+        }
+        c.rowMismatchSince = null;
         // Random order can be absent or incomplete while the host updates its
         // queue. Drop the old reservation without interrupting this song.
         if (selected && (!snap.nextKnown || !matchingBoundary(selected, snap))) {

@@ -13,7 +13,7 @@
       const state = { points: null, rate: null, coverage: null };
       const read = async (start, end, requestSignal) => {
         const controller = new AbortController(), readSignal = controller.signal;
-        let timedOut = false;
+        let timedOut = false, refreshed = false;
         const abort = () => controller.abort();
         if (requestSignal.aborted) abort();
         requestSignal.addEventListener('abort', abort, { once: true });
@@ -29,7 +29,19 @@
               state.coverage = coverage;
             }
             const gaps = globalThis.GaplessCacheCoverage.missing(coverage, start, end);
-            if (!gaps.length) return await this.cache.readReadyRange(source, start, end, readSignal, coverage);
+            if (!gaps.length) {
+              try { return await this.cache.readReadyRange(source, start, end, readSignal, coverage); }
+              catch (error) {
+                if (refreshed || readSignal.aborted || !this.valid(source)
+                  || coverage.generation !== this.cache.generation
+                  || !(error.name === 'TypeError' || ['seek-range-length', 'seek-range-unsupported',
+                    'native-cache-range-missing'].includes(error.message))) throw error;
+                refreshed = true;
+                this.cache.mounts.delete(coverage.path);
+                state.coverage = null;
+                continue;
+              }
+            }
             if (readSignal.aborted) throw new Error('cancelled');
             const position = state.points
               ? globalThis.GaplessCacheCoverage.seekBefore(gaps[0][0], state.points, state.rate) : 0;
