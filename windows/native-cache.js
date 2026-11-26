@@ -1,4 +1,4 @@
-/* MIT. Read-only Windows 3.1.43 playback cache, matched to the authorized source. */
+/* MIT. Read-only Windows playback cache, matched to the authorized source. */
 (() => {
   const BITRATE = { standard: 128, higher: 192, exhigh: 320, lossless: 999, hires: 1999 };
   // Yield in bounded batches without the nested/background timer minimum.

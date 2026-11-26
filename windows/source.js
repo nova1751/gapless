@@ -1,4 +1,4 @@
-/* MIT. Native source and queue adapter for NetEase Cloud Music 3.1.43.205627. */
+/* MIT. Native source and queue adapter for the matched NetEase Cloud Music build. */
 const WindowsSource = (() => {
   const { fingerprint, localIdentity } = globalThis.GaplessAudioResources;
   const allowedLevels = new Set(['standard', 'higher', 'exhigh', 'lossless', 'hires']);

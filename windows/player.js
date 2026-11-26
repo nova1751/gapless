@@ -2,7 +2,6 @@
 plugin.onLoad(async () => {
   'use strict';
   const bridge = window.gaplessWindowsBridge;
-  if (!bridge?.hooked || window.APP_CONF?.appver !== '3.1.43.205627') return;
   // Host settings are persisted independently of Chromium's deferred localStorage flush.
   const enabledKey = 'gapless-player-windows.enabled.v1';
   let modeEnabled = false, savingConfig = false, configQueue = Promise.resolve();
@@ -15,8 +14,10 @@ plugin.onLoad(async () => {
     modeEnabled = saved === 'true' || (saved === 'unset' && plugin.getConfig('enabled', true) === true);
     plugin.setConfig('enabled', modeEnabled);
   } catch { modeEnabled = false; }
-  bridge.startupEnabled = modeEnabled;
-  if (!modeEnabled) bridge.flushStartup?.(true);
+  if (bridge) {
+    bridge.startupEnabled = modeEnabled;
+    if (!modeEnabled) bridge.flushStartup?.(true);
+  }
 
   const events = [];
   const retainedDiagnostics = [];
@@ -37,7 +38,7 @@ plugin.onLoad(async () => {
         sourceError: safe(detail.sourceError), position: detail.position };
     }
     if (events.length > 180) events.shift();
-    const health = /^(loaded|native-load|native-settings|web-load-fallback|stream-output-fallback|restore|restored|prepare-fallback|claim-timeout|boundary|claimed|scheduled|stream-fully-scheduled|stream-seek-wait|stream-seek-ready|stream-seek-cancel|load-timing|first-output-scheduled|host-stop-to-load|cache-cleared|native-preload-suppressed|native-cache-clear-result)$/.test(event);
+    const health = /^(loaded|menu-mounted|bridge-unavailable|selector-unavailable|selector-connected|init-error|native-load|native-settings|web-load-fallback|stream-output-fallback|restore|restored|prepare-fallback|claim-timeout|boundary|claimed|scheduled|stream-fully-scheduled|stream-seek-wait|stream-seek-ready|stream-seek-cancel|load-timing|first-output-scheduled|host-stop-to-load|cache-cleared|native-preload-suppressed|native-cache-clear-result)$/.test(event);
     if (!gaplessWindowsBuild.diagnostics && !gaplessWindowsBuild.probe && !health) return;
     if (flush) return;
     flush = setTimeout(() => {
@@ -48,13 +49,15 @@ plugin.onLoad(async () => {
       try { state = diagnosticState(); } catch { /* Diagnostics cannot block playback or the log. */ }
       if (state) records.push({ at: Math.round(performance.now()), wallMs: Date.now(), event: 'diagnostic-state', ...state });
       const safe = records.map(({ at, wallMs, event, id, from, to, reason, mode, enabled,
-        owns, loading, capable, nextKnown, supportsRandom, codec, sourceError,
+        owns, loading, capable, nextKnown, supportsRandom, codec, sourceError, version, client,
         rate, sourceRate, loadMs, leadSeconds, scheduledGapFrames, delayMs, blockers, memoryHit, waitMs, target, position, decodedSeconds, retainedPlaybackBytes, success, outputWallMs, pcmBytes, pcmCapacity,
         sourceKind, sourceInfoMs, resourceMs, bufferMs, contextMs, gateMs, firstOutputEstimateMs, stopToLoadMs,
         cursorSeconds, bufferedUntilSeconds, refillTargetSeconds, rangeStartSeconds, rangeEndSeconds }) => ({
         at, wallMs, event, id, from, to, mode, enabled, owns, loading, capable, nextKnown, supportsRandom,
         codec: /^[a-z0-9-]+$/i.test(codec || '') ? codec : undefined,
         sourceError: /^[a-z0-9:-]+$/.test(sourceError || '') ? sourceError : undefined,
+        version: /^\d+(\.\d+)+$/.test(version || '') ? version : undefined,
+        client: /^\d+(\.\d+)+$/.test(client || '') ? client : undefined,
         rate, sourceRate, loadMs, leadSeconds,
         scheduledGapFrames, delayMs, blockers, memoryHit, waitMs, target, position, decodedSeconds, retainedPlaybackBytes, success, outputWallMs, pcmBytes, pcmCapacity,
         sourceKind, sourceInfoMs, resourceMs, bufferMs, contextMs, gateMs, firstOutputEstimateMs, stopToLoadMs,
@@ -65,12 +68,14 @@ plugin.onLoad(async () => {
         new Blob([JSON.stringify(safe, null, 2)])).catch(() => {});
     }, 200);
   }
-  bridge.report = error => trace('bridge-error', { kind: error.name });
-  trace('loaded', { version: gaplessWindowsBuild.version, client: window.APP_CONF.appver,
+  const report = error => trace('bridge-error', { kind: error.name });
+  if (bridge) bridge.report = report;
+  trace('loaded', { version: gaplessWindowsBuild.version, client: window.APP_CONF?.appver,
     probe: gaplessWindowsBuild.probe, nativeSource: gaplessWindowsBuild.nativeSource });
-  if (gaplessWindowsBuild.probe) { probeNative(bridge, trace); return; }
+  if (gaplessWindowsBuild.probe && bridge?.hooked) { probeNative(bridge, trace); return; }
 
   function installPlayer() {
+    if (!bridge?.hooked) { trace('bridge-unavailable'); return; }
     const source = WindowsSource;
     let native;
     try { native = source.connect(); } catch (error) { bridge.report(error); }
@@ -1583,7 +1588,7 @@ plugin.onLoad(async () => {
         fillStalls: current?.cacheFillStalls || 0, fillSuspended: (current?.cacheFillStalls || 0) >= 6,
         currentComplete: !!current?.cacheComplete, pendingPrevious: retiredFills.length, queue: cacheQueue?.status() || null,
         session: cacheSession ? { ...cacheSession.stats } : null }),
-      status: () => ({ version: gaplessWindowsBuild.version, nativeSourceMode, enabled: enabled(), savingConfig, owns: !!current?.owns, loading: !!current?.loading,
+      status: () => ({ version: gaplessWindowsBuild.version, available: true, nativeSourceMode, enabled: enabled(), savingConfig, owns: !!current?.owns, loading: !!current?.loading,
         lastFallback: lastFallback && { ...lastFallback },
         nativeAudioPolicy: enabled() ? 'gapless-priority' : 'native',
         suppressedNativeAudioSettings: enabled() && current?.owns ? getSnapshot()?.nativeAudioPreferences || [] : [],
@@ -1622,66 +1627,14 @@ plugin.onLoad(async () => {
         }
         if (value && current) { current.blocked = false; current.prepareAttempts = 0; current.prepareAfter = 0; cancelCandidate(); }
     }
-    window.gaplessWindows = Object.freeze(publicStatus);
-    installGaplessToggle(publicStatus, pluginManager);
-    function settingsControl(makeCheckbox) {
-      const label = document.createElement('label');
-      const checkbox = makeCheckbox({ checked: enabled() });
-      checkbox.addEventListener('change', async () => {
-        checkbox.disabled = true;
-        try { await publicStatus.enable(checkbox.checked); } catch (error) { bridge.report(error); }
-        finally { checkbox.checked = enabled(); checkbox.disabled = false; }
-      });
-      checkbox.addEventListener('focus', () => { checkbox.checked = enabled(); });
-      label.append(checkbox, ' 无缝播放');
-      return label;
-    }
-    plugin.onConfig(tools => settingsControl(options => tools.makeCheckbox(options)));
-    function openGaplessSettings(manager) {
-      manager.classList.add('gp-manager');
-      manager.querySelector('[data-plugin-slug="gapless-player-windows"]')?.click();
-    }
-    function pluginManager(toggle = false) {
-      const manager = document.querySelector('section.better-ncm-manager');
-      const main = document.querySelector('.right-container, section.g-mn:not(.better-ncm-manager)');
-      if (!manager || !main || manager === main) return null;
-      const isOpen = manager.classList.contains('ncmm-show');
-      if (!toggle) return { isOpen };
-      // Reuse BetterNCM's page and plugin controls. Some layouts remove its
-      // original title-bar shortcut, so keep the existing page toggle as a fallback.
-      const shortcut = [...document.querySelectorAll('[title="BetterNCM"]')]
-        .find(node => !manager.contains(node));
-      if (shortcut) {
-        shortcut.click();
-        if (manager.classList.contains('ncmm-show') !== isOpen) {
-          if (!isOpen) openGaplessSettings(manager);
-          return { isOpen: !isOpen };
-        }
-      }
-      if (isOpen) {
-        manager.classList.remove('ncmm-show');
-        if (main.style.getPropertyValue('display') === 'none') main.style.removeProperty('display');
-      } else {
-        if (manager.parentElement !== main.parentElement) main.after(manager);
-        manager.classList.add('ncmm-show');
-        main.style.setProperty('display', 'none', 'important');
-        openGaplessSettings(manager);
-      }
-      return { isOpen: !isOpen };
-    }
-    window.addEventListener('click', event => {
-      // The manager overlays the current page without adding a history entry.
-      if (!event.target?.closest?.('[data-testid="tid_header_back_btn"]') || !pluginManager()?.isOpen) return;
-      if (!pluginManager(true)) return;
-      event.preventDefault();
-      event.stopPropagation();
-    }, true);
-    window.addEventListener('keydown', event => {
-      if (event.repeat || !event.ctrlKey || !event.altKey || event.shiftKey
-        || String(event.key).toLowerCase() !== 'g') return;
-      if (event.target?.closest?.('input,textarea,[contenteditable]')) return;
-      if (pluginManager(true)) event.preventDefault();
-    }, true);
+    return publicStatus;
   }
-  try { installPlayer(); } catch (error) { trace('init-error', { kind: error.name }); }
+
+  let controller;
+  try { controller = installPlayer(); } catch (error) { trace('init-error', { kind: error.name }); }
+  window.gaplessWindows = Object.freeze(controller || {
+    status: () => ({ version: gaplessWindowsBuild.version, available: false, enabled: false }),
+    diagnostics: () => events.slice(),
+  });
+  installGaplessSettings(window.gaplessWindows, plugin, report, () => trace('menu-mounted'));
 });

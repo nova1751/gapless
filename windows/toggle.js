@@ -1,5 +1,5 @@
 /* MIT. Host-backed menu and scoped styling for the BetterNCM manager. */
-function installGaplessToggle(controller, pluginManager) {
+function installGaplessToggle(controller, pluginManager, onMounted) {
   const id = 'gapless-windows-menu';
   if (document.getElementById(id)) return;
   const style = document.createElement('style');
@@ -49,7 +49,7 @@ function installGaplessToggle(controller, pluginManager) {
     toggle = element('button', 'gp-switch'); toggle.type = 'button';
     toggle.setAttribute('role', 'switch'); toggle.setAttribute('aria-label', '无缝播放');
     toggle.addEventListener('click', async () => {
-      if (busy) return;
+      if (busy || controller.status().available === false) return;
       busy = true; saveError = false; toggle.disabled = true;
       try { await controller.enable(!controller.status().enabled); }
       catch { saveError = true; }
@@ -70,8 +70,10 @@ function installGaplessToggle(controller, pluginManager) {
     manage.textContent = manager?.isOpen ? '返回网易云' : '管理插件';
     const state = controller.status();
     toggle.setAttribute('aria-checked', String(state.enabled));
-    toggle.disabled = busy || state.savingConfig || state.handingBack || (!state.enabled && (state.owns || state.loading));
-    message.textContent = saveError ? '设置未保存，请重试' : toggle.disabled ? '正在切换播放方式…'
+    toggle.disabled = state.available === false || busy || state.savingConfig || state.handingBack
+      || (!state.enabled && (state.owns || state.loading));
+    message.textContent = state.available === false ? '播放接口不兼容 · 网易云原生播放'
+      : saveError ? '设置未保存，请重试' : toggle.disabled ? '正在切换播放方式…'
       : state.waitingForNextLoad ? '已开启，当前保持原生播放，下次选歌生效'
       : state.enabled ? '已开启' : '已关闭 · 网易云原生播放';
   }
@@ -120,6 +122,8 @@ function installGaplessToggle(controller, pluginManager) {
         button.setAttribute('aria-expanded', 'true'); theme(); position(); toggle?.focus();
       });
       entries.set(host, button);
+      onMounted?.();
+      onMounted = null;
     }
     theme();
   }
@@ -130,4 +134,72 @@ function installGaplessToggle(controller, pluginManager) {
   const timer = setInterval(() => { mount(); update(); position(); }, 500);
   window.addEventListener('beforeunload', () => clearInterval(timer), { once: true });
   return update;
+}
+
+function installGaplessSettings(controller, plugin, report, onMounted) {
+  installGaplessToggle(controller, pluginManager, onMounted);
+  function settingsControl(makeCheckbox) {
+    const label = document.createElement('label');
+    const state = controller.status();
+    if (state.available === false) {
+      label.textContent = '当前客户端的播放接口不兼容，网易云原生播放';
+      return label;
+    }
+    const enabled = () => controller.status().enabled;
+    const checkbox = makeCheckbox({ checked: enabled() });
+    checkbox.addEventListener('change', async () => {
+      checkbox.disabled = true;
+      try { await controller.enable(checkbox.checked); } catch (error) { report(error); }
+      finally { checkbox.checked = enabled(); checkbox.disabled = false; }
+    });
+    checkbox.addEventListener('focus', () => { checkbox.checked = enabled(); });
+    label.append(checkbox, ' 无缝播放');
+    return label;
+  }
+  plugin.onConfig(tools => settingsControl(options => tools.makeCheckbox(options)));
+  function openGaplessSettings(manager) {
+    manager.classList.add('gp-manager');
+    manager.querySelector('[data-plugin-slug="gapless-player-windows"]')?.click();
+  }
+  function pluginManager(toggle = false) {
+    const manager = document.querySelector('section.better-ncm-manager');
+    const main = document.querySelector('.right-container, section.g-mn:not(.better-ncm-manager)');
+    if (!manager || !main || manager === main) return null;
+    const isOpen = manager.classList.contains('ncmm-show');
+    if (!toggle) return { isOpen };
+    // Reuse BetterNCM's page and plugin controls. Some layouts remove its
+    // original title-bar shortcut, so keep the existing page toggle as a fallback.
+    const shortcut = [...document.querySelectorAll('[title="BetterNCM"]')]
+      .find(node => !manager.contains(node));
+    if (shortcut) {
+      shortcut.click();
+      if (manager.classList.contains('ncmm-show') !== isOpen) {
+        if (!isOpen) openGaplessSettings(manager);
+        return { isOpen: !isOpen };
+      }
+    }
+    if (isOpen) {
+      manager.classList.remove('ncmm-show');
+      if (main.style.getPropertyValue('display') === 'none') main.style.removeProperty('display');
+    } else {
+      if (manager.parentElement !== main.parentElement) main.after(manager);
+      manager.classList.add('ncmm-show');
+      main.style.setProperty('display', 'none', 'important');
+      openGaplessSettings(manager);
+    }
+    return { isOpen: !isOpen };
+  }
+  window.addEventListener('click', event => {
+    // The manager overlays the current page without adding a history entry.
+    if (!event.target?.closest?.('[data-testid="tid_header_back_btn"]') || !pluginManager()?.isOpen) return;
+    if (!pluginManager(true)) return;
+    event.preventDefault();
+    event.stopPropagation();
+  }, true);
+  window.addEventListener('keydown', event => {
+    if (event.repeat || !event.ctrlKey || !event.altKey || event.shiftKey
+      || String(event.key).toLowerCase() !== 'g') return;
+    if (event.target?.closest?.('input,textarea,[contenteditable]')) return;
+    if (pluginManager(true)) event.preventDefault();
+  }, true);
 }

@@ -38,8 +38,9 @@ assert original.count("await i.AudioPlayer.setPreloadInfoResult(") == 4
 # Expose an observer on a separate factory instance. Webpack's native exports and
 # callbacks still follow the original code. Only the observer receives full playInfo.
 patched = original.replace("const F=async e=>{", "const F=async (e,observe,requestedRow)=>{", 1)
-assert patched.count('if(d===r.i.PlayFm)') == 1
-patched = patched.replace('if(d===r.i.PlayFm)', 'if(requestedRow){p=v=requestedRow}else if(d===r.i.PlayFm)', 1)
+mode_name, = re.findall(r'if\(d===([\w$]+)\.i\.PlayFm\)', original)
+mode_anchor = f'if(d==={mode_name}.i.PlayFm)'
+patched = patched.replace(mode_anchor, 'if(requestedRow){p=v=requestedRow}else ' + mode_anchor, 1)
 patched = patched.replace("await i.AudioPlayer.setPreloadInfoResult(", "await observe(")
 patched = patched.replace("return void await observe(t)}catch(S)",
                           "return void await observe({...t,info:h.playInfo,row:p})}catch(S)")
@@ -48,14 +49,14 @@ assert "info:h.playInfo,row:p" in patched
 # Reuse its normal source resolver and allow a fresh native Load to claim playback.
 loop_anchor = "!v)return;for(let t=n;t>=0;t--)"
 assert patched.count(loop_anchor) == 1
-patched = patched.replace(loop_anchor, "!v)return;if(d===r.i.PlayOneCycle)p=v;else for(let t=n;t>=0;t--)")
+patched = patched.replace(loop_anchor, f"!v)return;if(d==={mode_name}.i.PlayOneCycle)p=v;else for(let t=n;t>=0;t--)")
 
 patched += """
 ;return {
   // The resolver owns random ordering; F only delegates to it.
   supportsRandom: typeof O.a === 'function' && ['PlayRandom', 'randomOrder', 'displayOrder']
     .every(marker => String(O.a).includes(marker)),
-  nextRow: (mode, queue, row) => mode === r.i.PlayOneCycle ? row : O.a(mode, queue, row, 1),
+  nextRow: (mode, queue, row) => mode === MODE_ENUM.i.PlayOneCycle ? row : O.a(mode, queue, row, 1),
   read: () => c.a.getStore(),
   resolveCurrent: () => new Promise((resolve, reject) => {
     const state = c.a.getStore(), row = state.playing.curPlaying;
@@ -74,7 +75,7 @@ patched += """
     F({curPlayId:playId,preloadIndex:0},resolve).then(() => resolve(null),reject);
   })
 };
-"""
+""".replace("MODE_ENUM", mode_name)
 selector = "const selector = " + json.dumps({"original": original, "patched": patched}) + ";"
 mode = json.dumps({"version": manifest["version"], "probe": args.probe, "diagnostics": args.diagnostics, "temporaryBridge": args.temporary_bridge,
                    "nativeSource": native_source})

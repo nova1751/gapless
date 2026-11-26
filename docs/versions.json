@@ -1,6 +1,6 @@
 {
   "date": "2026-11-26",
-  "baseMain": "59392cf",
+  "baseMain": "d238655",
   "mac": {
     "sourceVersion": "0.3.14",
     "installedVersion": "0.3.14",
@@ -22,10 +22,10 @@
     "verificationScope": "Installed runtime 0.3.14; full authorized native cache and MD5 verified after host restart. Directed production-method checks cover one refresh, stale path, persistent failure, cancellation and timeout. User paused track/quality restored. Before-deployment 0.3.13 natural scheduling and native claim observed; no post-deployment sound recording or system-control UI acceptance. Previous system file-open trigger remains unknown. Windows not operated."
   },
   "windows": {
-    "sourceVersion": "0.4.23",
-    "installedVersion": "0.4.23",
-    "runtimeVersion": "0.4.23",
-    "packageSha256": "85C7F2E39C1C14FB22E34CB28E25C1F3EF32DF49363BAC7886FEADEA6C8ABB8B",
+    "sourceVersion": "0.4.24",
+    "installedVersion": "0.4.24",
+    "runtimeVersion": "0.4.24",
+    "packageSha256": "6C8757520F105122090FBDB8CD8605A6509AC5A5A68B4E6AD105E91114388C82",
     "runtimeMatchesPackage": true,
     "evidence": "docs/CURRENT_STATUS.md",
     "previousInstallationReported": {
@@ -42,9 +42,9 @@
       "packageSha256": "D2F2DA921AEED8BD2CA17EC497788363C8079AE7605CF47E4FB929972A94D998",
       "evidence": "docs/verification/windows-candidate-install.json"
     },
-    "clientVersion": "3.1.43.205627 x64",
+    "clientVersion": "3.1.44.205670 x64",
     "hostVersion": "1.3.4",
-    "verificationScope": "Installed and restarted; runtime main and startup files match. Directed checks reproduced the old in-flight cancellation and verified earlier refill, explicit seek priority, terminal timeouts and the Hi-Res buffer budget. Verified the actual native cache MD5 and decoded the previously affected section through EOF outside the client. No long-running app playback or output A/B.",
+    "verificationScope": "Installed and restarted on 3.1.44; runtime main and startup files match. Live diagnostics confirmed load, native selector connection and title-bar menu mount. Directed checks verified the entry remains available with an absent bridge or mismatched selector while playback stays native. No new audible transition test.",
     "runtimeMatchesCurrentSource": true
   },
   "historicalAudioEvidence": {
