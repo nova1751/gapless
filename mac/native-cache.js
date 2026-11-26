@@ -11,9 +11,14 @@
   class NativeCache {
     constructor({ storage, crypto, settings, trace }) {
       this.storage = storage; this.crypto = crypto; this.settings = settings; this.trace = trace;
-      this.home = null; this.mounts = new Map(); this.generation = 0;
+      this.home = null; this.mounts = new Map(); this.generation = 0; this.preferredRoot = null;
     }
-    clear() { this.generation++; this.mounts.clear(); }
+    clear() { this.generation++; this.mounts.clear(); this.preferredRoot = null; }
+    setMount(path, url) {
+      if (this.mounts.size >= 64) this.mounts.delete(this.mounts.keys().next().value);
+      this.mounts.set(path, url);
+      return url;
+    }
     roots() {
       const settings = this.settings() || {}, roots = [];
       for (const p of [settings.storageCachePath, settings.cacheDir, settings.oldCacheDir]) {
@@ -23,7 +28,11 @@
       }
       if (this.home) roots.push(this.home + '/Library/Containers/com.netease.163music/Data/Library/Caches/online_play_cache',
         this.home + '/Library/Caches/online_play_cache');
-      return [...new Set(roots)];
+      const unique = [...new Set(roots)];
+      if (this.preferredRoot && unique.includes(this.preferredRoot)) {
+        return [this.preferredRoot, ...unique.filter(r => r !== this.preferredRoot)];
+      }
+      return unique;
     }
     wait(promise, signal) {
       return new Promise((resolve, reject) => {
@@ -86,7 +95,7 @@
       }
     }
     async readMountedRange(path, start, end, size, signal, xor = false, partialFile = false) {
-      if (!this.mounts.has(path)) this.mounts.set(path, await this.wait(betterncm.fs.mountFile(path), signal));
+      if (!this.mounts.has(path)) this.setMount(path, await this.wait(betterncm.fs.mountFile(path), signal));
       const url = this.mounts.get(path), parsed = new URL(url);
       if (parsed.protocol !== 'http:' || parsed.hostname !== '127.0.0.1') throw new Error('native-only-cache-mount');
       try {
@@ -163,6 +172,7 @@
             continue;
           }
           if (coverage.ranges.some(([, end]) => end > Number(file.size))) continue;
+          this.preferredRoot = root;
           return { ...coverage, generation, path, indexPath };
         }
       }
@@ -172,13 +182,18 @@
     async readReadyRange(source, start, end, signal, coverage) {
       if (!coverage || coverage.generation !== this.generation
         || globalThis.GaplessCacheCoverage.missing(coverage, start, end).length) throw new Error('native-only-cache-gap');
-      const before = await this.nativeFs('getProperties', [coverage.path], signal);
-      if (!before || Number(before.size) < end) throw new Error('native-only-cache-changed');
+      const finalized = coverage.complete && coverage.path.endsWith('.uc!');
+      const before = finalized ? null : await this.nativeFs('getProperties', [coverage.path], signal);
+      if (!finalized && (!before || Number(before.size) < end)) throw new Error('native-only-cache-changed');
       let bytes;
-      try { bytes = await this.readMountedRange(coverage.path, start, end, coverage.size, signal, true, true); }
+      try { bytes = await this.readMountedRange(coverage.path, start, end, coverage.size, signal, true, !finalized); }
       catch (error) {
         if (error.message === 'seek-range-unsupported') throw new Error('native-only-cache-changed');
         throw error;
+      }
+      if (finalized) {
+        if (signal.aborted || coverage.generation !== this.generation) throw new Error('cancelled');
+        return bytes;
       }
       const after = await this.nativeFs('getProperties', [coverage.path], signal);
       if (signal.aborted || coverage.generation !== this.generation) throw new Error('cancelled');
@@ -227,10 +242,10 @@
       for (const root of this.roots()) {
         if (signal.aborted) throw new Error('cancelled');
         const candidate = root + '/' + name, properties = await this.nativeFs('getProperties', [candidate], signal);
-        if (properties?.type === 'file' && Number(properties.size) === size) { path = candidate; break; }
+        if (properties?.type === 'file' && Number(properties.size) === size) { this.preferredRoot = root; path = candidate; break; }
       }
       if (!path) return null;
-      if (!this.mounts.has(path)) this.mounts.set(path, await this.wait(betterncm.fs.mountFile(path), signal));
+      if (!this.mounts.has(path)) this.setMount(path, await this.wait(betterncm.fs.mountFile(path), signal));
       const url = this.mounts.get(path), parsed = new URL(url);
       if (parsed.protocol !== 'http:' || parsed.hostname !== '127.0.0.1') throw new Error('native-cache-mount');
       if (generation !== this.generation) throw new Error('cancelled');

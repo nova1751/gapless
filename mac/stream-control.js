@@ -8,7 +8,12 @@
       error.cancelled = ['cancelled', 'superseded', 'pause', 'cache-clear', 'stale'].includes(kind);
       return error;
     }
-    ready(entry, target, ahead = entry?.origin === 'native-source' ? 2 : 0.5) {
+    defaultAhead(entry, target = 0) {
+      if (entry?.origin !== 'native-source') return 0.5;
+      if (entry.stream?.hasDiskCoverage?.(target, 2)) return 0.5;
+      return 1.5;
+    }
+    ready(entry, target, ahead = this.defaultAhead(entry, target)) {
       if (!entry || entry.stream?.error) return false;
       if (!entry.stream || entry.stream.done) return true;
       const start = Math.floor(target * entry.spec.rate);
@@ -23,13 +28,14 @@
         if (controller?.entry?.stream) controller.entry.stream.priorityTarget = null;
       }
     }
-    async prepare(track, target, valid, { purpose = 'seek', ahead = track?.entry?.origin === 'native-source' ? 2 : 0.5 } = {}) {
+    async prepare(track, target, valid, { purpose = 'seek', ahead } = {}) {
       // An older file/intent check can finish after a newer preparation starts.
       // Reject that caller before it can abort the current controller.
       if (!valid() || !this.resources.enabled) throw StreamControl.failure('stale');
       this.cancel(track, 'superseded');
       const controller = track.streamPreparation = new AbortController();
       const entry = track.entry, signal = controller.signal;
+      const targetAhead = () => ahead ?? this.defaultAhead(entry, target);
       controller.purpose = purpose; controller.entry = entry; controller.target = target;
       const timer = setTimeout(() => controller.abort(StreamControl.failure('timeout')), 10000);
       const check = () => {
@@ -39,13 +45,14 @@
       };
       try {
         check();
-        if (entry.stream?.indexed && !this.ready(entry, target, ahead)) {
+        if (entry.stream?.indexed && !this.ready(entry, target, targetAhead())) {
           entry.stream.ensureController?.abort();
           entry.stream.priorityTarget = target;
-          await globalThis.GaplessSeekRange.prepare(this.resources, entry, target, signal, Math.max(2, ahead));
+          await globalThis.GaplessSeekRange.prepare(this.resources, entry, target, signal, targetAhead());
         }
-        while (!this.ready(entry, target, ahead)) {
-          check(); await new Promise(resolve => setTimeout(resolve, 25));
+        while (!this.ready(entry, target, targetAhead())) {
+          check();
+          await (entry.stream.waitProgress ? entry.stream.waitProgress(25) : new Promise(resolve => setTimeout(resolve, 25)));
         }
         check();
       } catch (error) {

@@ -56,7 +56,11 @@
     matches(source, info) { return !!source?.localKey && source.localKey === this.path(info); }
     async open(source, signal) {
       await this.validate(source, signal);
-      if (!this.mounts.has(source.localKey)) this.mounts.set(source.localKey, await this.mount(source.localKey, signal));
+      if (!this.mounts.has(source.localKey)) {
+        const mounted = await this.mount(source.localKey, signal);
+        if (this.mounts.size >= 64) this.mounts.delete(this.mounts.keys().next().value);
+        this.mounts.set(source.localKey, mounted);
+      }
       const url = new URL(this.mounts.get(source.localKey));
       if (url.protocol !== 'http:' || !['127.0.0.1', 'localhost'].includes(url.hostname)) throw new Error('native-only-local-mount');
       const read = async (start, end, rangeSignal) => {

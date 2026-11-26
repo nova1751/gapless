@@ -13,6 +13,12 @@
       this.prefix = Date.now().toString(36) + '_' + (++instanceSerial);
       this.stats = { batches: 0, cancelled: 0, failed: 0, stopFailed: 0 };
     }
+    resetFault() {
+      if (!this.active && this.fault) {
+        this.fault = null;
+        this.trace('native-cache-fault-reset');
+      }
+    }
     observe(name, args) {
       if (!name.startsWith('audioplayer.')) return false;
       const id = args[0];
@@ -73,7 +79,7 @@
         catch (error) { finish(true, error); }
       });
     }
-    async batch({ source, position, signal, budgetMs = 2000 }) {
+    async batch({ source, position, signal, budgetMs = 2000, wantRange = null }) {
       if (this.fault) throw new Error(this.fault);
       if (this.active) throw new Error('native-cache-busy');
       if (!source || !/^\d+$/.test(String(source.songId)) || source.freeTrialInfo || source.path
@@ -97,7 +103,7 @@
           this.check(job);
           if (result?.[0]?.result === true) break;
           if (performance.now() >= deadline) throw new Error('native-cache-load-timeout');
-          await this.delay(job, 40);
+          await this.delay(job, 15);
         }
         const mark = job.id + '|seek';
         waiter = this.bridge.wait('audioplayer.onSeek', args => args[0] === job.id && args[1] === mark, 3000);
@@ -111,11 +117,15 @@
         if (Number(result[2]) !== 0) throw new Error('native-cache-seek-failed');
         await this.delay(job, budgetMs);
         this.stop(job);
-        // Stop was observed to commit .idx; snapshot must verify source identity
-        // and may conservatively return an older subset. It must never infer
-        // validity from file length or buffering percent.
-        await this.delay(job, 50);
-        const coverage = await this.pending(job, this.snapshot(source, signal)); this.check(job);
+        // Stop was observed to commit .idx up to ~154 ms after dispatch. Check
+        // at 50 ms first, then re-observe briefly if the desired range is not
+        // yet committed so we avoid restarting a whole CDN download needlessly.
+        let coverage;
+        for (const wait of wantRange ? [50, 60, 80] : [50]) {
+          await this.delay(job, wait);
+          coverage = await this.pending(job, this.snapshot(source, signal)); this.check(job);
+          if (!wantRange || (coverage?.path && !globalThis.GaplessCacheCoverage.missing(coverage, wantRange[0], wantRange[1]).length)) break;
+        }
         this.stats.batches++;
         this.trace('native-cache-batch', { position, complete: !!coverage?.complete });
         return coverage;

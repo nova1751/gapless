@@ -52,7 +52,7 @@
       super.retain(refs);
       if (!keep.size) this.songCache.clear();
     }
-    ensure(entry, target) {
+    ensure(entry, target, maxAhead = null) {
       const state = entry.stream;
       if (!state.indexed || state.done || state.error) return;
       const readAhead = this.indexedReadAheadSeconds;
@@ -60,11 +60,12 @@
       if (state.priorityTarget != null && (readAhead || Math.abs(state.priorityTarget - target) > 1)) return;
       const { rate, channels } = entry.spec;
       let ahead = readAhead || 8;
+      if (maxAhead != null) ahead = Math.min(ahead, maxAhead);
       if (readAhead && state.bounded && entry.buffer.limit < entry.buffer.length * channels * 4) {
         // Leave half the PCM budget for the current block and the end of a seek interval.
         ahead = Math.min(ahead, entry.buffer.limit / (rate * channels * 8));
       }
-      const lowWater = readAhead ? ahead * 5 / 8 : 4;
+      const lowWater = maxAhead != null ? Math.min(ahead * 0.75, ahead) : (readAhead ? ahead * 5 / 8 : 4);
       const sample = Math.floor(target * rate);
       const bufferedEnd = globalThis.GaplessSeekRange.until(entry, sample);
       if (bufferedEnd >= Math.min(entry.buffer.length, sample + lowWater * rate)) return;
@@ -77,10 +78,11 @@
       if (readAhead) this.trace('indexed-refill-start', { id: entry.id, target, bufferedUntilSeconds: bufferedEnd / rate });
       void globalThis.GaplessSeekRange.prepare(this, entry, target, controller.signal, ahead)
         .catch(error => {
-          if (controller.signal.aborted) return;
+          if (controller.signal.aborted || error.message === 'cancelled') return;
           state.error = /^[a-z0-9-]+$/.test(error.message) ? error.message : 'indexed-read-failed';
           this.lastRangeFailure = { at: Math.round(performance.now()), id: entry.id, target, reason: state.error };
           this.trace('indexed-read-failed', this.lastRangeFailure);
+          state.notifyProgress?.();
         })
         .finally(() => { if (state.ensureController === controller) state.ensureController = null; });
     }
@@ -96,8 +98,6 @@
           await input.response.body?.cancel(); throw new Error('range-header-unavailable');
         }
         reader = input.response.body.getReader();
-        decoder = new globalThis['flac-decoder'].FLACDecoder();
-        await decoder.ready;
         let prefix = new Uint8Array(0), spec, workAt = performance.now();
         const append = result => {
           this.check(job);
@@ -151,11 +151,19 @@
                 : new AudioBuffer({ length: spec.frames, numberOfChannels: spec.channels, sampleRate: spec.rate });
               const hash = fingerprint(source);
               const identity = source.localKey ? globalThis.GaplessAudioResources.localIdentity(source) : job.identity;
+              const progressWaiters = new Set();
               entry = { id: job.ref.id, requestKey: this.requestKey(job.ref), key: `${this.requestKey(job.ref)}:${identity}:${spec.rate}`,
                 identity,
                 source, hash, level: source.level, requestedLevel: job.ref.level,
                 spec, buffer, size, duration: spec.duration, origin: input.kind, acquisition: input.acquisition, pins: 0,
-                stream: { decodedFrames: 0, done: false, error: null, bounded: !!bounded } };
+                stream: { decodedFrames: 0, done: false, error: null, bounded: !!bounded,
+                  hasDiskCoverage: input.hasDiskCoverage || null,
+                  notifyProgress: () => { for (const wake of progressWaiters) wake(); progressWaiters.clear(); },
+                  waitProgress: (ms = 30) => new Promise(resolve => {
+                    const done = () => { clearTimeout(timer); progressWaiters.delete(done); resolve(); };
+                    const timer = setTimeout(done, ms);
+                    progressWaiters.add(done);
+                  }) } };
               entry.stream.seekPoints = seekPoints;
               entry.stream.readRange = input.seekRange || (input.kind === 'network'
                 ? (start, end, signal) => globalThis.GaplessSeekRange.read(source.url, start, end, Number(source.size), signal) : null);
@@ -197,6 +205,9 @@
                 }
               }
               if (input.partial) throw new Error('range-header-unavailable');
+              decoder = new globalThis['flac-decoder'].FLACDecoder();
+              await decoder.ready;
+              this.check(job);
               append(await decoder.decode(prefix)); prefix = null;
             } else append(await decoder.decode(bytes));
             // Bound main-thread decode/hash work; no security-policy changes for workers.
@@ -213,6 +224,7 @@
           throw new Error('decode-stream-length');
         await input.validate?.(total); this.check(job);
         entry.stream.done = true;
+        entry.stream.notifyProgress?.();
         this.failures.delete(entry.requestKey);
         this.trace('stream-complete', { id: job.ref.id, frames: spec.frames, sourceRate: spec.rate,
           elapsedMs: Math.round(performance.now() - started), origin: input.kind });
@@ -220,6 +232,7 @@
       } catch (error) {
         if (entry) {
           entry.stream.error = 'decode-stream-failed';
+          entry.stream.notifyProgress?.();
           // Once published, fallback must be coordinated by the player, never
           // silently splice a second source into this partially heard stream.
           if (!entry.pins) this.entries.delete(entry.key);
@@ -242,7 +255,8 @@
     async open(entry) {
       const stamp = this.ctx?.getOutputTimestamp?.();
       if (this.readyContext === this.ctx && this.ctx?.state === 'running' && this.matches(entry)
-        && stamp?.contextTime > 0 && performance.now() - stamp.performanceTime < 250) {
+        && stamp?.contextTime > 0 && performance.now() - stamp.performanceTime < 500) {
+        this.openSerial++;
         this.trace('output-reused', { sourceRate: entry.spec.rate }); return this.ctx;
       }
       const ctx = await super.open(entry); this.readyContext = ctx; return ctx;
@@ -251,14 +265,19 @@
       const stream = track.entry?.stream;
       if (!stream || stream.done) return super.start(track, at, offset);
       if (stream.error || this.ctx?.state !== 'running' || !this.matches(track.entry)) throw new Error('native-only-stream');
-      at = Math.max(at, this.ctx.currentTime + 0.06);
+      at = Math.max(at, this.ctx.currentTime + 0.02);
       const previous = replace && track.playing ? track.node : null;
       const heard = previous ? this.heard(track) + Math.max(0, at - this.ctx.currentTime) : 0;
       if (previous) { track.node = null; this.active.delete(track); }
       else this.stop(track);
       const entry = track.entry, rate = entry.spec.rate, generation = this.generation;
+      // Cap scheduled PCM runway to stay inside the reserved 8 MiB output budget
+      // across both 44.1/48 kHz and 96/192 kHz Hi-Res tracks.
+      const aheadSeconds = Math.min(this.scheduleAheadSeconds,
+        Math.max(4, Math.floor((6 * 1024 * 1024) / (rate * entry.spec.channels * 4))));
       const nodes = new Set(); let timer, stopped = false, cursor = Math.round(offset * rate);
       const first = cursor;
+      let prebufferedFuture = false;
       const owner = { streaming: true, onended: null,
         stop: when => {
           stopped = true; clearInterval(timer);
@@ -286,20 +305,26 @@
         if (stopped || track.node !== owner || this.generation !== generation) return;
         try {
           if (stream.error) throw new Error('stream-integrity');
-          this.resources.ensure?.(entry, offset + Math.max(0, this.ctx.currentTime - at));
+          const farFuture = !stream.done && at > this.ctx.currentTime + aheadSeconds + 4 && cursor !== first;
+          if (!farFuture || !prebufferedFuture) {
+            this.resources.ensure?.(entry, offset + Math.max(0, this.ctx.currentTime - at), farFuture ? 4 : null);
+            if (farFuture && globalThis.GaplessSeekRange.until(entry, first) >= Math.min(entry.buffer.length, first + 3 * rate))
+              prebufferedFuture = true;
+          }
+          if (farFuture) return;
           while (cursor < entry.buffer.length) {
             const when = at + (cursor - first) / rate;
             // Once verified PCM is complete, schedule the entire remaining
             // buffer now, even for a track minutes in the future. Do not leave
             // a last-second main-thread timer responsible for its continuation.
-            if (!stream.done && when > this.ctx.currentTime + this.scheduleAheadSeconds && cursor !== first) break;
+            if (!stream.done && when > this.ctx.currentTime + aheadSeconds && cursor !== first) break;
             const available = globalThis.GaplessSeekRange.until(entry, cursor) - cursor;
             if (available <= 0) {
               if (when < this.ctx.currentTime + 0.03) throw new Error('stream-underrun');
               break;
             }
             if (when < this.ctx.currentTime - 0.005) throw new Error('stream-underrun');
-            const count = stream.done ? entry.buffer.length - cursor : Math.min(available, rate);
+            const count = stream.done ? entry.buffer.length - cursor : Math.min(available, rate * 2);
             const node = this.ctx.createBufferSource(); node.connect(this.gain);
             const end = cursor + count;
             if (stream.done) node.buffer = entry.buffer;
@@ -309,7 +334,11 @@
                 entry.buffer.copyFromChannel(node.buffer.getChannelData(ch), ch, cursor);
             }
             nodes.add(node);
-            node.onended = () => { nodes.delete(node); node.disconnect(); if (end === entry.buffer.length) owner.onended?.(); };
+            node.onended = () => {
+              nodes.delete(node); node.disconnect();
+              if (end === entry.buffer.length) owner.onended?.();
+              else if (!stopped) pump();
+            };
             node.start(Math.max(when, this.ctx.currentTime), stream.done ? cursor / rate : 0);
             cursor = end;
             if (stream.done) this.trace('stream-fully-scheduled', { id: track.info?.songId || track.id,
@@ -344,7 +373,7 @@
     seek(track, offset) {
       if (track.node && track.playing && track.entry?.stream && !track.entry.stream.done) {
         // Stop the old nodes at the exact scheduled start of the replacement.
-        this.start(track, this.ctx.currentTime + 0.06, offset, true); return;
+        this.start(track, this.ctx.currentTime + 0.02, offset, true); return;
       }
       return super.seek(track, offset);
     }

@@ -10,8 +10,18 @@
   class WindowsNativeCache {
     constructor({ settings, trace }) {
       this.settings = settings; this.trace = trace; this.mounts = new Map(); this.generation = 0;
+      this.preferredRoot = null;
     }
-    clear() { this.generation++; this.mounts.clear(); }
+    clear() { this.generation++; this.mounts.clear(); this.preferredRoot = null; }
+    candidateRoots(settings) {
+      const list = [...new Set([this.storage.cacheDir, settings.cacheDir, settings.storageCachePath, settings.oldCacheDir]
+        .filter(p => typeof p === 'string' && /^[a-z]:[\\/]/i.test(p) && !p.split(/[\\/]/).includes('..'))
+        .flatMap(p => { const root = p.replace(/[\\/]+$/, ''); return [root + '\\Cache', root]; }))];
+      if (this.preferredRoot && list.includes(this.preferredRoot)) {
+        return [this.preferredRoot, ...list.filter(r => r !== this.preferredRoot)];
+      }
+      return list;
+    }
     async settleStoppedWrites(stops) {
       // A bounded observation, not an atomic native flush acknowledgement.
       // Stop can commit metadata after dispatch (observed about 154 ms later).
@@ -21,9 +31,7 @@
       if (typeof fs?.getProperties !== 'function' || typeof fs?.exists !== 'function' || !this.services())
         throw new Error('native-cache-settle-unavailable');
       const settings = this.settings() || {};
-      const roots = [...new Set([this.storage.cacheDir, settings.cacheDir, settings.storageCachePath, settings.oldCacheDir]
-        .filter(p => typeof p === 'string' && /^[a-z]:[\\/]/i.test(p) && !p.split(/[\\/]/).includes('..'))
-        .flatMap(p => { const root = p.replace(/[\\/]+$/, ''); return [root + '\\Cache', root]; }))];
+      const roots = this.candidateRoots(settings);
       if (!roots.length || stops.length > 64) throw new Error('native-cache-settle-scope');
       const paths = new Set();
       for (const { source } of stops) {
@@ -72,21 +80,26 @@
       if (total !== size || digest.finalize().toString(crypto.enc.Hex).toLowerCase() !== hash)
         throw new Error('cache-integrity');
     }
+    async fileExists(path, signal) {
+      if (signal.aborted) throw new Error('cancelled');
+      const nativeExists = globalThis.betterncm_native?.fs?.exists;
+      if (typeof nativeExists === 'function') {
+        try { return !!nativeExists(path); } catch { /* Fall back to async exists on inaccessible paths. */ }
+      }
+      return !!(await this.wait(betterncm.fs.exists(path), signal));
+    }
     async snapshotSource(source, signal) {
       const hash = globalThis.GaplessAudioResources.fingerprint(source), bitrate = BITRATE[source.level];
       const size = Number(source.size ?? source.fileSize), id = String(source.songId || '');
       if (!/^\d+$/.test(id) || !hash || !bitrate || source.freeTrialInfo || source.path
         || !Number.isSafeInteger(size) || size <= 0 || !this.services()) throw new Error('native-only-cache-source');
       const generation = this.generation, settings = this.settings() || {};
-      const roots = [...new Set([this.storage.cacheDir, settings.cacheDir, settings.storageCachePath, settings.oldCacheDir]
-        .filter(p => typeof p === 'string' && /^[a-z]:[\\/]/i.test(p) && !p.split(/[\\/]/).includes('..'))
-        .flatMap(p => { const root = p.replace(/[\\/]+$/, ''); return [root + '\\Cache', root]; }))];
+      const roots = this.candidateRoots(settings);
       const key = `${id}-${bitrate}-${hash}`;
       const empty = { size, ranges: [], complete: false, path: null, generation, key };
       for (const root of roots) {
         const path = root + '\\' + `${id}-${bitrate}-${hash}.uc`, indexPath = path.slice(0, -3) + '.idx';
-        if (!await this.wait(betterncm.fs.exists(path), signal)
-          || !await this.wait(betterncm.fs.exists(indexPath), signal)) continue;
+        if (!await this.fileExists(path, signal) || !await this.fileExists(indexPath, signal)) continue;
         const blob = await this.wait(betterncm.fs.readFile(indexPath), signal);
         if (!blob || blob.size > 1024 * 1024) throw new Error('native-only-cache-index');
         const text = await this.wait(blob.text(), signal);
@@ -97,6 +110,7 @@
           continue;
         }
         if (generation !== this.generation) throw new Error('cancelled');
+        this.preferredRoot = root;
         return { ...coverage, path, generation, key };
       }
       if (generation !== this.generation) throw new Error('cancelled');
@@ -113,7 +127,7 @@
       if (!mounted) {
         mounted = await this.wait(betterncm.fs.mountFile(snapshot.path), signal);
         if (snapshot.generation !== this.generation) throw new Error('cancelled');
-        if (this.mounts.size >= 16) this.mounts.delete(this.mounts.keys().next().value);
+        if (this.mounts.size >= 64) this.mounts.delete(this.mounts.keys().next().value);
         this.mounts.set(snapshot.path, mounted);
       }
       const url = new URL(mounted);
@@ -133,10 +147,12 @@
         if (this.runtime) { delete this.runtime.m[key]; delete this.runtime.c[key]; }
       }
       for (const mod of Object.values(this.runtime?.c || {})) {
-        for (const value of [mod.exports, mod.exports?.default, mod.exports?.Storage]) {
-          if (typeof value?.getTrackFromCacheFast === 'function') this.storage = value;
-          if (value?.algo?.MD5?.create && value?.lib?.WordArray?.create) this.crypto = value;
-        }
+        try {
+          for (const value of [mod?.exports, mod?.exports?.default, mod?.exports?.Storage]) {
+            if (typeof value?.getTrackFromCacheFast === 'function') this.storage = value;
+            if (value?.algo?.MD5?.create && value?.lib?.WordArray?.create) this.crypto = value;
+          }
+        } catch {}
       }
       return this.storage && this.crypto;
     }
@@ -169,19 +185,17 @@
       if (metadata.resourceType !== 'track' || metadata.freeTrialInfo || metadata.level !== source.level
         || String(metadata.md5).toLowerCase() !== hash || Number(metadata.size) !== size) return null;
       const settings = this.settings() || {};
-      const roots = [...new Set([this.storage.cacheDir, settings.cacheDir, settings.storageCachePath, settings.oldCacheDir]
-        .filter(p => typeof p === 'string' && /^[a-z]:[\\/]/i.test(p) && !p.split(/[\\/]/).includes('..'))
-        .flatMap(p => { const root = p.replace(/[\\/]+$/, ''); return [root + '\\Cache', root]; }))];
+      const roots = this.candidateRoots(settings);
       const name = `${ref.id}-${bitrate}-${hash}.uc`;
       let path;
       for (const root of roots) {
         const candidate = root + '\\' + name;
-        if (await this.wait(betterncm.fs.exists(candidate), signal)) { path = candidate; break; }
+        if (await this.fileExists(candidate, signal)) { this.preferredRoot = root; path = candidate; break; }
       }
       if (!path) return null;
       if (!this.mounts.has(path)) {
         const url = await this.wait(betterncm.fs.mountFile(path), signal);
-        if (this.mounts.size >= 16) this.mounts.delete(this.mounts.keys().next().value);
+        if (this.mounts.size >= 64) this.mounts.delete(this.mounts.keys().next().value);
         this.mounts.set(path, url);
       }
       const url = new URL(this.mounts.get(path));

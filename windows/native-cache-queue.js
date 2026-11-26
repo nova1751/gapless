@@ -7,11 +7,11 @@
       this.session = session; this.queue = []; this.running = null;
       this.generation = 0; this.serial = 0; this.closed = false;
     }
-    request({ source, position, signal, priority = PRIORITY.playback, budgetMs = 500 }) {
+    request({ source, position, signal, priority = PRIORITY.playback, budgetMs = 500, wantRange = null }) {
       if (this.closed || signal?.aborted) return Promise.reject(new Error('native-cache-cancelled'));
       if (!signal || !Object.values(PRIORITY).includes(priority)) return Promise.reject(new Error('native-cache-priority'));
       if (this.queue.length >= 32) return Promise.reject(new Error('native-cache-queue-full'));
-      const task = { source, position, signal, priority, budgetMs, order: ++this.serial,
+      const task = { source, position, signal, priority, budgetMs, wantRange, order: ++this.serial,
         generation: this.generation, controller: new AbortController(), settled: false };
       const promise = new Promise((resolve, reject) => { task.resolve = resolve; task.reject = reject; });
       task.abort = () => {

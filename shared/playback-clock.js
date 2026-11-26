@@ -4,7 +4,7 @@
   class PlaybackClock {
     constructor({ resources, onState, onEnded, trace }) {
       this.resources = resources; this.onState = onState; this.onEnded = onEnded; this.trace = trace;
-      this.ctx = null; this.gain = null; this.generation = 0; this.volume = 1;
+      this.ctx = null; this.gain = null; this.generation = 0; this.openSerial = 0; this.volume = 1;
       this.active = new Set(); this.retiring = new Map();
       this.outputSwitch = { before: true, enabled: true, at: 0 };
     }
@@ -12,15 +12,16 @@
       const rate = entry?.spec?.rate;
       if (!entry?.buffer || entry.buffer.sampleRate !== rate
         || entry.buffer.numberOfChannels !== entry.spec.channels) throw new Error('native-only-source-spec');
+      const token = ++this.openSerial;
       if (this.ctx?.state === 'closed') this.ctx = null;
       if (this.ctx && this.ctx.sampleRate !== rate) {
         // Mixed-rate tracks cannot share this clock without resampling. Finish
         // the old output first; never close a sounding or scheduled source.
         if (this.active.size || this.retiring.size) throw new Error('native-only-active-sample-rate');
         const generation = this.generation, previousRate = this.ctx.sampleRate;
-        await this.close();
+        await this.closeContext();
         // A newer Load may have opened its own output while close was pending.
-        if (this.generation !== generation + 1) throw new Error('cancelled');
+        if (this.openSerial !== token || this.generation !== generation + 1) throw new Error('cancelled');
         this.trace('output-rate-boundary', { fromRate: previousRate, toRate: rate });
       }
       if (!this.ctx) {
@@ -35,6 +36,7 @@
         try { await Promise.race([this.ctx.resume(), new Promise((resolve, reject) => {
           timer = setTimeout(() => reject(new Error('native-only-context-awaiting-gesture')), 1500);
         })]); } finally { clearTimeout(timer); }
+        if (this.openSerial !== token) throw new Error('cancelled');
       }
       if (!this.matches(entry) || this.ctx.state !== 'running') throw new Error('native-only-context');
       // A running state can precede the first output block. Keep the native
@@ -44,6 +46,7 @@
       if (typeof ctx.getOutputTimestamp !== 'function') throw new Error('native-only-output-clock');
       const initial = ctx.getOutputTimestamp();
       for (;;) {
+        if (this.openSerial !== token) throw new Error('cancelled');
         if (this.ctx !== ctx || ctx.state !== 'running' || !this.matches(entry)) throw new Error('native-only-context');
         const stamp = ctx.getOutputTimestamp();
         if (stamp.contextTime > Math.max(0, initial.contextTime)
@@ -52,8 +55,8 @@
             outputContextTime: stamp.contextTime });
           return ctx;
         }
-        if (performance.now() - started >= 500) throw new Error('native-only-output-clock-timeout');
-        await new Promise(resolve => setTimeout(resolve, 10));
+        if (performance.now() - started >= 1200) throw new Error('native-only-output-clock-timeout');
+        await new Promise(resolve => setTimeout(resolve, performance.now() - started < 100 ? 5 : 10));
       }
     }
     matches(entry) { return !!entry?.buffer && entry.spec.rate === entry.buffer.sampleRate
@@ -181,6 +184,10 @@
       if (s.at > now) param.setValueAtTime(s.enabled ? volume : 0, s.at);
     }
     async close() {
+      this.openSerial++;
+      return this.closeContext();
+    }
+    async closeContext() {
       for (const track of [...this.active]) this.stop(track);
       for (const [node, retired] of [...this.retiring]) {
         try { node.stop(); } catch { /* Already ended. */ }

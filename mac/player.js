@@ -46,12 +46,23 @@ plugin.onLoad(() => {
   }
   function nativeSourceResolver() {
     if (S.resolveNativeSource) return S.resolveNativeSource;
-    // Verified 3.1.12 source selector: reuses the client's rights, cache,
-    // download preference and quality policy without loading its audio backend.
-    const resolver = webpackRequire().c[100]?.exports?.f;
-    const code = typeof resolver === 'function' ? String(resolver) : '';
-    if (!code.includes('requestSoundQuality') || !code.includes('getTrackFromCacheFast')
-      || !code.includes('isNextTrack')) throw new Error('native-source-selector-unavailable');
+    const isResolver = fn => {
+      const code = typeof fn === 'function' ? String(fn) : '';
+      return code.includes('requestSoundQuality') && code.includes('getTrackFromCacheFast') && code.includes('isNextTrack');
+    };
+    const r = webpackRequire();
+    let resolver = r.c[100]?.exports?.f;
+    if (!isResolver(resolver)) {
+      for (const mod of Object.values(r.c)) {
+        try {
+          const exp = mod?.exports;
+          if (!exp || typeof exp !== 'object') continue;
+          const found = Object.values(exp).find(isResolver);
+          if (found) { resolver = found; break; }
+        } catch {}
+      }
+    }
+    if (!isResolver(resolver)) throw new Error('native-source-selector-unavailable');
     return S.resolveNativeSource = resolver;
   }
   function nativePlayer() {
@@ -64,9 +75,27 @@ plugin.onLoad(() => {
   }
   function nativeQueueNext(mode, list, current) {
     // Use the client's actual selector for both shuffled and ordered queues.
-    const resolver = webpackRequire().c[161]?.exports?.a;
-    const code = typeof resolver === 'function' ? String(resolver) : '';
-    if (!code.includes('PlayRandom') || !code.includes('randomOrder') || !code.includes('displayOrder')) return null;
+    const isQueueResolver = fn => {
+      const code = typeof fn === 'function' ? String(fn) : '';
+      return code.includes('PlayRandom') && code.includes('randomOrder') && code.includes('displayOrder');
+    };
+    let resolver = S.resolveQueueNext;
+    if (!resolver) {
+      const r = webpackRequire();
+      resolver = r.c[161]?.exports?.a;
+      if (!isQueueResolver(resolver)) {
+        for (const mod of Object.values(r.c)) {
+          try {
+            const exp = mod?.exports;
+            if (!exp || typeof exp !== 'object') continue;
+            const found = Object.values(exp).find(isQueueResolver);
+            if (found) { resolver = found; break; }
+          } catch {}
+        }
+      }
+      if (isQueueResolver(resolver)) S.resolveQueueNext = resolver;
+      else return null;
+    }
     const order = mode === 'playRandom' ? 'randomOrder' : 'displayOrder';
     if (list.some(row => !Number.isFinite(row[order]))
       || new Set(list.map(row => row[order])).size !== list.length) return null;
@@ -77,7 +106,7 @@ plugin.onLoad(() => {
   }
   function capabilityCheck() {
     try {
-      if (window.APP_CONF?.appver !== '3.1.12' || !state()?.playing || !state()?.playingList) return false;
+      if (!state()?.playing || !state()?.playingList) return false;
       if (!['onSeek', 'onPlayState', 'onPlayProgress', 'onEnd'].every(n => bridge.registrations[`audioplayer.${n}`])) return false;
       nativePlayer(); nativeSourceResolver(); return true;
     } catch (error) { trace('capability-fallback', { reason: error.message }); return false; }
@@ -102,34 +131,82 @@ plugin.onLoad(() => {
   const rows = () => state()?.playingList?.curPlayingList || [];
   const ref = c => c && ({ id: c.id, level: c.requestedLevel, account: c.account, duration: c.duration, row: c.row });
   const nativePosition = () => Math.max(0, S.nativePosition + (S.nativePlaying ? (performance.now() - S.nativeAt) / 1000 : 0));
-  let recent = null;
-  function clearRecent() {
-    if (recent) resources.unpin(recent.entry);
-    recent = null;
+  const recentEntries = [];
+  const recentLimitCount = 4, recentLimitBytes = 160 * 1024 * 1024;
+  const recentRefs = () => recentEntries.map(item => item.ref);
+  function clearRecent(predicate = null) {
+    for (let i = recentEntries.length - 1; i >= 0; i--) {
+      if (predicate && !predicate(recentEntries[i])) continue;
+      resources.unpin(recentEntries[i].entry);
+      recentEntries.splice(i, 1);
+    }
+  }
+  function evictOldestRecent() {
+    const oldest = recentEntries.shift();
+    if (!oldest) return false;
+    resources.unpin(oldest.entry);
+    return true;
   }
   function rememberRecent(c) {
     const entry = c?.entry;
     if (!entry || entry.stream?.error || entry.size > 128 * 1024 * 1024
       || entry.stream && !entry.stream.done && !entry.stream.indexed) return;
-    clearRecent(); recent = { entry, ref: ref(c) }; resources.pin(entry);
+    const existing = recentEntries.findIndex(item => item.entry === entry || item.entry.key === entry.key);
+    const nextItem = { entry, ref: ref(c) };
+    if (existing >= 0) {
+      const [found] = recentEntries.splice(existing, 1);
+      if (found.entry !== entry) { resources.unpin(found.entry); resources.pin(entry); }
+      recentEntries.push(nextItem);
+    } else {
+      recentEntries.push(nextItem);
+      resources.pin(entry);
+    }
+    let total = recentEntries.reduce((sum, item) => sum + item.entry.size, 0);
+    while (recentEntries.length > recentLimitCount || (recentEntries.length > 1 && total > recentLimitBytes)) {
+      const evicted = recentEntries.shift();
+      total -= evicted.entry.size;
+      resources.unpin(evicted.entry);
+    }
   }
   async function obtain(request, info) {
     const owner = S.current, epoch = S.epoch;
-    try { return await resources.obtain(request, info); }
-    catch (error) {
-      if (error.message !== 'native-only-memory' || !recent) throw error;
-      if (S.current !== owner || S.epoch !== epoch) throw new Error('cancelled');
-      clearRecent(); resources.resetFailures();
-      // Drop the unpinned old entry before retrying inside the same budget.
-      resources.retain([request, ref(S.current), nextTrack(), ref(S.scheduled)]);
-      return resources.obtain(request, info);
+    for (;;) {
+      try { return await resources.obtain(request, info); }
+      catch (error) {
+        if (error.message !== 'native-only-memory' || !evictOldestRecent()) throw error;
+        if (S.current !== owner || S.epoch !== epoch) throw new Error('cancelled');
+        resources.resetFailures();
+        // Drop the unpinned old entry before retrying inside the same budget.
+        resources.retain([request, ref(S.current), nextTrack(), ref(S.scheduled), ...recentRefs()]);
+      }
     }
   }
   const nativeCache = globalThis.GaplessNativeCache && new globalThis.GaplessNativeCache({ trace,
-    storage: () => webpackRequire()(4).Storage, settings: () => state()?.setting,
+    storage: () => {
+      const r = webpackRequire();
+      const fast = r.c[4]?.exports?.Storage;
+      if (typeof fast?.getTrackFromCacheFast === 'function') return fast;
+      for (const mod of Object.values(r.c)) {
+        try {
+          for (const value of [mod?.exports, mod?.exports?.default, mod?.exports?.Storage]) {
+            if (typeof value?.getTrackFromCacheFast === 'function') return value;
+          }
+        } catch {}
+      }
+      return r(4).Storage;
+    }, settings: () => state()?.setting,
     crypto: () => {
       const r = webpackRequire();
-      return [139,257,671].map(id => r.c[id]?.exports).find(x => x?.algo?.MD5?.create);
+      const fast = [139,257,671].map(id => r.c[id]?.exports).find(x => x?.algo?.MD5?.create);
+      if (fast) return fast;
+      for (const mod of Object.values(r.c)) {
+        try {
+          for (const value of [mod?.exports, mod?.exports?.default]) {
+            if (value?.algo?.MD5?.create && value?.lib?.WordArray?.create) return value;
+          }
+        } catch {}
+      }
+      return null;
     } });
   const localSource = new globalThis.GaplessMacLocalSource({
     fs: (method, args, signal) => nativeCache.nativeFs(method, args, signal),
@@ -161,8 +238,9 @@ plugin.onLoad(() => {
       return result.playInfo;
     },
     priority: source => String(source.songId) !== S.current?.id ? 30
-      : S.current?.streamPreparation?.purpose === 'seek' ? 100 : 60 });
+      : (S.current?.loading || S.current?.streamPreparation?.purpose === 'seek') ? 100 : 60 });
   const resources = new globalThis.GaplessStreamingResources({ trace, boundedIndexed: true,
+    indexedReadAheadSeconds: 16,
     openLocalInput: (source, signal) => localSource.open(source, signal),
     readCache: nativeCache && (async (r, source, signal, full) => {
       if (!full && nativeSource && S.current?.owns && S.phase !== 'restoring' && allowed(S.current.info)
@@ -190,7 +268,7 @@ plugin.onLoad(() => {
     return !!c && r.account === S.account && (rate >= 8000 && rate <= 192000);
   } });
   const streamControl = new globalThis.GaplessMacStreamControl(resources);
-  const clock = new globalThis.GaplessStreamingClock({ resources, trace,
+  const clock = new globalThis.GaplessStreamingClock({ resources, trace, scheduleAheadSeconds: 10,
     onState: (value, failedTrack) => {
       if (failedTrack && failedTrack !== S.current) {
         if (S.scheduled === failedTrack) cancelScheduled();
@@ -266,6 +344,7 @@ plugin.onLoad(() => {
     }
     return { owns: true, controlsReady: S.phase !== 'pausing' && S.phase !== 'restoring',
       canAcquire: S.enabled && ((c.owns && S.phase !== 'restoring') || preparing),
+      seekPending: !!(c.pendingOwnedSeek || c.streamPreparation?.purpose === 'seek'),
       id: c.id, playing: S.phase === 'restoring' ? !!c.recoveryPlaying : S.phase === 'pausing' ? !!c.takeoverPlaying
         : c.owns ? !!(c.playing || (c.loading || c.transitioning) && c.loadIntent) : S.nativePlaying, duration: c.duration,
       position: c.owns ? clock.position(c) : nativePosition(), revision: S.revision, metadata: c.mediaMetadata };
@@ -306,7 +385,16 @@ plugin.onLoad(() => {
   function prepareVisualClock() {
     // Keep the original 30 fps renderer and its animation parameters. Only its
     // time argument changes: the 150 ms UI heartbeat is not an audio clock.
-    const sdk = webpackRequire().c[42]?.exports?.b;
+    const r = webpackRequire();
+    let sdk = r.c[42]?.exports?.b;
+    if (typeof sdk?._AERenderMV !== 'function') {
+      for (const mod of Object.values(r.c)) {
+        try {
+          sdk = [mod?.exports, mod?.exports?.b].find(s => typeof s?._AERenderMV === 'function' && typeof s?._AESetAudioData === 'function');
+          if (sdk) break;
+        } catch {}
+      }
+    }
     if (!sdk) return;
     for (const [name, index] of [['_AERenderMV', 1], ['_AEWebSetPlaybackPosition', 0]]) {
       const original = sdk[name], previous = visualRenderHooks.get(name);
@@ -369,6 +457,7 @@ plugin.onLoad(() => {
   }
   function progress(c, force = false) {
     if (S.current !== c || !c.owns || S.claim || (!c.playing && !force)) return;
+    if (!force && (c.pendingOwnedSeek || c.streamPreparation?.purpose === 'seek' || seekReplies.length)) return;
     bridge.emit('audioplayer.onPlayProgress', [c.id, clock.position(c).toFixed(3), '1.0000', force]);
     media?.sync(force);
   }
@@ -431,7 +520,7 @@ plugin.onLoad(() => {
     const selection = JSON.stringify(s.setting?.quantity || null);
     const selectionChanged = S.selection && selection !== S.selection;
     S.selection = selection;
-    if (recent && (recent.ref.account !== account || recent.ref.level !== c?.requestedLevel || selectionChanged)) clearRecent();
+    if (recentEntries.length) clearRecent(item => item.ref.account !== account || item.ref.level !== c?.requestedLevel || selectionChanged);
     if (c?.owns && (selectionChanged || !allowed(c.info) || c.account !== account)) {
       nativeFill.clear();
       if (selectionChanged) {
@@ -527,10 +616,17 @@ plugin.onLoad(() => {
     const c = S.current;
     const next = c && !c.blocked
       && ['native', 'owned', 'warming', 'pausing', 'loading'].includes(S.phase) ? nextTrack() : null;
-    resources.retain([S.current?.blocked && !S.current.owns ? null : ref(S.current), next, ref(S.scheduled), recent?.ref]);
-    // Prepare a trusted next source while paused too. Scheduling/output remain
-    // gated by playback intent; cancellation still checks epoch and queue.
+    resources.retain([S.current?.blocked && !S.current.owns ? null : ref(S.current), next, ref(S.scheduled), ...recentRefs()]);
+    // Prepare a trusted next source while paused too. While playing, wait until
+    // the current track has a healthy 6 s buffer ahead (or nears its end) so
+    // next-track preloading does not contend with cold fetches.
+    const currentPos = c?.owns ? clock.position(c) : 0;
+    const currentBufferedEnough = !c?.owns || !c.playing || !c.entry?.stream || c.entry.stream.done
+      || c.duration - currentPos <= 20
+      || globalThis.GaplessSeekRange.until(c.entry, Math.floor(currentPos * c.entry.spec.rate))
+        >= Math.min(c.entry.buffer.length, Math.ceil((currentPos + 6) * c.entry.spec.rate));
     if (!S.enabled || !c?.entry || !next || ['restoring', 'warming', 'pausing'].includes(S.phase)
+      || !currentBufferedEnough
       || resources.lookup(next) || resources.jobs.has(resources.requestKey(next))) return;
     const epoch = S.epoch, queueVersion = S.queueVersion;
     obtain(next).then(() => {
@@ -569,6 +665,7 @@ plugin.onLoad(() => {
     c.webLoadRunning = true;
     if (msg.command === 'audioplayer.load' && msg.seq) c.pendingSdkLoad = msg;
     const epoch = S.epoch, loadAt = performance.now(), timings = {};
+    let bufferingSent = false;
     c.loadAt = c.pauseAfterClaimRevision != null || msg.resumeExisting && !c.playing ? null : loadAt;
     try {
       if (msg.resumeExisting) {
@@ -581,6 +678,11 @@ plugin.onLoad(() => {
       const normalized = await normalizeSource(c.info, c.row);
       if (!validRecovery(c, epoch)) throw new Error('cancelled');
       const memoryHit = !!resources.lookup(ref(c), normalized);
+      if (!msg.resumeExisting && !memoryHit) {
+        bridge.emit('audioplayer.onPlayProgress', [c.id, Number(c.offset || 0).toFixed(3), '0.0000', true]);
+        bridge.emit('audioplayer.onBuffering', [c.id, 1]);
+        bufferingSent = true;
+      }
       let stageAt = performance.now();
       c.entry = await obtain(ref(c), normalized);
       timings.sourceMs = Math.round(performance.now() - stageAt);
@@ -589,29 +691,40 @@ plugin.onLoad(() => {
         throw new Error('native-only-source-identity');
       if (!validRecovery(c, epoch) || !allowed(c.info)) throw new Error('cancelled');
       c.duration = c.entry.duration; c.level = c.entry.level;
-      stageAt = performance.now();
-      await prepareLoadPosition(c, epoch);
-      if (c.entry.source.localKey) await localSource.validate(c.entry.source);
-      if (!validRecovery(c, epoch) || !allowed(c.info)) throw new Error('cancelled');
-      timings.bufferMs = Math.round(performance.now() - stageAt); stageAt = performance.now();
-      await clock.open(c.entry);
-      timings.contextMs = Math.round(performance.now() - stageAt); stageAt = performance.now();
-      if (!validRecovery(c, epoch) || !allowed(c.info)) throw new Error('cancelled');
-      // Direct Web Load/resume also parks the native output. Otherwise an
-      // unwrapped native system command could revive the old audio instance.
-      if (S.nativeGate?.releasing) await S.nativeGate.releasing;
+      // Overlap native gate handshake, buffer readiness, and audio output warmup.
+      const ensureGate = async () => {
+        const started = performance.now();
+        if (S.nativeGate?.releasing) await S.nativeGate.releasing;
+        if (!validRecovery(c, epoch) || !allowed(c.info) || S.phase === 'restoring') throw new Error('cancelled');
+        if (!S.nativeGate) await acquireNativeGate(c, epoch, 'continuous-web');
+        else { S.nativeGate.c = c; S.nativeGate.epoch = epoch; await S.nativeGate.ready; }
+        if (!validRecovery(c, epoch) || !allowed(c.info) || S.phase === 'restoring') throw new Error('cancelled');
+        clearTimeout(S.nativeGate?.watchdog);
+        timings.gateMs = Math.round(performance.now() - started);
+      };
+      await Promise.all([
+        (async () => {
+          await ensureGate();
+          const t = performance.now();
+          await prepareLoadPosition(c, epoch);
+          if (c.entry.source.localKey) await localSource.validate(c.entry.source);
+          if (!validRecovery(c, epoch) || !allowed(c.info)) throw new Error('cancelled');
+          timings.bufferMs = Math.round(performance.now() - t);
+        })(),
+        (async () => {
+          const t = performance.now();
+          await clock.open(c.entry);
+          timings.contextMs = Math.round(performance.now() - t);
+        })(),
+      ]);
       if (!validRecovery(c, epoch) || !allowed(c.info) || S.phase === 'restoring') throw new Error('cancelled');
-      if (!S.nativeGate) await acquireNativeGate(c, epoch, 'continuous-web');
-      else { S.nativeGate.c = c; S.nativeGate.epoch = epoch; await S.nativeGate.ready; }
-      if (!validRecovery(c, epoch) || !allowed(c.info) || S.phase === 'restoring') throw new Error('cancelled');
-      clearTimeout(S.nativeGate?.watchdog);
-      timings.gateMs = Math.round(performance.now() - stageAt);
       // A Seek can arrive while the context/gain handshake is awaiting native.
       // Recheck the latest requested offset before committing any Web output.
       await prepareLoadPosition(c, epoch);
       if (c.entry.source.localKey) await localSource.validate(c.entry.source);
       if (!validRecovery(c, epoch) || !allowed(c.info) || S.phase === 'restoring') throw new Error('cancelled');
       clock.setOutput(true); c.loading = false; c.transitioning = false; c.blocked = false; S.phase = 'owned';
+      if (bufferingSent) { bufferingSent = false; bridge.emit('audioplayer.onBuffering', [c.id, 0]); }
       if (c.playing) {
         clock.start(c, clock.ctx.currentTime + 0.01, c.offset); recordLoadOutput(c);
       }
@@ -622,6 +735,8 @@ plugin.onLoad(() => {
       trace('web-loaded', { id: c.id, origin: c.entry.origin, rate: c.entry.spec.rate,
         memoryHit, ...timings, loadMs: Math.round(performance.now() - loadAt) });
     } catch (error) {
+      if (bufferingSent) { bufferingSent = false; bridge.emit('audioplayer.onBuffering', [c.id, 0]); }
+      streamControl.cancel(c, 'cancelled');
       if (!validRecovery(c, epoch)) { bridge.dispatch(msg.seq, [c.id, { code: -1 }]); return; }
       if (error.message === 'native-only-context-awaiting-gesture' && allowed(c.info)) {
         // A cold autoplay request must not sound natively while Web waits for
@@ -1228,7 +1343,7 @@ plugin.onLoad(() => {
       // buffers between Load and play, especially when selecting the same track.
       const cached = allowed(info) && !localSource.path(info) && resources.lookup(ref(c), info);
       if (cached) { c.entry = cached; c.duration = cached.duration; c.level = cached.level; }
-      resources.resetFailures(); resources.retain([ref(c), nextTrack(), recent?.ref]);
+      resources.resetFailures(); resources.retain([ref(c), nextTrack(), ...recentRefs()]);
       if (allowed(info) && !msg.observedNative) {
         c.owns = true; c.loading = true; c.playing = !!snapshot?.playing;
         c.loadIntent = snapshot ? snapshot.playing : wasPlaying; S.phase = 'loading';
@@ -1531,7 +1646,7 @@ plugin.onLoad(() => {
         });
         if (!response.ok) throw new Error(`host-switch-${response.status}`);
         if (on) {
-          S.enabled = true; resources.enabled = true;
+          S.enabled = true; resources.enabled = true; nativeSource?.resetFault();
           if (S.current) { S.current.blocked = false; void prepareCurrent(S.current); }
         }
         button.setAttribute('aria-checked', String(on)); trace('enabled-changed', { enabled: on });
@@ -1631,7 +1746,7 @@ plugin.onLoad(() => {
         memory: resources.status(), mode: state()?.playing?.playingMode, nativeAllowed: allowed(c?.info),
         lastFallback: S.lastFallback && { ...S.lastFallback },
         nativeCacheSource: nativeSource?.status(),
-        nativeCacheFill: nativeFill.status(), recentId: recent?.entry.id, localSource: !!c?.entry?.source.localKey,
+        nativeCacheFill: nativeFill.status(), recentId: recentEntries.at(-1)?.entry.id, localSource: !!c?.entry?.source.localKey,
         queueVersion: S.queueVersion, loadEpoch: S.epoch, controlRevision: S.revision,
         systemMedia: media?.status(), visualization: { ...visual.status(), renderClock: visualRenderHooks.size ? 'output' : 'pending',
           renderClockHooks: [...visualRenderHooks.keys()] } };

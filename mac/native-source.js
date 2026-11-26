@@ -16,6 +16,12 @@
       return name.startsWith('audioplayer.') && (args?.[0] === this.active?.id || this.retired.has(args?.[0]));
     }
     cancel() { this.queue.clear(); }
+    resetFault() {
+      if (!this.active && this.fault) {
+        this.fault = null;
+        this.trace('native-cache-fault-reset');
+      }
+    }
     async beginClear() {
       const timer = setTimeout(() => {
         this.fault = 'native-only-cache-clear-timeout'; this.finishClear();
@@ -55,7 +61,7 @@
         await delay(10);
       }
     }
-    async batch({ source, position, signal, budgetMs }) {
+    async batch({ source, position, signal, budgetMs, wantRange = null }) {
       if (this.fault) throw new Error(this.fault);
       const job = { id: source.songId + '_gp_cache_' + this.prefix + '_' + (++this.serial), signal, source };
       const check = () => {
@@ -100,9 +106,14 @@
       }
       check();
       // Stop is followed by a verified committed index, never by an assumed
-      // delay/percentage/file-length definition of valid audio bytes.
-      await delay(30); check();
-      const coverage = await pending(this.cache.snapshotSource(source, signal)); check();
+      // delay/percentage/file-length definition of valid audio bytes. Re-check
+      // briefly if the desired interval has not yet flushed to disk.
+      let coverage;
+      for (const wait of wantRange ? [30, 60, 80] : [30]) {
+        await delay(wait); check();
+        coverage = await pending(this.cache.snapshotSource(source, signal)); check();
+        if (!wantRange || (coverage && !globalThis.GaplessCacheCoverage.missing(coverage, wantRange[0], wantRange[1]).length)) break;
+      }
       this.stats.batches++;
       this.trace('native-cache-batch', { id: String(source.songId), position, complete: !!coverage?.complete });
       return coverage;
@@ -116,8 +127,9 @@
         if (requestSignal.aborted) abort();
         requestSignal.addEventListener('abort', abort, { once: true });
         let timedOut = false;
+        const readDeadline = performance.now() + 8000;
         const timeout = setTimeout(() => { timedOut = true; abort(); }, 8000), inputSignal = controller.signal;
-        let refreshedReads = 0;
+        let refreshedReads = 0, seekBatches = 0;
         try {
           for (;;) {
             if (inputSignal.aborted || !this.valid(source)) throw new Error('cancelled');
@@ -135,9 +147,14 @@
               }
               if (gaps.length) {
                 const position = points ? globalThis.GaplessCacheCoverage.seekBefore(gaps[0][0], points, rate) : 0;
+                const priority = this.priority(source);
+                const budgets = priority >= 100 ? [1200, 1800, 2500] : [1800, 2400, 2800];
+                const planned = budgets[Math.min(budgets.length - 1, seekBatches++)];
+                const remaining = Math.floor(readDeadline - performance.now() - 400);
+                const budgetMs = Math.max(250, Math.min(planned, remaining));
                 try {
                   coverage = await this.queue.request({ source, position, signal: inputSignal,
-                    priority: this.priority(source), budgetMs: 500 });
+                    priority, budgetMs, wantRange: [start, end] });
                 } catch (error) {
                   if (['native-cache-preempted', 'native-cache-cleared'].includes(error.message)) continue;
                   throw error;
@@ -173,8 +190,23 @@
           throw new Error(error.message.startsWith('native-only-') ? error.message : 'native-only-cache-' + error.message);
         } finally { clearTimeout(timeout); requestSignal.removeEventListener('abort', abort); }
       };
-      const size = Number(source.size), end = Math.min(size, 32768), head = await read(0, end, signal);
-      return { kind: 'native-source', partial: true,
+      const size = Number(source.size);
+      const hasDiskCoverage = (targetSeconds, runwaySeconds = 2) => {
+        const cov = committed;
+        if (!cov || cov.generation !== this.cache.generation || !points || !rate) return false;
+        if (cov.complete) return true;
+        const startSample = Math.max(0, Math.floor(targetSeconds * rate));
+        const endSample = Math.min(points[points.length - 1].sample, Math.ceil((targetSeconds + runwaySeconds) * rate));
+        const first = points.findIndex((p, i) => i + 1 < points.length && p.sample <= startSample && points[i + 1].sample > startSample);
+        if (first < 0) return false;
+        let last = first;
+        while (last + 1 < points.length && points[last + 1].sample < endSample) last++;
+        const byteStart = points[first].offset;
+        const byteEnd = Math.min(size, points[Math.min(points.length - 1, last + 1)].offset + 16);
+        return !globalThis.GaplessCacheCoverage.missing(cov, byteStart, byteEnd).length;
+      };
+      const end = Math.min(size, 32768), head = await read(0, end, signal);
+      return { kind: 'native-source', partial: true, hasDiskCoverage,
         response: new Response(head, { status: 206, headers: { 'content-range': `bytes 0-${end - 1}/${size}`,
           'content-length': String(end) } }),
         setIndex: (index, spec) => { points = index; rate = spec.rate; }, seekRange: read,

@@ -6,7 +6,7 @@
       this.length = spec.frames; this.sampleRate = spec.rate;
       this.numberOfChannels = spec.channels; this.duration = spec.duration;
       this.limit = Math.min(limit, spec.frames * spec.channels * 4);
-      this.bytes = 0; this.serial = 0; this.parts = new Map(); this.last = null;
+      this.bytes = 0; this.serial = 0; this.parts = new Map(); this.sorted = []; this.last = null;
     }
     put(start, channels) {
       const length = channels[0]?.length, end = start + length;
@@ -23,14 +23,20 @@
         let oldest;
         for (const part of this.parts.values()) if (!oldest || part.used < oldest.used) oldest = part;
         this.parts.delete(oldest.start); this.bytes -= oldest.size;
+        const idx = this.sorted.indexOf(oldest);
+        if (idx >= 0) this.sorted.splice(idx, 1);
         if (this.last === oldest) this.last = null;
       }
       const data = channels.map(c => c.slice());
-      this.parts.set(start, { start, end, data, size, used: ++this.serial }); this.bytes += size;
+      const entry = { start, end, data, size, used: ++this.serial };
+      this.parts.set(start, entry); this.bytes += size;
+      let insertAt = this.sorted.length;
+      while (insertAt > 0 && this.sorted[insertAt - 1].start > start) insertAt--;
+      this.sorted.splice(insertAt, 0, entry);
     }
     until(sample) {
       let end = sample;
-      for (const part of [...this.parts.values()].sort((a, b) => a.start - b.start)) {
+      for (const part of this.sorted) {
         if (part.start > end) break;
         if (part.end > end) end = part.end;
       }

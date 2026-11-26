@@ -4,12 +4,13 @@
   const MiB = 1024 * 1024;
   function normalizeFlacPCM(channelData, bits) {
     if (![8, 16, 24].includes(bits)) throw new Error('decode-flac-bit-depth');
-    const scale = 2 ** (bits - 1), wrapperMax = scale - 1;
+    const scale = 2 ** (bits - 1), wrapperMax = scale - 1, invScale = 1 / scale;
     // The WASM wrapper divides signed integers by positive full scale. Recover
     // those integers, then use the exact power-of-two signed PCM scale for both
     // signs. Float32 represents every normalized 8/16/24-bit integer exactly.
+    // Multiplication by 2^-(bits-1) is bit-exact in IEEE 754 and avoids division.
     for (const pcm of channelData) for (let i = 0; i < pcm.length; i++)
-      pcm[i] = Math.round(pcm[i] * wrapperMax) / scale;
+      pcm[i] = Math.round(pcm[i] * wrapperMax) * invScale;
     return channelData;
   }
   function header(bytes, durationHint = 0) {

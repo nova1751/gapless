@@ -115,7 +115,7 @@
             });
           } else this.audio.pause();
         }
-        if (!this.pendingSeek && !this.seeking && (force || s.revision !== this.revision || this.positionAt === -Infinity
+        if (!this.pendingSeek && !this.seeking && !s.seekPending && (force || s.revision !== this.revision || this.positionAt === -Infinity
           || (s.playing && performance.now() - this.positionAt >= 1000))) {
           this.media.setPositionState({ duration: s.duration, playbackRate: 1,
             position: Math.max(0, Math.min(s.duration, s.position)) });

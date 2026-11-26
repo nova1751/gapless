@@ -221,7 +221,7 @@ plugin.onLoad(async () => {
         if (!nativeBytes) return nativeCache.read(ref, info, signal, full);
         if (full) throw new Error('native-only-cache-index-required');
         try { return await nativeBytes.open(info, signal, () => source.trackId(info) === source.trackId(current?.info)
-          ? (current?.entry?.stream?.priorityTarget != null ? 100 : 60) : 30); }
+          ? (current?.loading || current?.entry?.stream?.priorityTarget != null ? 100 : 60) : 30); }
         catch (error) {
           if (signal.aborted || /^native-cache-(preempted|cleared|cancelled)$/.test(error.message)) throw new Error('cancelled');
           // Do not silently start a second Web download after native acquisition.
@@ -245,7 +245,7 @@ plugin.onLoad(async () => {
       }
     }
     const clock = new globalThis.GaplessStreamingClock({
-      resources, trace, scheduleAheadSeconds: 4,
+      resources, trace, scheduleAheadSeconds: 10,
       onState: (state, failedTrack) => {
         if (state === 'running') return;
         if (failedTrack && failedTrack !== current) {
@@ -351,7 +351,32 @@ plugin.onLoad(async () => {
       : c.nativePosition + (c.nativePlaying ? (performance.now() - c.progressAt) / 1000 : 0);
     const currentPlayed = c => c.nativeHeard + clock.heard(c);
     const stateEvent = (c, mark, value) => event('PlayState', [c.id, mark, value]);
-    const progress = (c, force = false) => { if (current !== c || !c.owns || (!c.playing && !force)) return; event('PlayProgress', [c.id, Number(clock.position(c)).toFixed(3), '1.0000', force]); };
+    let sliderInteracting = false, sliderReleaseUntil = 0;
+    const isProgressSlider = target => {
+      const el = target?.nodeType === 1 ? target : target?.parentElement;
+      return !!el?.closest?.('[aria-label="\u64ad\u653e\u8fdb\u5ea6\u8c03\u8282"]');
+    };
+    const endSliderInteraction = () => {
+      if (!sliderInteracting) return;
+      sliderInteracting = false;
+      sliderReleaseUntil = performance.now() + 250;
+    };
+    if (typeof window !== 'undefined') {
+      window.addEventListener('pointerdown', e => {
+        if (isProgressSlider(e.target)) { sliderInteracting = true; sliderReleaseUntil = 0; }
+      }, { capture: true });
+      window.addEventListener('pointerup', endSliderInteraction, { capture: true });
+      window.addEventListener('pointercancel', endSliderInteraction, { capture: true });
+      window.addEventListener('blur', endSliderInteraction);
+    }
+    let lastProgress = 0;
+    const progressSuppressed = c => !!(c.pendingStreamSeek || seekReplies.length || sliderInteracting || performance.now() < sliderReleaseUntil);
+    const progress = (c, force = false) => {
+      if (current !== c || !c.owns || (!c.playing && !force)) return;
+      if (!force && progressSuppressed(c)) return;
+      lastProgress = performance.now();
+      event('PlayProgress', [c.id, Number(clock.position(c)).toFixed(3), '1.0000', force]);
+    };
     const loadInfo = c => ({ activeCode: 0, code: 0, errorCode: 0, errorString: '', duration: c.duration });
     function makeTrack(id, info) {
       return { id, info, duration: Number(info?.songDuration) / 1000, pendingNativeSeeks: new Set(), nativePlaying: false, nativePosition: 0, progressAt: performance.now(),
@@ -378,6 +403,7 @@ plugin.onLoad(async () => {
         .catch(error => {
           if (!controller.signal.aborted) {
             controller.failure = error;
+            entry.stream.notifyProgress?.();
             trace('seek-range-unavailable', { reason: error.message });
           }
         })
@@ -398,15 +424,15 @@ plugin.onLoad(async () => {
       startSeekRange(c, target);
       const valid = () => current === c && c.owns && enabled() && !restoring
         && c.entry === entry && c.pendingStreamSeek === request;
-      const required = Math.min(entry.buffer.length, Math.ceil((target + seekBufferSeconds(entry)) * entry.spec.rate));
+      const required = () => Math.min(entry.buffer.length, Math.ceil((target + seekBufferSeconds(entry, target)) * entry.spec.rate));
       trace('stream-seek-wait', { id: source.trackId(c.info), target });
       try {
-        while (!entry.stream.done && globalThis.GaplessSeekRange.until(entry, Math.floor(target * entry.spec.rate)) < required) {
+        while (!entry.stream.done && globalThis.GaplessSeekRange.until(entry, Math.floor(target * entry.spec.rate)) < required()) {
           if (!valid()) throw new Error('cancelled');
           if (entry.stream.error) throw new Error('stream-seek-source-failed');
           if (c.seekRangeController?.failure) throw c.seekRangeController.failure;
           if (performance.now() - began > 10000) throw new Error('stream-seek-timeout');
-          await new Promise(resolve => setTimeout(resolve, 30));
+          await (entry.stream.waitProgress ? entry.stream.waitProgress(30) : new Promise(resolve => setTimeout(resolve, 30)));
         }
         if (!valid() || entry.stream.error) throw new Error('cancelled');
         if (c.playing) clock.seek(c, target);
@@ -440,11 +466,13 @@ plugin.onLoad(async () => {
         }
       }
     }
-    function seekBufferSeconds(entry) {
-      // A target can land in the last fraction of a FLAC seek interval. Native
-      // Load/Seek/Stop plus committed-index reads need more runway than that
-      // fraction; do not switch after merely obtaining the target's first frame.
-      return entry?.origin === 'native-source' ? 2 : 0.5;
+    function seekBufferSeconds(entry, target = 0) {
+      if (entry?.origin !== 'native-source') return 0.5;
+      // When local disk cache already covers the target window, subsequent
+      // indexed intervals decode in tens of milliseconds; 0.5 s is ample
+      // runway while avoiding a second serial interval fetch before sound.
+      if (entry.stream?.hasDiskCoverage?.(target, 2)) return 0.5;
+      return 1.5;
     }
     function deliverSeek() {
       const item = seekReplies[0];
@@ -456,7 +484,7 @@ plugin.onLoad(async () => {
           const same = current === c && (c.owns || item.nativeResult && c.recoverySucceeded && !restoring);
           const valid = !item.failed && same && revision === item.revision;
           event('Seek', [c.id, item.mark, valid ? 0 : -1, same && !valid ? currentPosition(c) : item.target]);
-          if (valid) progress(c);
+          if (valid && c.playing) progress(c, true);
         } finally {
           seekReplies.shift();
           if (seekReplies.length) setTimeout(deliverSeek, 0);
@@ -476,16 +504,44 @@ plugin.onLoad(async () => {
       clearTimeout(previous.timer);
       clock.stop(previous.track);
     }
-    let switchIdleTimer, recentEntry;
-    function clearRecent() {
-      resources.unpin(recentEntry); recentEntry = null;
+    let switchIdleTimer;
+    const recentEntries = [];
+    const recentLimitCount = 4, recentLimitBytes = 160 * 1024 * 1024;
+    function clearRecent(keepRef = null) {
+      for (let i = recentEntries.length - 1; i >= 0; i--) {
+        const entry = recentEntries[i];
+        if (keepRef && entry.requestKey === resources.requestKey({ ...keepRef, id: entry.id })
+          && entry.requestedLevel === keepRef.level) continue;
+        resources.unpin(entry);
+        recentEntries.splice(i, 1);
+      }
+    }
+    function evictOldestRecent() {
+      const oldest = recentEntries.shift();
+      if (!oldest) return false;
+      resources.unpin(oldest);
+      return true;
     }
     function rememberRecent(c) {
       const entry = c?.entry;
       if (!entry || entry.stream?.error
         || (entry.stream && !entry.stream.done && !entry.stream.indexed)
         || entry.size > 128 * 1024 * 1024) return;
-      clearRecent(); recentEntry = entry; resources.pin(entry);
+      const existing = recentEntries.findIndex(item => item === entry || item.key === entry.key);
+      if (existing >= 0) {
+        const [found] = recentEntries.splice(existing, 1);
+        if (found !== entry) { resources.unpin(found); resources.pin(entry); }
+        recentEntries.push(entry);
+      } else {
+        recentEntries.push(entry);
+        resources.pin(entry);
+      }
+      let total = recentEntries.reduce((sum, item) => sum + item.size, 0);
+      while (recentEntries.length > recentLimitCount || (recentEntries.length > 1 && total > recentLimitBytes)) {
+        const evicted = recentEntries.shift();
+        total -= evicted.size;
+        resources.unpin(evicted);
+      }
     }
     function clearMemoryCache() {
       clearRetiredFills(); if (current) current.cacheComplete = false;
@@ -549,6 +605,8 @@ plugin.onLoad(async () => {
       if (nativeGate && !keepWarm) void releaseNativeGate().catch(bridge.report);
       current = null;
       restoring = null;
+      sliderInteracting = false;
+      sliderReleaseUntil = 0;
       if (!keepWarm) resources.retain([]);
       else switchIdleTimer = setTimeout(() => {
         if (current) return;
@@ -556,7 +614,7 @@ plugin.onLoad(async () => {
         resources.retain([]);
         void clock.close().catch(bridge.report);
         void releaseNativeGate().catch(bridge.report);
-      }, 2500);
+      }, 15000);
     }
 
     function schedule(c, candidate) {
@@ -659,11 +717,12 @@ plugin.onLoad(async () => {
         c.entry = entry;
         if (source.same(c.info, candidate.info)) candidate.entry = c.entry;
         else {
-          try { candidate.entry = await resources.obtain(nextRef, nextInfo); }
-          catch (error) {
-            if (error.message !== 'native-only-memory' || !recentEntry || !stillCurrent()) throw error;
-            clearRecent(); resources.retain([firstRef, nextRef]); resources.resetFailures();
-            candidate.entry = await resources.obtain(nextRef, nextInfo);
+          for (;;) {
+            try { candidate.entry = await resources.obtain(nextRef, nextInfo); break; }
+            catch (error) {
+              if (error.message !== 'native-only-memory' || !stillCurrent() || !evictOldestRecent()) throw error;
+              resources.retain([firstRef, nextRef]); resources.resetFailures();
+            }
           }
         }
         if (!stillCurrent()) return;
@@ -1065,12 +1124,14 @@ plugin.onLoad(async () => {
         check();
         if (!entry.stream || entry.stream.done) return;
         if (entry.stream.error) throw new Error('native-only-seek-buffer');
-        if (target !== c.offset) { target = c.offset; startSeekRange(c, target); }
-        if (globalThis.GaplessSeekRange.until(entry, Math.floor(target * entry.spec.rate))
-          >= Math.min(entry.buffer.length, Math.ceil((target + seekBufferSeconds(entry)) * entry.spec.rate))) return;
+        const currentTarget = c.offset;
+        const required = Math.min(entry.buffer.length,
+          Math.ceil((currentTarget + seekBufferSeconds(entry, currentTarget)) * entry.spec.rate));
+        if (globalThis.GaplessSeekRange.until(entry, Math.floor(currentTarget * entry.spec.rate)) >= required) return;
+        if (target !== currentTarget) { target = currentTarget; startSeekRange(c, target); }
         if (c.seekRangeController?.failure) throw c.seekRangeController.failure;
         if (performance.now() - began > 10000) throw new Error('native-only-seek-buffer');
-        await new Promise(resolve => setTimeout(resolve, 30));
+        await (entry.stream.waitProgress ? entry.stream.waitProgress(30) : new Promise(resolve => setTimeout(resolve, 30)));
       }
     }
     function traceFirstOutput(c) {
@@ -1087,7 +1148,7 @@ plugin.onLoad(async () => {
     async function loadOwned(c, args, callback, resume = false) {
       const loadStarted = performance.now();
       c.firstOutputLoadAt = loadStarted;
-      let stageAt = loadStarted, gateMs = 0;
+      let stageAt = loadStarted, gateMs = 0, bufferingSent = false;
       const operation = c.loadingToken = {};
       c.loading = true; c.owns = true;
       const valid = () => current === c && c.loadingToken === operation && !restoring;
@@ -1108,57 +1169,70 @@ plugin.onLoad(async () => {
         const info = source.sourceInfo(c.info, c.environment.currentRow);
         const sourceInfoMs = Math.round(performance.now() - stageAt);
         stageAt = performance.now();
-        if (nativeSourceMode) {
+        const ref = makeRef(info, c.environment);
+        clearRecent(ref);
+        const cached = resources.lookup(ref, info);
+        const memoryHit = !!cached;
+        const priorRequests = cached?.acquisition?.nativeRequests ?? 0;
+        if (!resume && !memoryHit) {
+          // Immediately reset the host progress bar to 00:00 with 0% cache so
+          // uncached track switches never appear stuck on the previous song.
+          lastProgress = performance.now();
+          event('PlayProgress', [c.id, Number(c.offset || 0).toFixed(3), '0.0000', true]);
+          event('Buffering', [c.id, 1]);
+          bufferingSent = true;
+        }
+        if (nativeSourceMode && !memoryHit) {
           if (nativeGate?.releasing) await nativeGate.releasing;
           check();
           if (nativeGate) nativeGate.c = c;
           else await acquireNativeGate(c);
           check();
         }
-        const ref = makeRef(info, c.environment);
-        if (recentEntry && (recentEntry.requestKey !== resources.requestKey({ ...ref, id: recentEntry.id })
-          || recentEntry.requestedLevel !== ref.level)) clearRecent();
         gateMs += performance.now() - stageAt;
         stageAt = performance.now();
-        const cached = resources.lookup(ref, info);
-        const memoryHit = !!cached;
-        const priorRequests = cached?.acquisition?.nativeRequests ?? 0;
         resources.retain([ref]);
         let entry;
-        try {
-          let deadline;
-          try { entry = await Promise.race([resources.obtain(ref, info), new Promise((_, reject) => {
-            deadline = setTimeout(() => reject(new Error('native-only-start-deadline')), nativeSourceMode ? 8000 : 1000);
-          })]); } finally { clearTimeout(deadline); }
-        }
-        catch (error) {
-          check();
-          if (error.message !== 'native-only-memory' || !recentEntry) throw error;
-          clearRecent(); resources.retain([ref]); resources.resetFailures();
-          entry = await resources.obtain(ref, info);
+        for (;;) {
+          try {
+            let deadline;
+            try { entry = await Promise.race([resources.obtain(ref, info), new Promise((_, reject) => {
+              deadline = setTimeout(() => reject(new Error('native-only-start-deadline')), nativeSourceMode ? 8000 : 1000);
+            })]); } finally { clearTimeout(deadline); }
+            break;
+          } catch (error) {
+            check();
+            if (error.message !== 'native-only-memory' || !evictOldestRecent()) throw error;
+            resources.retain([ref]); resources.resetFailures();
+          }
         }
         check();
         if (!source.same(entry.source, info)) throw new Error('native-only-source-identity');
         if (ref.duration > 0 && Math.abs(entry.duration - ref.duration) > 0.15) throw new Error('native-only-duration');
         const resourceMs = Math.round(performance.now() - stageAt);
         c.entry = entry; c.duration = entry.duration;
-        stageAt = performance.now();
-        await prepareLoadBuffer(c, entry, check);
-        let bufferMs = performance.now() - stageAt;
-        stageAt = performance.now();
-        await clock.open(entry);
-        const contextMs = Math.round(performance.now() - stageAt);
-        stageAt = performance.now();
+        // Overlap buffer readiness, audio output warmup, and native gate acquisition.
+        let bufferMs = 0, contextMs = 0;
+        const ensureGate = async () => {
+          const started = performance.now();
+          if (nativeGate?.releasing) await nativeGate.releasing;
+          check();
+          if (nativeGate && nativeGate.c !== c) nativeGate.c = c;
+          check();
+          if (!nativeGate) await acquireNativeGate(c);
+          check();
+          gateMs += performance.now() - started;
+        };
+        await Promise.all([
+          (async () => {
+            await ensureGate();
+            const t = performance.now();
+            await prepareLoadBuffer(c, entry, check);
+            bufferMs += performance.now() - t;
+          })(),
+          (async () => { const t = performance.now(); await clock.open(entry); contextMs = Math.round(performance.now() - t); })(),
+        ]);
         check();
-        // A previous native instance must remain inaudible even if an external
-        // native transport command revives it while Web owns playback.
-        if (nativeGate?.releasing) await nativeGate.releasing;
-        check();
-        if (nativeGate && nativeGate.c !== c) nativeGate.c = c;
-        check();
-        if (!nativeGate) await acquireNativeGate(c);
-        check();
-        gateMs += performance.now() - stageAt;
         stageAt = performance.now();
         // Seek/transport may change while output initialization awaits native.
         // Commit only after the latest offset has playable PCM.
@@ -1171,6 +1245,7 @@ plugin.onLoad(async () => {
         trace('load-timing', { id: source.trackId(c.info), sourceInfoMs, resourceMs,
           bufferMs: Math.round(bufferMs), contextMs, gateMs: Math.round(gateMs), sourceKind, memoryHit });
         c.loading = false; c.blocked = false; c.bridgeSide = null;
+        if (bufferingSent) { bufferingSent = false; event('Buffering', [c.id, 0]); }
         prepareVisualClock(); visual.sync();
         reply(callback);
         queueMicrotask(() => {
@@ -1187,6 +1262,8 @@ plugin.onLoad(async () => {
           decodedRate: entry.buffer.sampleRate, contextRate: clock.ctx.sampleRate, resume,
           memoryHit, loadMs: Math.round(performance.now() - loadStarted) });
       } catch (error) {
+        if (bufferingSent) { bufferingSent = false; event('Buffering', [c.id, 0]); }
+        c.seekRangeController?.abort();
         if (!valid()) { reply(callback); return; }
         c.firstOutputLoadAt = null;
         c.loading = false; c.owns = false; c.blocked = true;
@@ -1333,7 +1410,7 @@ plugin.onLoad(async () => {
         if (claim?.previous === c) clearClaim();
         revision++;
         if (!seek) c.intent = play;
-        else c.lastSeek = performance.now();
+        else { c.lastSeek = performance.now(); sliderInteracting = false; sliderReleaseUntil = 0; }
       }
       if (restoring === c && (play || pause || seek)) {
         if (seek) c.recoverySeeks.push({ callback, mark: String(args[1]), position: Math.max(0, Number(args[2]) || 0) });
@@ -1414,7 +1491,7 @@ plugin.onLoad(async () => {
         if (play) {
           if (!c.playing && !c.pendingStreamSeek && c.entry?.stream && !c.entry.stream.done
             && globalThis.GaplessSeekRange.until(c.entry, Math.floor(c.offset * c.entry.spec.rate))
-              < Math.min(c.entry.buffer.length, Math.ceil((c.offset + seekBufferSeconds(c.entry)) * c.entry.spec.rate))) {
+              < Math.min(c.entry.buffer.length, Math.ceil((c.offset + seekBufferSeconds(c.entry, c.offset)) * c.entry.spec.rate))) {
             // A paused position may have been evicted from bounded PCM. Refill
             // before opening its output, while retaining subsequent pause/seek.
             reply(callback);
@@ -1448,7 +1525,7 @@ plugin.onLoad(async () => {
           c.entry?.stream?.ensureController?.abort();
           cancelPendingSeek(c);
           if (c.entry?.stream && !c.entry.stream.done
-            && globalThis.GaplessSeekRange.until(c.entry, Math.floor(target * c.entry.spec.rate)) < Math.min(c.entry.buffer.length, Math.ceil((target + seekBufferSeconds(c.entry)) * c.entry.spec.rate))) {
+            && globalThis.GaplessSeekRange.until(c.entry, Math.floor(target * c.entry.spec.rate)) < Math.min(c.entry.buffer.length, Math.ceil((target + seekBufferSeconds(c.entry, target)) * c.entry.spec.rate))) {
             void seekWhenReady(c, callback, mark, target);
             return true;
           }
@@ -1465,7 +1542,6 @@ plugin.onLoad(async () => {
       return false;
     };
 
-    let lastProgress = 0;
     setInterval(() => {
       try {
         const c = current;
@@ -1526,7 +1602,7 @@ plugin.onLoad(async () => {
         if (!source.valid(c.info) || c.blocked) return;
         if (c.owns) {
           if (handback) {
-            if (c.playing && performance.now() - lastProgress > 250) { lastProgress = performance.now(); progress(c); }
+            if (c.playing && !progressSuppressed(c) && performance.now() - lastProgress > 250) progress(c);
             return;
           }
           if (temporaryBridge && c.handbackRequested && !c.claimed && !seekReplies.length) {
@@ -1535,11 +1611,17 @@ plugin.onLoad(async () => {
           }
           if (c.claimed && performance.now() - (c.claimAt || 0) > 800) c.claimed = false;
           // Paused playback still has a valid authorized source and queue.
-          // Prepare only; schedule() remains gated on actual playback intent.
-          if (!temporaryBridge && !c.claimed && snap.nextKnown && !selected) void prepare(c, snap);
+          // While playing, wait until the current track has a healthy 6 s
+          // buffer ahead (or nears its end) so next-track preloading does not
+          // contend with cold fetches, including on 192 kHz Hi-Res tracks.
+          const currentPos = clock.position(c);
+          const currentBufferedEnough = !c.playing || !c.entry?.stream || c.entry.stream.done || c.duration - currentPos <= 20
+            || globalThis.GaplessSeekRange.until(c.entry, Math.floor(currentPos * c.entry.spec.rate))
+              >= Math.min(c.entry.buffer.length, Math.ceil((currentPos + 6) * c.entry.spec.rate));
+          if (!temporaryBridge && !c.claimed && snap.nextKnown && !selected && currentBufferedEnough) void prepare(c, snap);
           maybeFill(c);
           if (!c.playing || c.claimed) return;
-          if (performance.now() - lastProgress > 50) { lastProgress = performance.now(); progress(c); }
+          if (!progressSuppressed(c) && performance.now() - lastProgress > 50) progress(c);
           prepareVisualClock();
           visual.sync();
           if (temporaryBridge && c.bridgeSide === 'head') {
@@ -1615,6 +1697,7 @@ plugin.onLoad(async () => {
     };
     function applyEnabled(value) {
         if (!value) {
+          sliderInteracting = false; sliderReleaseUntil = 0;
           clearRetiredFills(); cacheQueue?.clear();
           resources.songCache.clear();
           cancelPendingSeek(current);
@@ -1625,7 +1708,10 @@ plugin.onLoad(async () => {
           else { cancelCandidate(); resources.retain([]); void clock.close().catch(bridge.report); void releaseNativeGate().catch(bridge.report); }
           clearClaim();
         }
-        if (value && current) { current.blocked = false; current.prepareAttempts = 0; current.prepareAfter = 0; cancelCandidate(); }
+        if (value) {
+          cacheSession?.resetFault();
+          if (current) { current.blocked = false; current.prepareAttempts = 0; current.prepareAfter = 0; cancelCandidate(); }
+        }
     }
     return publicStatus;
   }

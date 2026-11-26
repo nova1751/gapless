@@ -1,6 +1,34 @@
 /* MIT. Indexed FLAC ranges; no clock access and no alternate audio source. */
 (() => {
   const MiB = 1024 * 1024;
+  const idleDecoders = [];
+  let preferIPv4Localhost = true;
+  function localIPv4Url(url) {
+    if (!preferIPv4Localhost) return null;
+    try {
+      const parsed = new URL(url);
+      if (parsed.protocol === 'http:' && parsed.hostname === 'localhost') {
+        parsed.hostname = '127.0.0.1';
+        return parsed.href;
+      }
+    } catch {}
+    return null;
+  }
+  async function acquireDecoder() {
+    const cached = idleDecoders.pop();
+    if (cached) return cached;
+    const decoder = new globalThis['flac-decoder'].FLACDecoder();
+    await decoder.ready;
+    return decoder;
+  }
+  function releaseDecoder(decoder, healthy) {
+    if (!decoder) return;
+    if (!healthy || idleDecoders.length >= 2) { try { decoder.free(); } catch {} return; }
+    void Promise.resolve(decoder.reset()).then(() => {
+      if (idleDecoders.length < 2) idleDecoders.push(decoder);
+      else try { decoder.free(); } catch {}
+    }, () => { try { decoder.free(); } catch {} });
+  }
   function index(bytes, spec, size) {
     if (!Number.isSafeInteger(size) || size <= 0) return false;
     const view = new DataView(bytes.buffer, bytes.byteOffset, bytes.byteLength);
@@ -46,7 +74,25 @@
   async function readBytes(url, start, end, size, signal, xor, partialFile) {
     if (!Number.isSafeInteger(size) || !Number.isSafeInteger(start) || !Number.isSafeInteger(end)
       || start < 0 || end <= start || end > size || end - start > 2 * MiB) throw new Error('seek-range-bounds');
-    const response = await fetch(url, { headers: { Range: `bytes=${start}-${end - 1}` }, signal });
+    const rangeHeaders = { headers: { Range: `bytes=${start}-${end - 1}` }, signal };
+    const ipv4 = localIPv4Url(url);
+    let response;
+    if (ipv4) {
+      try {
+        response = await fetch(ipv4, rangeHeaders);
+        if (response.status !== 206) {
+          await response.body?.cancel();
+          preferIPv4Localhost = false;
+          response = await fetch(url, rangeHeaders);
+        }
+      } catch (error) {
+        if (signal.aborted || error?.name !== 'TypeError') throw error;
+        preferIPv4Localhost = false;
+        response = await fetch(url, rangeHeaders);
+      }
+    } else {
+      response = await fetch(url, rangeHeaders);
+    }
     const expected = `bytes ${start}-${end - 1}/${size}`;
     const contentRange = response.headers.get('content-range');
     const nativeRange = partialFile && /^bytes (\d+)-(\d+)\/(\d+)$/.exec(contentRange || '');
@@ -55,19 +101,15 @@
     if (response.status !== 206 || (contentRange !== expected && !nativeFileValid)) {
       await response.body?.cancel(); throw new Error('seek-range-unsupported');
     }
-    const result = new Uint8Array(end - start), reader = response.body.getReader();
-    let offset = 0;
-    try {
-      while (true) {
-        const part = await reader.read();
-        if (part.done) break;
-        if (offset + part.value.length > result.length) throw new Error('seek-range-length');
-        result.set(part.value, offset); offset += part.value.length;
-      }
-      if (offset !== result.length) throw new Error('seek-range-length');
-      if (xor) for (let i = 0; i < result.length; i++) result[i] ^= 0xa3;
-      return result;
-    } finally { await reader.cancel().catch(() => {}); }
+    const buf = await response.arrayBuffer();
+    if (buf.byteLength !== end - start) throw new Error('seek-range-length');
+    const result = new Uint8Array(buf);
+    if (xor) {
+      const words = new Uint32Array(buf, 0, buf.byteLength >>> 2);
+      for (let i = 0; i < words.length; i++) words[i] ^= 0xa3a3a3a3;
+      for (let i = words.length << 2; i < result.length; i++) result[i] ^= 0xa3;
+    }
+    return result;
   }
   function until(entry, sample) {
     if (entry.stream?.bounded) return entry.buffer.until(sample);
@@ -122,15 +164,32 @@
     let n = points.findIndex((p, i) => i + 1 < points.length && p.sample <= sample && points[i + 1].sample > sample);
     if (n < 0 || resources.held() + resources.reserved + 8 * MiB > resources.limit) return;
     resources.reserved += 8 * MiB; resources.pin(entry);
-    let decoder;
+    let decoder, decoderHealthy = false;
     const previous = entry.stream.decodeTail || Promise.resolve();
     let release;
     entry.stream.decodeTail = new Promise(resolve => { release = resolve; });
     const started = performance.now();
     const check = () => { if (signal.aborted || !resources.enabled || entry.stream.error) throw new Error('cancelled'); };
+    // Start fetching the first missing interval immediately instead of waiting
+    // behind an aborted background decode finishing on decodeTail.
+    let firstRead = null;
+    if (!signal.aborted && resources.enabled && !entry.stream.error) {
+      let firstMissing = n;
+      while (firstMissing + 1 < points.length && points[firstMissing].sample < (target + ahead) * entry.spec.rate
+        && until(entry, points[firstMissing].sample) >= points[firstMissing + 1].sample) firstMissing++;
+      if (firstMissing + 1 < points.length && points[firstMissing].sample < (target + ahead) * entry.spec.rate) {
+        const p = points[firstMissing], next = points[firstMissing + 1];
+        const readEnd = Math.min(points[points.length - 1].offset, next.offset + 16);
+        if (readEnd - p.offset <= 2 * MiB && (next.sample - p.sample) * entry.spec.channels * 4 <= 4 * MiB) {
+          firstRead = { n: firstMissing, promise: Promise.resolve().then(() => readRange(p.offset, readEnd, signal)) };
+          void firstRead.promise.catch(() => {});
+        }
+      }
+    }
     try {
       await previous; check();
-      decoder = new globalThis['flac-decoder'].FLACDecoder(); await decoder.ready;
+      decoder = await acquireDecoder(); check();
+      decoderHealthy = true;
       for (; n + 1 < points.length; n++) {
         check();
         if (entry.stream.done || points[n].sample >= (target + ahead) * entry.spec.rate) return;
@@ -140,7 +199,9 @@
         const readEnd = Math.min(points[points.length - 1].offset, next.offset + 16);
         if (readEnd - p.offset > 2 * MiB || (next.sample - p.sample) * entry.spec.channels * 4 > 4 * MiB)
           throw new Error('seek-range-budget');
-        const bytes = await readRange(p.offset, readEnd, signal); check();
+        const bytes = firstRead?.n === n ? await firstRead.promise : await readRange(p.offset, readEnd, signal);
+        firstRead = null;
+        check();
         if (frameHeader(bytes, points.blockSize).sample !== p.sample) throw new Error('seek-frame-position');
         if (readEnd > next.offset) {
           // The pinned parser can drop a valid final frame when an indexed
@@ -151,13 +212,18 @@
         }
         // Do not flush lookahead as a complete file: a highly compressed next
         // frame could otherwise be emitted too. Only real EOF uses decodeFile.
+        decoderHealthy = false;
         const result = readEnd > next.offset ? await decoder.decode(bytes) : await decoder.decodeFile(bytes);
         if (readEnd > next.offset) await decoder.reset();
+        decoderHealthy = true;
         check();
         // The pinned minified bundle names its decoder error array `U`.
         if ((result.errors || result.U)?.length || result.samplesDecoded !== next.sample - p.sample
           || result.sampleRate !== entry.spec.rate || result.bitDepth !== entry.spec.bits
-          || result.channelData.length !== entry.spec.channels) throw new Error('seek-range-decode');
+          || result.channelData.length !== entry.spec.channels) {
+          decoderHealthy = false;
+          throw new Error('seek-range-decode');
+        }
         globalThis.GaplessAudioResources.normalizeFlacPCM(result.channelData, entry.spec.bits);
         for (let ch = 0; ch < entry.spec.channels; ch++) {
           const pcm = result.channelData[ch];
@@ -172,6 +238,7 @@
           if (entry.stream.decodedFrames === entry.buffer.length) entry.stream.done = true;
         }
         await entry.stream.verifyAvailable?.(signal); check();
+        entry.stream.notifyProgress?.();
         resources.trace('seek-range-ready', { id: entry.id, target, origin: entry.stream.rangeOrigin || entry.origin,
           pcmBytes: entry.stream.bounded ? entry.buffer.bytes : undefined,
           pcmCapacity: entry.stream.bounded ? entry.buffer.limit : undefined,
@@ -180,7 +247,11 @@
         if (resources.yieldIndexedWork) await resources.yieldIndexedWork();
         else await new Promise(resolve => setTimeout(resolve, 0));
       }
-    } finally { decoder?.free(); resources.unpin(entry); resources.reserved -= 8 * MiB; release(); }
+    } finally {
+      releaseDecoder(decoder, decoderHealthy);
+      entry.stream.notifyProgress?.();
+      resources.unpin(entry); resources.reserved -= 8 * MiB; release();
+    }
   }
   globalThis.GaplessSeekRange = { index, read, until, prepare };
 })();

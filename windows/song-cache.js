@@ -67,7 +67,7 @@
         let job = [...source.pending].find(p => !p.controller.signal.aborted && p.start <= at && p.end > at);
         if (job) this.joins++;
         else {
-          let to = Math.min(end, at + 256 * 1024);
+          let to = Math.min(end, at + 2 * 1024 * 1024);
           for (const p of [...source.parts, ...source.pending]) if (p.start > at) to = Math.min(to, p.start);
           job = { start: at, end: to, users: 0, done: false, controller: new AbortController() };
           const request = job; this.reads++;
