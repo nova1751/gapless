@@ -175,8 +175,10 @@
         resources.trace('seek-range-ready', { id: entry.id, target, origin: entry.stream.rangeOrigin || entry.origin,
           pcmBytes: entry.stream.bounded ? entry.buffer.bytes : undefined,
           pcmCapacity: entry.stream.bounded ? entry.buffer.limit : undefined,
-          waitMs: Math.round(performance.now() - started), decodedSeconds: (next.sample - p.sample) / entry.spec.rate });
-        await new Promise(resolve => setTimeout(resolve, 0));
+          waitMs: Math.round(performance.now() - started), decodedSeconds: (next.sample - p.sample) / entry.spec.rate,
+          rangeStartSeconds: p.sample / entry.spec.rate, rangeEndSeconds: next.sample / entry.spec.rate });
+        if (resources.yieldIndexedWork) await resources.yieldIndexedWork();
+        else await new Promise(resolve => setTimeout(resolve, 0));
       }
     } finally { decoder?.free(); resources.unpin(entry); resources.reserved -= 8 * MiB; release(); }
   }

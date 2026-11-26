@@ -12,6 +12,8 @@
   class StreamingResources extends AudioResources {
     constructor(options) {
       super(options); this.boundedIndexed = !!options.boundedIndexed; this.streaming = true; this.overlapStreaming = true;
+      this.indexedReadAheadSeconds = options.indexedReadAheadSeconds;
+      this.yieldIndexedWork = this.indexedReadAheadSeconds ? yieldWork : null;
       this.songCache = new globalThis.GaplessSongCache(() => this.limit - this.held() - this.reserved);
     }
     held() { return super.held() + (this.songCache?.bytes || 0); }
@@ -51,16 +53,29 @@
       if (!keep.size) this.songCache.clear();
     }
     ensure(entry, target) {
-      if (!entry.stream.indexed || entry.stream.done || entry.stream.error) return;
-      if (entry.stream.priorityTarget != null && Math.abs(entry.stream.priorityTarget - target) > 1) return;
-      const sample = Math.floor(target * entry.spec.rate);
-      if (globalThis.GaplessSeekRange.until(entry, sample) >= Math.min(entry.buffer.length, sample + 4 * entry.spec.rate)) return;
       const state = entry.stream;
+      if (!state.indexed || state.done || state.error) return;
+      const readAhead = this.indexedReadAheadSeconds;
+      // An explicit seek owns range preparation until it finishes.
+      if (state.priorityTarget != null && (readAhead || Math.abs(state.priorityTarget - target) > 1)) return;
+      const { rate, channels } = entry.spec;
+      let ahead = readAhead || 8;
+      if (readAhead && state.bounded && entry.buffer.limit < entry.buffer.length * channels * 4) {
+        // Leave half the PCM budget for the current block and the end of a seek interval.
+        ahead = Math.min(ahead, entry.buffer.limit / (rate * channels * 8));
+      }
+      const lowWater = readAhead ? ahead * 5 / 8 : 4;
+      const sample = Math.floor(target * rate);
+      const bufferedEnd = globalThis.GaplessSeekRange.until(entry, sample);
+      if (bufferedEnd >= Math.min(entry.buffer.length, sample + lowWater * rate)) return;
+      // Advancing playback cannot invalidate its own refill. Explicit controls
+      // still abort the controller and a native read retains its own deadline.
       if (state.ensureController && !state.ensureController.signal.aborted
-        && Math.abs((state.ensureTarget || 0) - target) < 4) return;
+        && (readAhead || Math.abs((state.ensureTarget || 0) - target) < 4)) return;
       state.ensureController?.abort();
       const controller = state.ensureController = new AbortController(); state.ensureTarget = target;
-      void globalThis.GaplessSeekRange.prepare(this, entry, target, controller.signal)
+      if (readAhead) this.trace('indexed-refill-start', { id: entry.id, target, bufferedUntilSeconds: bufferedEnd / rate });
+      void globalThis.GaplessSeekRange.prepare(this, entry, target, controller.signal, ahead)
         .catch(error => {
           if (controller.signal.aborted) return;
           state.error = /^[a-z0-9-]+$/.test(error.message) ? error.message : 'indexed-read-failed';
@@ -306,7 +321,10 @@
           clearInterval(timer);
           this.trace('stream-output-fallback', { id: track.id, reason: error.message, sourceError: stream.error,
             position: this.position(track),
-            decodedSeconds: stream.decodedFrames / rate, cursorSeconds: cursor / rate });
+            decodedSeconds: stream.decodedFrames / rate, cursorSeconds: cursor / rate,
+            bufferedUntilSeconds: globalThis.GaplessSeekRange.until(entry, cursor) / rate,
+            refillTargetSeconds: stream.ensureController ? stream.ensureTarget : undefined,
+            leadSeconds: at + (cursor - first) / rate - this.ctx.currentTime });
           // Player owns restoration and current intent; do not fake an End.
           this.onState('stream-failed', track);
         }

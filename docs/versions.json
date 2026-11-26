@@ -1,6 +1,6 @@
 {
-  "date": "2026-11-24",
-  "baseMain": "d54f990",
+  "date": "2026-11-26",
+  "baseMain": "59392cf",
   "mac": {
     "sourceVersion": "0.3.14",
     "installedVersion": "0.3.14",
@@ -22,10 +22,10 @@
     "verificationScope": "Installed runtime 0.3.14; full authorized native cache and MD5 verified after host restart. Directed production-method checks cover one refresh, stale path, persistent failure, cancellation and timeout. User paused track/quality restored. Before-deployment 0.3.13 natural scheduling and native claim observed; no post-deployment sound recording or system-control UI acceptance. Previous system file-open trigger remains unknown. Windows not operated."
   },
   "windows": {
-    "sourceVersion": "0.4.22",
-    "installedVersion": "0.4.22",
-    "runtimeVersion": "0.4.22",
-    "packageSha256": "7C448003D6137C1F1B97B0EBA1DEE45841908856BE1867A387EF5DC24BAD57FF",
+    "sourceVersion": "0.4.23",
+    "installedVersion": "0.4.23",
+    "runtimeVersion": "0.4.23",
+    "packageSha256": "85C7F2E39C1C14FB22E34CB28E25C1F3EF32DF49363BAC7886FEADEA6C8ABB8B",
     "runtimeMatchesPackage": true,
     "evidence": "docs/CURRENT_STATUS.md",
     "previousInstallationReported": {
@@ -44,7 +44,7 @@
     },
     "clientVersion": "3.1.43.205627 x64",
     "hostVersion": "1.3.4",
-    "verificationScope": "Installed/runtime files match; transient row change, persistent mismatch, account change and bounded range-read retry checked in isolation. Windows output scheduling lead increased to four seconds. No long-running playback verification or reproduction of the FLAC decode rejection.",
+    "verificationScope": "Installed and restarted; runtime main and startup files match. Directed checks reproduced the old in-flight cancellation and verified earlier refill, explicit seek priority, terminal timeouts and the Hi-Res buffer budget. Verified the actual native cache MD5 and decoded the previously affected section through EOF outside the client. No long-running app playback or output A/B.",
     "runtimeMatchesCurrentSource": true
   },
   "historicalAudioEvidence": {

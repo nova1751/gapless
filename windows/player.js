@@ -50,13 +50,15 @@ plugin.onLoad(async () => {
       const safe = records.map(({ at, wallMs, event, id, from, to, reason, mode, enabled,
         owns, loading, capable, nextKnown, supportsRandom, codec, sourceError,
         rate, sourceRate, loadMs, leadSeconds, scheduledGapFrames, delayMs, blockers, memoryHit, waitMs, target, position, decodedSeconds, retainedPlaybackBytes, success, outputWallMs, pcmBytes, pcmCapacity,
-        sourceKind, sourceInfoMs, resourceMs, bufferMs, contextMs, gateMs, firstOutputEstimateMs, stopToLoadMs }) => ({
+        sourceKind, sourceInfoMs, resourceMs, bufferMs, contextMs, gateMs, firstOutputEstimateMs, stopToLoadMs,
+        cursorSeconds, bufferedUntilSeconds, refillTargetSeconds, rangeStartSeconds, rangeEndSeconds }) => ({
         at, wallMs, event, id, from, to, mode, enabled, owns, loading, capable, nextKnown, supportsRandom,
         codec: /^[a-z0-9-]+$/i.test(codec || '') ? codec : undefined,
         sourceError: /^[a-z0-9:-]+$/.test(sourceError || '') ? sourceError : undefined,
         rate, sourceRate, loadMs, leadSeconds,
         scheduledGapFrames, delayMs, blockers, memoryHit, waitMs, target, position, decodedSeconds, retainedPlaybackBytes, success, outputWallMs, pcmBytes, pcmCapacity,
         sourceKind, sourceInfoMs, resourceMs, bufferMs, contextMs, gateMs, firstOutputEstimateMs, stopToLoadMs,
+        cursorSeconds, bufferedUntilSeconds, refillTargetSeconds, rangeStartSeconds, rangeEndSeconds,
         reason: reason ? (/^[a-z0-9:-]+$/.test(reason) ? reason : 'unavailable') : undefined,
       }));
       void betterncm.fs.writeFile('C:\\betterncm\\gapless-windows.log',
@@ -220,7 +222,7 @@ plugin.onLoad(async () => {
           // Do not silently start a second Web download after native acquisition.
           throw new Error('native-only-cache-provider');
         }
-      }, exactSize: true, openLocal: source.openLocal, openLocalInput: source.openLocalInput,
+      }, exactSize: true, indexedReadAheadSeconds: 16, openLocal: source.openLocal, openLocalInput: source.openLocalInput,
       resolve: async () => { throw new Error('native-only-source'); }, acceptRate: () => true,
     });
     const preparedPairs = new Map();
@@ -1438,6 +1440,7 @@ plugin.onLoad(async () => {
           const wasPlaying = c.playing;
           const target = Math.max(0, Math.min(Number(args[2]) || 0, c.duration - 0.001));
           c.prepareAfter = 0; c.prepareAttempts = 0;
+          c.entry?.stream?.ensureController?.abort();
           cancelPendingSeek(c);
           if (c.entry?.stream && !c.entry.stream.done
             && globalThis.GaplessSeekRange.until(c.entry, Math.floor(target * c.entry.spec.rate)) < Math.min(c.entry.buffer.length, Math.ceil((target + seekBufferSeconds(c.entry)) * c.entry.spec.rate))) {
