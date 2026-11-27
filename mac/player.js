@@ -106,7 +106,9 @@ plugin.onLoad(() => {
   }
   function capabilityCheck() {
     try {
-      if (!state()?.playing || !state()?.playingList) return false;
+      // Keep the manager visible on newer clients, but only intercept the
+      // native protocol/cache format actually verified on this Mac version.
+      if (window.APP_CONF?.appver !== '3.1.12' || !state()?.playing || !state()?.playingList) return false;
       if (!['onSeek', 'onPlayState', 'onPlayProgress', 'onEnd'].every(n => bridge.registrations[`audioplayer.${n}`])) return false;
       nativePlayer(); nativeSourceResolver(); return true;
     } catch (error) { trace('capability-fallback', { reason: error.message }); return false; }
@@ -665,7 +667,7 @@ plugin.onLoad(() => {
     c.webLoadRunning = true;
     if (msg.command === 'audioplayer.load' && msg.seq) c.pendingSdkLoad = msg;
     const epoch = S.epoch, loadAt = performance.now(), timings = {};
-    let bufferingSent = false;
+    let bufferingSent = false, loadWorkCancelled = false;
     c.loadAt = c.pauseAfterClaimRevision != null || msg.resumeExisting && !c.playing ? null : loadAt;
     try {
       if (msg.resumeExisting) {
@@ -695,10 +697,10 @@ plugin.onLoad(() => {
       const ensureGate = async () => {
         const started = performance.now();
         if (S.nativeGate?.releasing) await S.nativeGate.releasing;
-        if (!validRecovery(c, epoch) || !allowed(c.info) || S.phase === 'restoring') throw new Error('cancelled');
+        if (loadWorkCancelled || !validRecovery(c, epoch) || !allowed(c.info) || S.phase === 'restoring') throw new Error('cancelled');
         if (!S.nativeGate) await acquireNativeGate(c, epoch, 'continuous-web');
         else { S.nativeGate.c = c; S.nativeGate.epoch = epoch; await S.nativeGate.ready; }
-        if (!validRecovery(c, epoch) || !allowed(c.info) || S.phase === 'restoring') throw new Error('cancelled');
+        if (loadWorkCancelled || !validRecovery(c, epoch) || !allowed(c.info) || S.phase === 'restoring') throw new Error('cancelled');
         clearTimeout(S.nativeGate?.watchdog);
         timings.gateMs = Math.round(performance.now() - started);
       };
@@ -735,8 +737,15 @@ plugin.onLoad(() => {
       trace('web-loaded', { id: c.id, origin: c.entry.origin, rate: c.entry.spec.rate,
         memoryHit, ...timings, loadMs: Math.round(performance.now() - loadAt) });
     } catch (error) {
-      if (bufferingSent) { bufferingSent = false; bridge.emit('audioplayer.onBuffering', [c.id, 0]); }
+      loadWorkCancelled = true;
+      // c is the failed/obsolete track object, so stop its private refill even
+      // when a newer load has already replaced it. Do this before the recovery
+      // validity check; otherwise an abandoned range request can keep running.
       streamControl.cancel(c, 'cancelled');
+      if (bufferingSent) {
+        bufferingSent = false;
+        if (validRecovery(c, epoch)) bridge.emit('audioplayer.onBuffering', [c.id, 0]);
+      }
       if (!validRecovery(c, epoch)) { bridge.dispatch(msg.seq, [c.id, { code: -1 }]); return; }
       if (error.message === 'native-only-context-awaiting-gesture' && allowed(c.info)) {
         // A cold autoplay request must not sound natively while Web waits for

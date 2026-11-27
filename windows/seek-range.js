@@ -101,11 +101,21 @@
     if (response.status !== 206 || (contentRange !== expected && !nativeFileValid)) {
       await response.body?.cancel(); throw new Error('seek-range-unsupported');
     }
-    const buf = await response.arrayBuffer();
-    if (buf.byteLength !== end - start) throw new Error('seek-range-length');
-    const result = new Uint8Array(buf);
+    // Retain the 2 MiB bound while receiving, rather than allocating an
+    // unbounded body before discovering a malformed/oversized Range reply.
+    const result = new Uint8Array(end - start), reader = response.body.getReader();
+    let received = 0;
+    try {
+      for (;;) {
+        const part = await reader.read();
+        if (part.done) break;
+        if (received + part.value.length > result.length) throw new Error('seek-range-length');
+        result.set(part.value, received); received += part.value.length;
+      }
+      if (received !== result.length) throw new Error('seek-range-length');
+    } finally { await reader.cancel().catch(() => {}); }
     if (xor) {
-      const words = new Uint32Array(buf, 0, buf.byteLength >>> 2);
+      const words = new Uint32Array(result.buffer, 0, result.length >>> 2);
       for (let i = 0; i < words.length; i++) words[i] ^= 0xa3a3a3a3;
       for (let i = words.length << 2; i < result.length; i++) result[i] ^= 0xa3;
     }

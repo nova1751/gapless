@@ -17,14 +17,21 @@
     }
     cancel() { this.queue.clear(); }
     resetFault() {
-      if (!this.active && this.fault) {
+      // A failed Stop leaves the old native writer unconfirmed. A toggle must
+      // not silently reopen that lane; only the recoverable clear timeout can
+      // be reset after all cleanup and clear barriers have finished.
+      if (!this.active && !this.queue.running && !this.clearTimers.length
+        && this.fault === 'native-only-cache-clear-timeout') {
         this.fault = null;
         this.trace('native-cache-fault-reset');
       }
     }
     async beginClear() {
       const timer = setTimeout(() => {
-        this.fault = 'native-only-cache-clear-timeout'; this.finishClear();
+        // A later clear deadline must not turn an unconfirmed Stop into the
+        // recoverable timeout that resetFault is allowed to release.
+        if (this.fault !== 'native-only-cache-stop-failed') this.fault = 'native-only-cache-clear-timeout';
+        this.finishClear();
       }, 10000);
       this.clearTimers.push(timer);
       await this.quiesce();
@@ -151,7 +158,8 @@
                 const budgets = priority >= 100 ? [1200, 1800, 2500] : [1800, 2400, 2800];
                 const planned = budgets[Math.min(budgets.length - 1, seekBatches++)];
                 const remaining = Math.floor(readDeadline - performance.now() - 400);
-                const budgetMs = Math.max(250, Math.min(planned, remaining));
+                if (remaining < 250) throw new Error('native-only-cache-read-timeout');
+                const budgetMs = Math.min(planned, remaining);
                 try {
                   coverage = await this.queue.request({ source, position, signal: inputSignal,
                     priority, budgetMs, wantRange: [start, end] });

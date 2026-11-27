@@ -1,0 +1,151 @@
+{
+  "date": "2026-11-27",
+  "baseMain": "923e1b7",
+  "beforeInstall": {
+    "cache": {
+      "runtimeBefore": "0.3.14",
+      "sourceCandidate": "0.3.20",
+      "id": "2671195352",
+      "bytes": 61788202,
+      "complete": true,
+      "validRanges": 1,
+      "headerValid": true,
+      "headerReadMs": 31,
+      "fullBytes": 61788202,
+      "md5Verified": true,
+      "fullReadMs": 2292,
+      "completeFileChangedRejected": true,
+      "versionChecks": 2
+    },
+    "before": {
+      "id": "2671195352",
+      "position": 431.918231292515,
+      "playing": true,
+      "requestedLevel": "hires",
+      "actualLevel": "lossless"
+    },
+    "nativeRestored": {
+      "id": "2671195352",
+      "position": 431.9243312924196,
+      "playing": true,
+      "owns": false,
+      "phase": "native"
+    }
+  },
+  "runtime": {
+    "version": "0.3.20",
+    "appVersion": "3.1.12",
+    "id": "3332271383",
+    "phase": "owned",
+    "owns": true,
+    "playing": true,
+    "position": 72.54070294784574,
+    "requestedLevel": "hires",
+    "actualLevel": "lossless",
+    "sourceRate": 44100,
+    "contextRate": 44100,
+    "activeNodes": 2,
+    "lastFallback": null,
+    "cache": {
+      "batches": 6,
+      "reads": 109,
+      "hits": 110,
+      "refreshes": 1,
+      "failures": 0,
+      "queued": 0,
+      "activePriority": null,
+      "generation": 1,
+      "closed": false,
+      "pendingClears": 0,
+      "fault": null
+    },
+    "systemMedia": {
+      "supported": true,
+      "active": true,
+      "failed": false,
+      "seekPending": false
+    },
+    "transitions": [
+      {
+        "at": 65256,
+        "event": "web-loaded",
+        "id": "2671195352",
+        "origin": "native-source",
+        "rate": 44100,
+        "memoryHit": false,
+        "sourceMs": 81,
+        "gateMs": 155,
+        "bufferMs": 0,
+        "contextMs": 295,
+        "loadMs": 395
+      },
+      {
+        "at": 65398,
+        "event": "seek",
+        "id": "2671195352",
+        "position": 432
+      },
+      {
+        "at": 65469,
+        "event": "scheduled",
+        "from": "2671195352",
+        "to": "3332271383",
+        "leadSeconds": 103.90773242630391,
+        "sourceRate": 44100,
+        "decodedRate": 44100,
+        "contextRate": 44100,
+        "scheduledGapFrames": 0
+      },
+      {
+        "at": 169489,
+        "event": "claimed",
+        "id": "3332271383",
+        "position": 0.11476190476184911,
+        "claimDelayMs": 112.80000019073486
+      },
+      {
+        "at": 171706,
+        "event": "native-cache-read-refresh",
+        "id": "591014",
+        "reason": "native-only-cache-changed"
+      },
+      {
+        "at": 171760,
+        "event": "scheduled",
+        "from": "3332271383",
+        "to": "591014",
+        "leadSeconds": 181.6063265306123,
+        "sourceRate": 44100,
+        "decodedRate": 44100,
+        "contextRate": 44100,
+        "scheduledGapFrames": 0
+      }
+    ],
+    "scope": {
+      "audioRecorded": false,
+      "systemControlsInteracted": false,
+      "visualizerInteracted": false,
+      "windowsOperated": false,
+      "nativeWindowObserved": true
+    }
+  },
+  "guards": {
+    "completeFileChangedRejected": true,
+    "unconfirmedStopHeld": true,
+    "clearDeadlinePreservesStopFailure": true,
+    "runningCleanupHeld": true,
+    "quiescentClearFaultReset": true,
+    "xorRestoredBytes": [
+      0,
+      1,
+      2,
+      3
+    ],
+    "oversizedBodyRejected": true
+  },
+  "package": {
+    "path": "releases/gapless-player-mac-0.3.20.plugin",
+    "sha256": "735414e58fdce09cec00658b63ffddd58ae17b82eebee2c0b961a6aba9dd9a48",
+    "runtimeFilesMatch": true
+  }
+}

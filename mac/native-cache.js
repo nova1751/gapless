@@ -182,18 +182,15 @@
     async readReadyRange(source, start, end, signal, coverage) {
       if (!coverage || coverage.generation !== this.generation
         || globalThis.GaplessCacheCoverage.missing(coverage, start, end).length) throw new Error('native-only-cache-gap');
-      const finalized = coverage.complete && coverage.path.endsWith('.uc!');
-      const before = finalized ? null : await this.nativeFs('getProperties', [coverage.path], signal);
-      if (!finalized && (!before || Number(before.size) < end)) throw new Error('native-only-cache-changed');
+      // Complete indexed coverage and a filename suffix do not prove native
+      // will never replace this file. Preserve the before/after version check.
+      const before = await this.nativeFs('getProperties', [coverage.path], signal);
+      if (!before || Number(before.size) < end) throw new Error('native-only-cache-changed');
       let bytes;
-      try { bytes = await this.readMountedRange(coverage.path, start, end, coverage.size, signal, true, !finalized); }
+      try { bytes = await this.readMountedRange(coverage.path, start, end, coverage.size, signal, true, true); }
       catch (error) {
         if (error.message === 'seek-range-unsupported') throw new Error('native-only-cache-changed');
         throw error;
-      }
-      if (finalized) {
-        if (signal.aborted || coverage.generation !== this.generation) throw new Error('cancelled');
-        return bytes;
       }
       const after = await this.nativeFs('getProperties', [coverage.path], signal);
       if (signal.aborted || coverage.generation !== this.generation) throw new Error('cancelled');
