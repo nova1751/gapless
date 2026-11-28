@@ -1,13 +1,13 @@
 {
-  "date": "2026-11-27",
-  "baseMain": "923e1b7",
+  "date": "2026-11-28",
+  "baseMain": "792c976",
   "mac": {
-    "sourceVersion": "0.3.20",
+    "sourceVersion": "0.3.21",
     "installedVersion": "0.3.20",
     "runtimeVersion": "0.3.20",
-    "package": "releases/gapless-player-mac-0.3.20.plugin",
-    "packageSha256": "735414e58fdce09cec00658b63ffddd58ae17b82eebee2c0b961a6aba9dd9a48",
-    "runtimeMatchesPackage": true,
+    "package": "releases/gapless-player-mac-0.3.21.plugin",
+    "packageSha256": "a7731a6a5a9981ed5d5d8f273aaf01383399eee0dfd3942425b0f006bd59e4b0",
+    "runtimeMatchesPackage": false,
     "clientVersion": "3.1.12 (3444)",
     "hostVersion": "0.1.7",
     "menuVersion": "1.2.1",
@@ -18,14 +18,14 @@
     "marketExposed": true,
     "marketPluginEnabled": true,
     "managerAvailable": true,
-    "runtimeFilesMatchPackage": true,
-    "verificationScope": "Installed on Mac 3.1.12; actual native-cache read and MD5, restart recovery, live scheduling/claim, and native window checked. Runtime files match package. Directed guards passed. No audio recording or system-control/visualizer interaction; unknown Mac versions stay native."
+    "runtimeFilesMatchPackage": false,
+    "verificationScope": "0.3.21 source and package built with syntax check on Windows (adds seekIntoGap() retry nudge when seekBefore() stalls on a cached boundary, plus 1 transient ensure() timeout retry while >=2s PCM runway remains). Not installed or tested on macOS yet; 0.3.20 remains the last Mac-verified runtime."
   },
   "windows": {
-    "sourceVersion": "0.4.33",
-    "installedVersion": "0.4.32",
-    "runtimeVersion": "0.4.32",
-    "packageSha256": "F16408CE2DF8D0BB4CFD7D8789884FBF01E7111382CE3BE7938499AC5A989D23",
+    "sourceVersion": "0.4.34",
+    "installedVersion": "0.4.34",
+    "runtimeVersion": "0.4.34",
+    "packageSha256": "624F9A27BAEC7A80AB1CBDD68ED9FF8767F79817BD86B31D7CCDE7365C50DC3A",
     "runtimeMatchesPackage": true,
     "evidence": "docs/CURRENT_STATUS.md",
     "previousInstallationReported": {
@@ -44,9 +44,8 @@
     },
     "clientVersion": "3.1.44.205670 x64",
     "hostVersion": "1.3.4",
-    "verificationScope": "Installed and restarted 0.4.32 on 3.1.44; runtime manifest, main and startup files match package SHA256. Live diagnostics confirmed load, native selector connection and title-bar menu mount. Restores NetEase's native 3s progress thumb loading animation (removes 0.4.31 250ms override) and eliminates click-to-seek snap-left-then-right by suppressing stale PlayProgress across pointerdown/pointerup until audioplayer.seek arrives (or 250ms expiry).",
-    "runtimeMatchesCurrentSource": false,
-    "sourceOnlyChanges": "0.4.33 restores bounded streaming reception in the range reader shared with Mac. Not packaged, installed or operated on Windows in this turn; installed/runtime evidence remains 0.4.32."
+    "verificationScope": "Installed and restarted 0.4.34 on 3.1.44 (includes 0.4.33 bounded Range reader); runtime manifest, main and startup files match package SHA256. Live diagnostics confirmed load, native selector connection and title-bar menu mount. Fixes mid-song native-only-cache-range-timeout fallback by refreshing live musicurl in NativeByteSource.updateSource() on warm reuse/claim/prepare, nudging past stalled cached boundaries with seekIntoGap(), rejecting batches with <250ms remaining before read deadline, and allowing 1 transient ensure() timeout retry while >=2s runway remains.",
+    "runtimeMatchesCurrentSource": true
   },
   "historicalAudioEvidence": {
     "macOutputABVersion": "0.3.7",

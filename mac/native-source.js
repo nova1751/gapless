@@ -136,7 +136,7 @@
         let timedOut = false;
         const readDeadline = performance.now() + 8000;
         const timeout = setTimeout(() => { timedOut = true; abort(); }, 8000), inputSignal = controller.signal;
-        let refreshedReads = 0, seekBatches = 0;
+        let refreshedReads = 0, seekBatches = 0, lastGapStart = null;
         try {
           for (;;) {
             if (inputSignal.aborted || !this.valid(source)) throw new Error('cancelled');
@@ -153,7 +153,14 @@
                 gaps = coverage ? globalThis.GaplessCacheCoverage.missing(coverage, start, end) : [[start, end]];
               }
               if (gaps.length) {
-                const position = points ? globalThis.GaplessCacheCoverage.seekBefore(gaps[0][0], points, rate) : 0;
+                const gapStart = gaps[0][0];
+                const stalledOnGap = lastGapStart === gapStart;
+                lastGapStart = gapStart;
+                const position = points
+                  ? (stalledOnGap
+                    ? globalThis.GaplessCacheCoverage.seekIntoGap(gapStart, points, rate)
+                    : globalThis.GaplessCacheCoverage.seekBefore(gapStart, points, rate))
+                  : 0;
                 const priority = this.priority(source);
                 const budgets = priority >= 100 ? [1200, 1800, 2500] : [1800, 2400, 2800];
                 const planned = budgets[Math.min(budgets.length - 1, seekBatches++)];
@@ -164,7 +171,9 @@
                   coverage = await this.queue.request({ source, position, signal: inputSignal,
                     priority, budgetMs, wantRange: [start, end] });
                 } catch (error) {
-                  if (['native-cache-preempted', 'native-cache-cleared'].includes(error.message)) continue;
+                  if (['native-cache-preempted', 'native-cache-cleared'].includes(error.message)) {
+                    lastGapStart = null; continue;
+                  }
                   throw error;
                 }
                 gaps = coverage ? globalThis.GaplessCacheCoverage.missing(coverage, start, end) : [[start, end]];

@@ -248,6 +248,7 @@
           if (entry.stream.decodedFrames === entry.buffer.length) entry.stream.done = true;
         }
         await entry.stream.verifyAvailable?.(signal); check();
+        entry.stream.timeoutRetries = 0;
         entry.stream.notifyProgress?.();
         resources.trace('seek-range-ready', { id: entry.id, target, origin: entry.stream.rangeOrigin || entry.origin,
           pcmBytes: entry.stream.bounded ? entry.buffer.bytes : undefined,

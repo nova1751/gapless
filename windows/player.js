@@ -199,7 +199,9 @@ plugin.onLoad(async () => {
           if (!valid()) return;
           if (coverage.complete) { owner.cacheComplete = true; return; }
           const gap = globalThis.GaplessCacheCoverage.missing(coverage)[0];
-          const target = globalThis.GaplessCacheCoverage.seekBefore(gap[0], points, rate);
+          const target = (owner.cacheFillStalls || 0) >= 1
+            ? globalThis.GaplessCacheCoverage.seekIntoGap(gap[0], points, rate)
+            : globalThis.GaplessCacheCoverage.seekBefore(gap[0], points, rate);
           const result = await cacheQueue.request({ source: fillSource, position: target, signal,
             priority: globalThis.WindowsNativeCachePriority.fill,
             budgetMs: Math.min(2000, 500 * 2 ** (owner.cacheFillStalls || 0)) });
@@ -714,6 +716,7 @@ plugin.onLoad(async () => {
         resources.retain([firstRef, nextRef]);
         const entry = await resources.obtain(firstRef, currentInfo);
         if (!stillCurrent()) return;
+        entry.stream?.updateSource?.(currentInfo);
         c.entry = entry;
         if (source.same(c.info, candidate.info)) candidate.entry = c.entry;
         else {
@@ -724,6 +727,7 @@ plugin.onLoad(async () => {
               resources.retain([firstRef, nextRef]); resources.resetFailures();
             }
           }
+          candidate.entry?.stream?.updateSource?.(nextInfo);
         }
         if (!stillCurrent()) return;
         // Each entry has already passed its own decode/spec validation. Keep
@@ -1209,6 +1213,7 @@ plugin.onLoad(async () => {
         check();
         if (!source.same(entry.source, info)) throw new Error('native-only-source-identity');
         if (ref.duration > 0 && Math.abs(entry.duration - ref.duration) > 0.15) throw new Error('native-only-duration');
+        entry.stream?.updateSource?.(info);
         const resourceMs = Math.round(performance.now() - stageAt);
         c.entry = entry; c.duration = entry.duration;
         // Overlap buffer readiness, audio output warmup, and native gate acquisition.
@@ -1300,6 +1305,7 @@ plugin.onLoad(async () => {
         const c = current = incoming.track;
         c.id = id;
         c.info = info;
+        try { c.entry?.stream?.updateSource?.(source.sourceInfo(info, snap.currentRow)); } catch {}
         c.owns = true;
         c.environment = incoming.snapshot;
         resources.retain([makeRef(info, snap)]);

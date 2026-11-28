@@ -52,5 +52,21 @@
     // Metadata preceding the first frame is acquired with the native Load.
     return selected ? selected.sample / rate : 0;
   }
-  globalThis.GaplessCacheCoverage = Object.freeze({ parse, missing, seekBefore });
+  // When seeking strictly at/before a gap lands inside already-cached bytes and
+  // makes no progress, nudge just past the gap start to trigger a cache miss.
+  function seekIntoGap(byteOffset, points, rate) {
+    const base = seekBefore(byteOffset, points, rate);
+    for (let i = 0; i + 1 < points.length; i++) {
+      const p = points[i], next = points[i + 1];
+      if (p.offset < byteOffset && next.offset > byteOffset) {
+        const frac = (byteOffset - p.offset) / (next.offset - p.offset);
+        const nudge = Math.min(0.95, frac + 0.15);
+        const target = (p.sample + Math.ceil((next.sample - p.sample) * nudge)) / rate;
+        const maxDuration = points[points.length - 1].sample / rate;
+        return Math.max(base, Math.min(maxDuration - 0.1, target));
+      }
+    }
+    return base;
+  }
+  globalThis.GaplessCacheCoverage = Object.freeze({ parse, missing, seekBefore, seekIntoGap });
 })();

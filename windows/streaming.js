@@ -79,7 +79,15 @@
       void globalThis.GaplessSeekRange.prepare(this, entry, target, controller.signal, ahead)
         .catch(error => {
           if (controller.signal.aborted || error.message === 'cancelled') return;
-          state.error = /^[a-z0-9-]+$/.test(error.message) ? error.message : 'indexed-read-failed';
+          const reason = /^[a-z0-9-]+$/.test(error.message) ? error.message : 'indexed-read-failed';
+          const isTimeout = reason === 'native-only-cache-range-timeout' || reason === 'native-only-cache-read-timeout';
+          const runway = globalThis.GaplessSeekRange.until(entry, Math.floor(target * rate)) - Math.floor(target * rate);
+          if (isTimeout && (state.timeoutRetries || 0) < 1 && runway >= 2 * rate) {
+            state.timeoutRetries = (state.timeoutRetries || 0) + 1;
+            this.trace('indexed-read-retry', { id: entry.id, target, reason, runwaySeconds: runway / rate });
+            return;
+          }
+          state.error = reason;
           this.lastRangeFailure = { at: Math.round(performance.now()), id: entry.id, target, reason: state.error };
           this.trace('indexed-read-failed', this.lastRangeFailure);
           state.notifyProgress?.();
@@ -158,6 +166,11 @@
                 spec, buffer, size, duration: spec.duration, origin: input.kind, acquisition: input.acquisition, pins: 0,
                 stream: { decodedFrames: 0, done: false, error: null, bounded: !!bounded,
                   hasDiskCoverage: input.hasDiskCoverage || null,
+                  updateSource: input.updateSource ? nextSource => {
+                    if (!input.updateSource(nextSource)) return false;
+                    entry.source = nextSource;
+                    return true;
+                  } : null,
                   notifyProgress: () => { for (const wake of progressWaiters) wake(); progressWaiters.clear(); },
                   waitProgress: (ms = 30) => new Promise(resolve => {
                     const done = () => { clearTimeout(timer); progressWaiters.delete(done); resolve(); };
