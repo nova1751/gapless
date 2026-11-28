@@ -1,28 +1,28 @@
 {
   "date": "2026-11-28",
-  "baseMain": "792c976",
+  "baseMain": "b253d40",
   "mac": {
-    "sourceVersion": "0.3.21",
-    "installedVersion": "0.3.20",
-    "runtimeVersion": "0.3.20",
-    "package": "releases/gapless-player-mac-0.3.21.plugin",
-    "packageSha256": "a7731a6a5a9981ed5d5d8f273aaf01383399eee0dfd3942425b0f006bd59e4b0",
-    "runtimeMatchesPackage": false,
+    "sourceVersion": "0.3.22",
+    "installedVersion": "0.3.22",
+    "runtimeVersion": "0.3.22",
+    "package": "releases/gapless-player-mac-0.3.22.plugin",
+    "packageSha256": "dd6a84902229b437879f318c5065769422ae507215f969c7a86a99a03fd6f25d",
+    "runtimeMatchesPackage": true,
     "clientVersion": "3.1.12 (3444)",
     "hostVersion": "0.1.7",
     "menuVersion": "1.2.1",
     "menuSha256": "cf966fbefd0b8f2cdf50c8276c9f1bdbe729d33f5d73d7f6ffb6ce1c22329a9f",
-    "evidence": "docs/verification/main-review-mac-0.3.20.json",
+    "evidence": "docs/verification/mac-cache-gap-0.3.22.json",
     "menuEvidence": "docs/verification/mac-quick-menu-1.2.1.json",
     "marketPluginVersion": "0.8.0",
     "marketExposed": true,
     "marketPluginEnabled": true,
     "managerAvailable": true,
-    "runtimeFilesMatchPackage": false,
-    "verificationScope": "0.3.21 source and package built with syntax check on Windows (adds seekIntoGap() retry nudge when seekBefore() stalls on a cached boundary, plus 1 transient ensure() timeout retry while >=2s PCM runway remains). Not installed or tested on macOS yet; 0.3.20 remains the last Mac-verified runtime."
+    "runtimeFilesMatchPackage": true,
+    "verificationScope": "Installed and page-reloaded on Mac 3.1.12. Runtime manifest/player match the 0.3.22 package; paused track id/position/quality intent preserved, native cache source opened without failure, and exact-index-boundary seekIntoGap advances beyond the repeated Seek. No playback, natural boundary, system-control or audio-recording interaction in this install turn."
   },
   "windows": {
-    "sourceVersion": "0.4.34",
+    "sourceVersion": "0.4.35",
     "installedVersion": "0.4.34",
     "runtimeVersion": "0.4.34",
     "packageSha256": "624F9A27BAEC7A80AB1CBDD68ED9FF8767F79817BD86B31D7CCDE7365C50DC3A",
@@ -45,7 +45,8 @@
     "clientVersion": "3.1.44.205670 x64",
     "hostVersion": "1.3.4",
     "verificationScope": "Installed and restarted 0.4.34 on 3.1.44 (includes 0.4.33 bounded Range reader); runtime manifest, main and startup files match package SHA256. Live diagnostics confirmed load, native selector connection and title-bar menu mount. Fixes mid-song native-only-cache-range-timeout fallback by refreshing live musicurl in NativeByteSource.updateSource() on warm reuse/claim/prepare, nudging past stalled cached boundaries with seekIntoGap(), rejecting batches with <250ms remaining before read deadline, and allowing 1 transient ensure() timeout retry while >=2s runway remains.",
-    "runtimeMatchesCurrentSource": true
+    "runtimeMatchesCurrentSource": false,
+    "sourceOnlyChanges": "0.4.35 includes the shared exact-frame-boundary seekIntoGap fix. It was not packaged or operated on Windows in this turn; installed/runtime evidence remains 0.4.34."
   },
   "historicalAudioEvidence": {
     "macOutputABVersion": "0.3.7",
@@ -63,6 +64,7 @@
     "Historical 0.3.12 verification: Mac 0.3.12 installed and running; native fallback preserves the original pending SDK Load callback. Actual source-read failure injection clears the client loading gate and native progress advances. Previous indexed decoder fix is included. Windows not operated.",
     "Mac 0.3.13 adds verified native heart-mode target selection, keeps boundary identity across renumbering, avoids timer-clamped MD5 work, removes lyric-page startup gating and preserves unsuperseded recovery intent. Cache index text uses existing mounted streaming route, not host readFileSync. Windows 0.4.21 kept unchanged in this Mac turn.",
     "Mac 0.3.14 refreshes native indexes once for transient mounted-file failures within the original deadline; normal reads add no wait. Persistent file/host failures still restore native.",
-    "Mac 0.3.20 installed after latest-main review, preserving latency optimizations while restoring file-version, deadline, unknown-version and load-ownership guards. Shared bounded Range receiving is Windows source 0.4.33 only."
+    "Mac 0.3.20 installed after latest-main review, preserving latency optimizations while restoring file-version, deadline, unknown-version and load-ownership guards. Shared bounded Range receiving is Windows source 0.4.33 only.",
+    "Mac 0.3.22 installs the 0.3.21 mid-song cache-gap retry and fixes the exact frame-boundary case; the same one-line shared fix is Windows source 0.4.35 only."
   ]
 }

@@ -1,0 +1,41 @@
+{
+  "date": "2026-11-28",
+  "baseMain": "b253d40",
+  "fix": {
+    "issue": "seekIntoGap returned the same position when the missing range began exactly at an indexed FLAC frame offset",
+    "conditionBefore": "p.offset < byteOffset",
+    "conditionAfter": "p.offset <= byteOffset",
+    "directedCheck": {
+      "baseSeconds": 1,
+      "exactBoundarySeconds": 1.15,
+      "insideFrameSeconds": 1.35
+    }
+  },
+  "runtime": {
+    "version": "0.3.22",
+    "clientVersion": "3.1.12",
+    "id": "2670863152",
+    "position": 5.8,
+    "playing": false,
+    "requestedLevel": "hires",
+    "actualLevel": "lossless",
+    "resourceOrigin": "native-source",
+    "cacheReads": 6,
+    "cacheFailures": 0,
+    "lastFallback": null
+  },
+  "package": {
+    "path": "releases/gapless-player-mac-0.3.22.plugin",
+    "sha256": "dd6a84902229b437879f318c5065769422ae507215f969c7a86a99a03fd6f25d",
+    "activePackageMatches": true,
+    "runtimePlayerMatches": true
+  },
+  "scope": {
+    "pageReloaded": true,
+    "playbackStarted": false,
+    "naturalBoundaryObserved": false,
+    "systemControlsInteracted": false,
+    "audioRecorded": false,
+    "windowsOperated": false
+  }
+}

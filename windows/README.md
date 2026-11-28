@@ -1,6 +1,6 @@
-# Windows 无缝播放 0.4.34
+# Windows 无缝播放 0.4.35（源码）
 
-当前版本 **0.4.34**，已在网易云 x64 **3.1.44.205670** ＋ BetterNCM **1.3.4** 验证加载（包含 0.4.33 共用 Range 有界接收保护）。插件入口允许随客户端加载，音频接管需要现有原生桥及打包时核对的选曲模块匹配。网易云升级后若模块有变化，菜单显示原生播放状态。打包使用当前客户端归档。
+当前源码 **0.4.35** 补齐精确帧边界缺口推进；本轮未在 Windows 打包／安装。已安装验证版 **0.4.34**，在网易云 x64 **3.1.44.205670** ＋ BetterNCM **1.3.4** 加载（包含 0.4.33 共用 Range 有界接收保护）。插件入口允许随客户端加载，音频接管需要现有原生桥及打包时核对的选曲模块匹配。网易云升级后若模块有变化，菜单显示原生播放状态。打包使用当前客户端归档。
 
 隔离检查覆盖队列重建、改动后续曲目、实际下一首变化、重复队列项，以及缓存读取失败时原始 Load 的回退。实机验收范围和包哈希见[当前状态](../docs/CURRENT_STATUS.md)和[统一版本记录](../docs/versions.json)。
 
@@ -38,13 +38,15 @@
 
 0.4.34 修复长时运行或复播部分缓存曲目时曲中 `native-only-cache-range-timeout` 回退原生的两处根因：① `NativeByteSource` 增加 `updateSource()`，在 `loadOwned` / `claim` / `prepare` 收到网易云最新授权音源时同步刷新闭包内的 `musicurl`，避免复用超过有效期的旧签名 URL（并同步 Mac 0.3.20 的 `remaining < 250` 提前超时判断）；② `GaplessCacheCoverage.seekIntoGap()` 在 `seekBefore()` 落入已缓存边界且连续零进展时自动微调至缺口字节之后，强制触发原生拉数；③ 后台 `ensure()` 在仍有 ≥2 秒可播跑道时允许 1 次瞬态超时重试，不再在 5.8 秒余量时直接断流回退。
 
+0.4.35（源码）修复缺口起点恰好等于 FLAC 索引点时 `seekIntoGap()` 仍返回原位置的问题；第二次零进展重试会向该帧内部推进。Windows 0.4.34 的安装证据保持不变。
+
 ## 打包安装
 
 ```powershell
 python windows/package.py --client "C:\Program Files\NetEase\CloudMusic\package\orpheus.ntpk"
 ```
 
-产物为 `dist/gapless-player-windows-0.4.34.plugin`。打包使用对应客户端归档。同 slug 活动目录只保留一个版本；旧包备份到目录之外，重启后核对 manifest、main、startup 及运行诊断版本。打包生成 ZIP 插件并内置 FLAC 解码库。
+按当前源码打包的产物为 `dist/gapless-player-windows-0.4.35.plugin`。本轮未在 Windows 生成或安装该包；已安装证据仍属于 0.4.34。打包使用对应客户端归档。同 slug 活动目录只保留一个版本；旧包备份到目录之外，重启后核对 manifest、main、startup 及运行诊断版本。打包生成 ZIP 插件并内置 FLAC 解码库。
 
 默认原生数据源，`--native-source-trial` 为兼容别名；显式 `--web-source` 生成旧路径包，新歌不保证原生持久缓存。无需 LibEAPIRequest 作为本无缝插件依赖；其他插件依赖应按各自说明处理。
 

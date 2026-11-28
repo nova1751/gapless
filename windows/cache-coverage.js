@@ -58,7 +58,9 @@
     const base = seekBefore(byteOffset, points, rate);
     for (let i = 0; i + 1 < points.length; i++) {
       const p = points[i], next = points[i + 1];
-      if (p.offset < byteOffset && next.offset > byteOffset) {
+      // Include an exact frame boundary. A missing range can start exactly at
+      // p.offset; returning p again would repeat the same zero-progress Seek.
+      if (p.offset <= byteOffset && next.offset > byteOffset) {
         const frac = (byteOffset - p.offset) / (next.offset - p.offset);
         const nudge = Math.min(0.95, frac + 0.15);
         const target = (p.sample + Math.ceil((next.sample - p.sample) * nudge)) / rate;
